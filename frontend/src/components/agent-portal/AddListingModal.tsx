@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Home, X } from "lucide-react";
+import { Home, X, Image as ImageIcon, Upload } from "lucide-react";
 import { AGENT_ZONES } from "@/types/agent";
 import { ListingKind, NewListingInput, PROPERTY_TYPES } from "@/types/agentPortal";
 import { useOverlay } from "@/components/agents/useOverlay";
@@ -21,6 +21,7 @@ interface FormState {
   baths: string;
   rent: string;
   listingType: ListingKind;
+  image: string;
 }
 
 const EMPTY: FormState = {
@@ -32,6 +33,7 @@ const EMPTY: FormState = {
   baths: "2",
   rent: "",
   listingType: "rent",
+  image: "",
 };
 
 type Errors = Partial<Record<keyof FormState, string>>;
@@ -72,6 +74,19 @@ export function AddListingModal({ isOpen, onClose, onCreate }: AddListingModalPr
     if (submitted) setErrors(validate(next));
   };
 
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === "string") {
+          update("image", reader.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitted(true);
@@ -87,6 +102,7 @@ export function AddListingModal({ isOpen, onClose, onCreate }: AddListingModalPr
       baths: Number(form.baths),
       rentPerYear: Number(form.rent.replace(/[,\s]/g, "")),
       listingType: form.listingType,
+      image: form.image || undefined,
     });
   };
 
@@ -100,8 +116,8 @@ export function AddListingModal({ isOpen, onClose, onCreate }: AddListingModalPr
       className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-900/50 p-4 backdrop-blur-sm"
       onMouseDown={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div role="dialog" aria-modal="true" aria-labelledby="add-listing-title" className="my-auto w-full max-w-[520px] rounded-2xl bg-white shadow-2xl">
-        <div className="flex items-start justify-between border-b border-slate-100 p-5 sm:p-6">
+      <div role="dialog" aria-modal="true" aria-labelledby="add-listing-title" className="my-auto w-full max-w-[540px] rounded-2xl bg-white shadow-2xl max-h-[92vh] overflow-y-auto">
+        <div className="sticky top-0 z-10 bg-white flex items-start justify-between border-b border-slate-100 p-5 sm:p-6">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-light">
               <Home className="h-5 w-5 text-primary" />
@@ -157,6 +173,50 @@ export function AddListingModal({ isOpen, onClose, onCreate }: AddListingModalPr
               <input id="l-rent" inputMode="numeric" value={form.rent} onChange={(e) => update("rent", e.target.value)} placeholder="3,500,000" className={cls("rent")} />
             </Field>
           </div>
+
+          {/* Property Image Upload & Preview */}
+          <Field label="Property Image" htmlFor="l-image">
+            <div className="space-y-3">
+              <div className="flex gap-2">
+                <input
+                  id="l-image"
+                  type="url"
+                  value={form.image.startsWith("data:") ? "" : form.image}
+                  onChange={(e) => update("image", e.target.value)}
+                  placeholder="Paste image URL (https://...)"
+                  className={cls("image")}
+                />
+                <label className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 cursor-pointer transition-colors shrink-0">
+                  <Upload className="w-4 h-4 text-slate-500" />
+                  <span>Upload File</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+
+              {form.image && (
+                <div className="relative rounded-xl overflow-hidden border border-slate-200 bg-slate-50 h-36 w-full flex items-center justify-center">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={form.image}
+                    alt="Property Preview"
+                    className="h-full w-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => update("image", "")}
+                    className="absolute top-2 right-2 p-1 rounded-full bg-black/60 text-white hover:bg-black/80"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
+            </div>
+          </Field>
 
           <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-end">
             <button type="button" onClick={onClose} className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-xs font-bold text-dark hover:bg-slate-50">

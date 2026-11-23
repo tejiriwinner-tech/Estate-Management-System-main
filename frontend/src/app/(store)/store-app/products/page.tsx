@@ -1,5 +1,10 @@
-import { redirect } from "next/navigation";
+import { Suspense } from "react";
+import { ProductCatalogRoute } from "../components/store-screens";
 
-export default function LegacyStoreProductsRedirect() {
-  redirect("/admin/store/products");
+export default function StoreAppProductsPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-muted">Loading product catalog…</div>}>
+      <ProductCatalogRoute />
+    </Suspense>
+  );
 }

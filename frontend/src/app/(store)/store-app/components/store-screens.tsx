@@ -242,20 +242,31 @@ export function StoreShell({
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [isMobileNavOpen]);
-  const navItemsList = [
-    { label: "Dashboard", href: "/admin/dashboard", icon: "dashboard" as const },
-    { label: "Finance", href: "/admin/finance", icon: "finance" as const },
-    { label: "Store", href: "/admin/store", icon: "store" as const, isDropdown: true },
-    { label: "Messages", href: "/admin/messages", icon: "messages" as const },
-    { label: "Reports", href: "/admin/reports", icon: "reports" as const },
-    { label: "Staffs", href: "/admin/staffs", icon: "staff" as const },
-  ];
+  const isStoreApp = pathname.startsWith("/store-app");
+
+  const navItemsList = isStoreApp
+    ? [
+        { label: "Store Dashboard", href: "/store-app", icon: "dashboard" as const },
+        { label: "Orders & Fulfillment", href: "/store-app/orders", icon: "reports" as const },
+        { label: "Product Catalog", href: "/store-app/products", icon: "store" as const },
+        { label: "Inventory & Stock", href: "/store-app/products/manage", icon: "finance" as const },
+        { label: "Settlements & Payouts", href: "/store-app/subscription", icon: "finance" as const },
+        { label: "Store Settings", href: "/store-app/settings", icon: "settings" as const },
+      ]
+    : [
+        { label: "Dashboard", href: "/admin/dashboard", icon: "dashboard" as const },
+        { label: "Finance", href: "/admin/finance", icon: "finance" as const },
+        { label: "Store", href: "/admin/store", icon: "store" as const, isDropdown: true },
+        { label: "Messages", href: "/admin/messages", icon: "messages" as const },
+        { label: "Reports", href: "/admin/reports", icon: "reports" as const },
+        { label: "Staffs", href: "/admin/staffs", icon: "staff" as const },
+      ];
 
   const storeDropdownSubLinks = [
     { label: "Store Overview", href: "/admin/store" },
     { label: "Inventory Management", href: "/store-app/products/manage" },
     { label: "Product Catalog", href: "/store-app/products" },
-    { label: "Orders & Analytics", href: "/store-app/dashboard" },
+    { label: "Orders & Analytics", href: "/store-app/orders" },
     { label: "Subscription", href: "/store-app/subscription" },
     { label: "Store Settings", href: "/store-app/settings" },
   ];
@@ -271,19 +282,21 @@ export function StoreShell({
         />
       )}
       <aside className={`sidebar${isMobileNavOpen ? " sidebar--mobile-open" : ""}`} id="primary-sidebar">
-        <Link className="brand" href="/admin/dashboard" aria-label="LincolnEstate home" onClick={() => setIsMobileNavOpen(false)}>
+        <Link className="brand" href={isStoreApp ? "/store-app" : "/admin/dashboard"} aria-label="LincolnEstate home" onClick={() => setIsMobileNavOpen(false)}>
           <span className="brand-mark">
             <span className="brand-initial">LE</span>
             <span className="brand-badge-dot" />
           </span>
           <span className="brand-copy">
             <strong>Lincoln<span style={{ color: "var(--primary)" }}>Estate</span></strong>
-            <small>ADMIN DASHBOARD</small>
+            <small style={isStoreApp ? { color: "#C9A227", fontWeight: "700" } : undefined}>
+              {isStoreApp ? "STORE OWNER HUB" : "ADMIN DASHBOARD"}
+            </small>
           </span>
         </Link>
         <nav className="side-nav" aria-label="Main navigation" id="primary-navigation">
           {navItemsList.map((item) => {
-            if (item.isDropdown) {
+            if ("isDropdown" in item && item.isDropdown) {
               return (
                 <details className="store-menu" open key={item.label}>
                   <summary aria-label="Toggle Store menu" className="store-menu-trigger is-active" style={{ background: "var(--primary)", color: "#fff", borderRadius: "12px", padding: "10px 14px", fontWeight: "600" }}>
@@ -321,13 +334,20 @@ export function StoreShell({
               );
             }
 
+            const isItemActive = pathname === item.href;
             return (
               <Link
-                aria-current={pathname === item.href ? "page" : undefined}
-                className={`nav-item store-menu-link${pathname === item.href ? " is-active" : ""}`}
+                aria-current={isItemActive ? "page" : undefined}
+                className={`nav-item store-menu-link${isItemActive ? " is-active" : ""}`}
                 href={item.href}
                 key={item.href}
                 onClick={() => setIsMobileNavOpen(false)}
+                style={isItemActive ? {
+                  background: "var(--primary)",
+                  color: "#ffffff",
+                  borderRadius: "10px",
+                  fontWeight: "700",
+                } : undefined}
               >
                 <ShellIcon name={item.icon} />
                 <span>{item.label}</span>
@@ -335,8 +355,16 @@ export function StoreShell({
             );
           })}
         </nav>
-        <button className="logout-button" onClick={() => { setIsMobileNavOpen(false); window.location.assign("/admin/dashboard"); }} type="button">
-          <ShellIcon name="logout" /><span>Return to Admin</span>
+        <button
+          className="logout-button"
+          onClick={() => {
+            setIsMobileNavOpen(false);
+            window.location.assign(isStoreApp ? "/login" : "/admin/dashboard");
+          }}
+          type="button"
+        >
+          <ShellIcon name="logout" />
+          <span>{isStoreApp ? "Sign Out" : "Return to Admin"}</span>
         </button>
       </aside>
       <div className="workspace">

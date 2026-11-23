@@ -42,9 +42,11 @@ export type AgentStatus = "Active" | "On Leave" | "Inactive";
 export const AGENT_STATUSES: AgentStatus[] = ["Active", "On Leave", "Inactive"];
 
 export const AGENT_ZONES = [
-  "Phase 1 – Lekki",
-  "Phase 2 – Ajah",
-  "Phase 3 – Sangotedo",
+  "Army Estate Phase 1",
+  "Army Estate Phase 2",
+  "Army Estate Phase 3",
+  "Army Estate Phase 4",
+  "Army Estate Phase 5",
 ] as const;
 
 export interface Agent {

@@ -150,28 +150,28 @@ export default function ResidentDashboard() {
         </div>
       </div>
 
-      {/* 4 Executive KPI Cards */}
+      {/* 4 Executive Resident Status Cards */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Card 1: Estate Dues */}
+        {/* Card 1: Unit Security Clearance */}
         <div className="rounded-2xl border border-gray-200/80 bg-white p-5 shadow-2xs flex flex-col justify-between hover:shadow-xs transition-shadow">
           <div className="flex items-start justify-between">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#FEF2F2] text-[#B22222]">
-              <CreditCard className="h-5 w-5" />
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
+              <ShieldCheck className="h-5 w-5" />
             </div>
             <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200/60">
-              Paid Up
+              Active
             </span>
           </div>
           <div className="mt-4">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Estate Levies</p>
-            <p className="text-2xl font-extrabold text-gray-900 mt-0.5">{totalPaid}</p>
-            <p className="text-[11px] text-slate-400 mt-1 font-medium">Q4 Maintenance Levy Cleared</p>
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Unit Clearance</p>
+            <p className="text-2xl font-extrabold text-gray-900 mt-0.5">Villa A-402</p>
+            <p className="text-[11px] text-slate-400 mt-1 font-medium">Biometric & RFID Access Active</p>
           </div>
           <Link
-            href="/finance"
+            href="/resident/messages"
             className="mt-4 flex items-center justify-between border-t border-gray-100 pt-3 text-xs font-bold text-[#B22222] hover:text-[#991B1B]"
           >
-            <span>Finance Overview</span>
+            <span>Security Bulletins</span>
             <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
@@ -266,17 +266,6 @@ export default function ResidentDashboard() {
             <span className="text-[10px] text-slate-400 font-medium">Issue visitor code</span>
           </button>
 
-          <Link
-            href="/finance"
-            className="flex flex-col items-center justify-center rounded-xl border border-gray-200/80 bg-slate-50/60 p-4 text-center hover:bg-[#FEF2F2] hover:border-[#B22222]/30 transition-all group"
-          >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-gray-700 shadow-2xs group-hover:text-[#B22222] group-hover:bg-[#FEF2F2]">
-              <CreditCard className="h-5 w-5" />
-            </div>
-            <span className="mt-2 text-xs font-bold text-gray-900">Pay Levies</span>
-            <span className="text-[10px] text-slate-400 font-medium">Paystack checkout</span>
-          </Link>
-
           <button
             onClick={() => setAwayModalOpen(true)}
             className="flex flex-col items-center justify-center rounded-xl border border-gray-200/80 bg-slate-50/60 p-4 text-center hover:bg-[#FEF2F2] hover:border-[#B22222]/30 transition-all group"
@@ -289,14 +278,25 @@ export default function ResidentDashboard() {
           </button>
 
           <Link
-            href="/store-app"
+            href="/resident/messages"
             className="flex flex-col items-center justify-center rounded-xl border border-gray-200/80 bg-slate-50/60 p-4 text-center hover:bg-[#FEF2F2] hover:border-[#B22222]/30 transition-all group"
           >
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-gray-700 shadow-2xs group-hover:text-[#B22222] group-hover:bg-[#FEF2F2]">
-              <Wrench className="h-5 w-5" />
+              <ShieldCheck className="h-5 w-5" />
             </div>
-            <span className="mt-2 text-xs font-bold text-gray-900">Estate Store</span>
-            <span className="text-[10px] text-slate-400 font-medium">Marketplace & Mart</span>
+            <span className="mt-2 text-xs font-bold text-gray-900">Messages & Notices</span>
+            <span className="text-[10px] text-slate-400 font-medium">Official bulletins</span>
+          </Link>
+
+          <Link
+            href="/resident/direction"
+            className="flex flex-col items-center justify-center rounded-xl border border-gray-200/80 bg-slate-50/60 p-4 text-center hover:bg-[#FEF2F2] hover:border-[#B22222]/30 transition-all group"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-gray-700 shadow-2xs group-hover:text-[#B22222] group-hover:bg-[#FEF2F2]">
+              <Users className="h-5 w-5" />
+            </div>
+            <span className="mt-2 text-xs font-bold text-gray-900">Estate Directions</span>
+            <span className="text-[10px] text-slate-400 font-medium">Gate & landmark maps</span>
           </Link>
         </div>
       </div>

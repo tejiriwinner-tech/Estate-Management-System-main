@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
+import { SiteSettingsScreen } from "../components/site-settings-screen";
 
-export default function LegacyStoreSettingsRedirect() {
-  redirect("/admin/store/settings");
+export default function StoreAppSettingsPage() {
+  return <SiteSettingsScreen />;
 }

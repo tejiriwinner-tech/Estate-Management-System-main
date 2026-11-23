@@ -374,7 +374,7 @@ export default function StoreDashboard() {
         <nav aria-label="Main navigation" className="side-nav">
           {[
             { label: "Store Dashboard", href: "/store-app", icon: "dashboard" as const },
-            { label: "Orders & Fulfillment", href: "/store-app/dashboard", icon: "orders" as const },
+            { label: "Orders & Fulfillment", href: "/store-app/orders", icon: "orders" as const },
             { label: "Product Catalog", href: "/store-app/products", icon: "products" as const },
             { label: "Inventory & Stock", href: "/store-app/products/manage", icon: "stock" as const },
             { label: "Settlements & Payouts", href: "/store-app/subscription", icon: "settlement" as const },
@@ -389,10 +389,10 @@ export default function StoreDashboard() {
                 key={item.href}
                 onClick={() => setIsMobileNavOpen(false)}
                 style={isActive ? {
-                  background: "var(--primary)",
+                  background: "#B22222",
                   color: "#ffffff",
-                  borderRadius: "12px",
-                  fontWeight: "600",
+                  borderRadius: "10px",
+                  fontWeight: "700",
                 } : undefined}
               >
                 <Icon name={item.icon} size={17} />

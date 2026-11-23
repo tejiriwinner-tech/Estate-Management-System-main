@@ -28,6 +28,8 @@ export interface Listing {
   /** Admin review state. Only approved listings appear on the public landing page. */
   approval?: ApprovalStatus;
   listingType?: ListingKind;
+  image?: string;
+  images?: string[];
 }
 
 export type ApprovalStatus = "pending" | "approved" | "rejected";
@@ -77,6 +79,8 @@ export interface NewListingInput {
   baths: number;
   rentPerYear: number;
   listingType?: ListingKind;
+  image?: string;
+  images?: string[];
 }
 
 /** Agency fee the agent earns on a let, as a share of the first year's rent. */

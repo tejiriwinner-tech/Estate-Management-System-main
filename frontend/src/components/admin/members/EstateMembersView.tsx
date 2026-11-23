@@ -88,7 +88,7 @@ export function EstateMembersView() {
 
           <div>
             <div className="text-2xl sm:text-3xl font-extrabold text-dark tracking-tight leading-none">
-              {totalCount}
+              {loading ? "..." : totalCount}
             </div>
             <div className="text-base sm:text-xl font-bold text-muted mt-1.5">
               Members Of Estate
@@ -155,7 +155,16 @@ export function EstateMembersView() {
                     colSpan={4}
                     className="py-10 text-center text-sm text-muted font-medium"
                   >
-                    {loading ? "Loading members…" : searchQuery ? <>No estate members match &ldquo;{searchQuery}&rdquo;.</> : "No estate members yet."}
+                    {loading ? (
+                      <span className="flex items-center justify-center gap-2 py-4">
+                        <span className="w-4 h-4 border-2 border-[#B22222] border-t-transparent rounded-full animate-spin inline-block" />
+                        <span>Loading registered estate members…</span>
+                      </span>
+                    ) : searchQuery ? (
+                      <>No estate members match &ldquo;{searchQuery}&rdquo;.</>
+                    ) : (
+                      "No estate members registered yet."
+                    )}
                   </td>
                 </tr>
               ) : (

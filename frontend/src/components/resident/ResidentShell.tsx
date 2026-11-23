@@ -27,9 +27,7 @@ import { NotificationPopover } from "@/components/chat/NotificationPopover";
 
 const NAV = [
   { href: "/resident", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { href: "/finance", label: "Finance & Levies", icon: CreditCard },
   { href: "/resident/activity", label: "Visitor Passes", icon: KeyRound },
-  { href: "/store-app", label: "Estate Stores", icon: Store },
   { href: "/resident/messages", label: "Messages & Notices", icon: Mail },
   { href: "/resident/direction", label: "Estate Directions", icon: Compass },
   { href: "/resident/profile", label: "Profile & Settings", icon: UserCheck },
