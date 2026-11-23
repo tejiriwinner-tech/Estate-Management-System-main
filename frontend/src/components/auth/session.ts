@@ -16,6 +16,7 @@ export interface Session {
   signedInAt: string;
   /** Sanctum token from the Laravel API (absent in offline/placeholder mode). */
   token?: string;
+  name?: string;
 }
 
 /** Where each role lands after signing in. */

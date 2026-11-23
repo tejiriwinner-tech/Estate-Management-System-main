@@ -183,7 +183,6 @@ export async function sendInquiry(id: number, body: { name: string; phone: strin
 // ---- agent ----
 /** Sends a new listing to the API for admin approval. Silent no-op when no API is configured. */
 export async function submitListingToApi(input: NewListingInput) {
-  if (!process.env.NEXT_PUBLIC_API_URL || !readSession()?.token) return;
   const kind = input.listingType ?? "rent";
   try {
     await call(

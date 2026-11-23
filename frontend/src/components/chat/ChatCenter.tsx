@@ -9,7 +9,8 @@ import { chatApi, fmtClock, type EstateAlert, type MeetingReport, type Message, 
 import { Avatar } from "./Avatar";
 
 type Tab = "MEETING" | "ALERTS" | "CHAT";
-const GREEN = "#0ca348";
+const BRAND_CRIMSON = "#B22222";
+const BRAND_ACCENT = "#C9A227";
 
 function useLoad<T>(fn: () => Promise<T>, deps: unknown[] = []) {
   const [data, setData] = useState<T | null>(null);
@@ -28,14 +29,14 @@ export function ChatCenter({ initialTab = "CHAT", onChanged }: { initialTab?: Ta
   const [roomId, setRoomId] = useState<number | null>(null);
 
   return (
-    <section className="mx-auto flex h-[calc(100vh-7rem)] min-h-[480px] w-full max-w-[558px] flex-col overflow-hidden bg-[#d9d9d9]">
-      <div className="bg-[#cafad5]">
-        <div className="flex justify-between px-6 py-3 text-2xl font-semibold" style={{ color: GREEN }}>
+    <section className="mx-auto flex h-[calc(100vh-7rem)] min-h-[480px] w-full max-w-[558px] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-slate-100 shadow-sm">
+      <div className="bg-[#FEF2F2] border-b border-gray-200">
+        <div className="flex justify-between px-6 py-3 text-lg font-bold" style={{ color: BRAND_CRIMSON }}>
           {(["MEETING", "ALERTS", "CHAT"] as Tab[]).map((t) => (
             <button key={t} onClick={() => { setTab(t); setRoomId(null); }} aria-current={tab === t}
-              className={`relative pb-1 ${tab === t ? "" : "opacity-90"}`}>
+              className={`relative pb-1 transition-colors ${tab === t ? "text-[#B22222]" : "text-slate-500 hover:text-slate-800"}`}>
               {t}
-              {tab === t && <span className="absolute inset-x-0 -bottom-3 h-1" style={{ background: GREEN }} />}
+              {tab === t && <span className="absolute inset-x-0 -bottom-3 h-1 rounded-full" style={{ background: BRAND_CRIMSON }} />}
             </button>
           ))}
         </div>
@@ -51,10 +52,10 @@ export function ChatCenter({ initialTab = "CHAT", onChanged }: { initialTab?: Ta
 
 function SubHeader({ title, hint, action }: { title: string; hint: string; action?: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between bg-white px-5 py-3" style={{ color: GREEN }}>
+    <div className="flex items-center justify-between bg-white px-5 py-3 border-b border-gray-100" style={{ color: BRAND_CRIMSON }}>
       <div className="mx-auto text-center">
-        <div className="text-2xl font-medium leading-tight">{title}</div>
-        <div className="text-base font-medium">{hint}</div>
+        <div className="text-xl font-bold leading-tight">{title}</div>
+        <div className="text-xs font-semibold text-slate-500">{hint}</div>
       </div>
       {action}
     </div>
@@ -91,7 +92,7 @@ function MeetingList() {
         <div className="space-y-2 bg-white p-4">
           <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Title" className="w-full border px-3 py-2 text-sm" />
           <textarea value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} placeholder="Report" rows={4} className="w-full border px-3 py-2 text-sm" />
-          <button disabled={busy} onClick={save} className="rounded px-4 py-2 text-sm font-semibold text-white disabled:opacity-60" style={{ background: GREEN }}>Save report</button>
+          <button disabled={busy} onClick={save} className="rounded-xl px-4 py-2 text-xs font-bold text-white disabled:opacity-60 transition-colors shadow-xs" style={{ background: BRAND_CRIMSON }}>Save report</button>
         </div>
       )}
       <div className="flex-1 overflow-y-auto">
@@ -234,18 +235,18 @@ function Thread({ roomId, onBack }: { roomId: number; onBack: () => void }) {
 
   return (
     <>
-      <div className="flex items-center gap-3 bg-white px-4 py-3" style={{ color: GREEN }}>
-        <button aria-label="Back to chat list" onClick={onBack}><ArrowLeft className="h-6 w-6" /></button>
-        <span className="text-lg font-medium">Conversation</span>
+      <div className="flex items-center gap-3 bg-white px-4 py-3 border-b border-gray-100" style={{ color: BRAND_CRIMSON }}>
+        <button aria-label="Back to chat list" onClick={onBack}><ArrowLeft className="h-5 w-5" /></button>
+        <span className="text-base font-bold">Conversation</span>
       </div>
       <div className="flex-1 space-y-3 overflow-y-auto p-4">
         {error && <p className="text-center text-sm text-[#ea4335]">{error}</p>}
         {msgs.map((m) => <Bubble key={m.id} m={m} mine={m.mine} />)}
         <div ref={bottom} />
       </div>
-      <form onSubmit={submit} className="flex gap-2 bg-white p-3">
-        <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Type a message…" maxLength={2000} className="flex-1 border px-3 py-2 text-sm" />
-        <button disabled={sending || !text.trim()} aria-label="Send" className="rounded px-4 text-white disabled:opacity-50" style={{ background: GREEN }}><Send className="h-5 w-5" /></button>
+      <form onSubmit={submit} className="flex gap-2 bg-white p-3 border-t border-gray-100">
+        <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Type a message…" maxLength={2000} className="flex-1 rounded-xl border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-[#B22222]" />
+        <button disabled={sending || !text.trim()} aria-label="Send" className="rounded-xl px-4 text-white disabled:opacity-50 transition-colors shadow-xs" style={{ background: BRAND_CRIMSON }}><Send className="h-4 w-4" /></button>
       </form>
     </>
   );
@@ -255,10 +256,10 @@ function Bubble({ m, mine }: { m: Message; mine: boolean }) {
   return (
     <div className={`flex gap-2 ${mine ? "flex-row-reverse" : ""}`}>
       <Avatar name={m.user.name} src={m.user.avatar_url} size={32} />
-      <div className={`max-w-[75%] rounded-lg px-3 py-2 text-sm ${mine ? "bg-[#0ca348] text-white" : "bg-white text-black"}`}>
-        {!mine && <div className="text-xs font-semibold" style={{ color: GREEN }}>{m.user.name}</div>}
+      <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-xs ${mine ? "bg-[#B22222] text-white shadow-xs" : "bg-white text-gray-900 border border-gray-100 shadow-2xs"}`}>
+        {!mine && <div className="text-[11px] font-bold" style={{ color: BRAND_CRIMSON }}>{m.user.name}</div>}
         <div className="whitespace-pre-wrap break-words">{m.body}</div>
-        <div className={`mt-1 text-[11px] ${mine ? "text-white/80" : "text-[#9f9c9c]"}`}>{fmtClock(m.created_at)}</div>
+        <div className={`mt-1 text-[10px] ${mine ? "text-white/80" : "text-slate-400"}`}>{fmtClock(m.created_at)}</div>
       </div>
     </div>
   );

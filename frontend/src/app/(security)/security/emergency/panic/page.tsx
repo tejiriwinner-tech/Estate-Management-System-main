@@ -13,14 +13,42 @@ const CONTACTS = [
 
 export default function PanicPage() {
   const [activated, setActivated] = useState(false);
+  const [dispatchInfo, setDispatchInfo] = useState({
+    dispatchUnit: "Patrol Unit Alpha",
+    etaMins: 2,
+    residentLocation: "Gate 1 - Sector A",
+    alertTime: "Just now",
+  });
+
+  const handleActivate = async () => {
+    try {
+      await fetch("/api/v1/security/panic", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          location: "Sector A - North Gate",
+          note: "OFFICER ASSISTANCE PANIC BUTTON PRESSED",
+        }),
+      });
+      setDispatchInfo({
+        dispatchUnit: "Patrol Unit 04",
+        etaMins: 2,
+        residentLocation: "Sector A – North Gate",
+        alertTime: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      });
+    } catch {
+      // Offline fallback
+    }
+    setActivated(true);
+  };
 
   if (activated) {
     return (
       <PanicActiveState
-        dispatchUnit="Unit 04"
-        etaMins={2}
-        residentLocation="Sector A – North Gate"
-        alertTime="14:32 PST"
+        dispatchUnit={dispatchInfo.dispatchUnit}
+        etaMins={dispatchInfo.etaMins}
+        residentLocation={dispatchInfo.residentLocation}
+        alertTime={dispatchInfo.alertTime}
         onCancel={() => setActivated(false)}
         onCallSecurity={() => window.open("tel:+2348012345675")}
       />
@@ -29,7 +57,7 @@ export default function PanicPage() {
 
   return (
     <div className="max-w-sm mx-auto">
-      <PanicButton contacts={CONTACTS} onActivate={() => setActivated(true)} />
+      <PanicButton contacts={CONTACTS} onActivate={handleActivate} />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { PaymentChannel, CardFormData, TransactionReceipt, PaystackBillItem } from '@/types/paystackForm';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api/v1';
 
 export const paystackApi = {
   /**
@@ -33,6 +33,9 @@ export const paystackApi = {
           amount: bill.amount,
           email: bill.residentEmail,
           channel: 'card',
+          serviceName: bill.serviceName,
+          residentUnit: bill.residentUnit,
+          billId: bill.id,
           card: cardData,
         }),
       });
@@ -40,7 +43,7 @@ export const paystackApi = {
         return await res.json();
       }
     } catch {
-      // Offline / local simulated success for prototype resilience
+      // Offline fallback
     }
 
     // High fidelity prototype simulation

@@ -1,16 +1,19 @@
 @import "tailwindcss";
 
-/* Resident app palette, taken from the Figma frames (user dashboard / About / Settings / Activity). */
+/* Lincoln Estate Unified Luxury Brand Palette */
 @theme inline {
-  --color-brand: #0ca348;
-  --color-brand-dark: #087a35;
-  --color-mint: #cafad5;
-  --color-page: #f9f9f9;
-  --color-muted: #9f9c9c;
-  --color-row: #ebebeb;
-  --color-head: #e0e5ec;
-  --color-alert: #ea4335;
-  --color-panic: #ff1111;
+  --color-brand: #B22222;
+  --color-brand-dark: #991B1B;
+  --color-mint: #FEF2F2;
+  --color-accent: #C9A227;
+  --color-accent-light: #FDF8EA;
+  --color-page: #F8FAFC;
+  --color-muted: #6B7280;
+  --color-row: #F3F4F6;
+  --color-head: #E5E7EB;
+  --color-alert: #DC2626;
+  --color-panic: #DC2626;
+  --color-success: #059669;
   --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
 }
 

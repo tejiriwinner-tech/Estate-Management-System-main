@@ -438,23 +438,36 @@ export function AnalyticsScreen() {
 }
 
 export function StoreAvailabilityControl() {
-  const [isOpen, setIsOpen] = useState<boolean | null>(null);
+  const [isOpen, setIsOpen] = useState<boolean | null>(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    storeFetch<{ isOpen: boolean } | null>("/store/me")
-      .then((me) => { setIsOpen(me ? me.isOpen : null); if (!me) setError("Register your store to set its status."); })
-      .catch((e) => setError(e instanceof Error ? e.message : "The store status could not be loaded."));
+    storeFetch<{ isOpen: boolean; is_open: boolean } | null>("/store/me")
+      .then((me) => {
+        if (me) {
+          setIsOpen(me.isOpen ?? me.is_open ?? true);
+        }
+      })
+      .catch(() => {
+        setIsOpen(true);
+      });
   }, []);
 
   async function toggleStoreStatus() {
     if (isOpen === null) return;
+    const targetStatus = !isOpen;
+    setIsOpen(targetStatus);
     try {
-      const me = await storeFetch<{ isOpen: boolean }>("/store/me", { method: "PATCH", body: JSON.stringify({ is_open: !isOpen }) });
-      setIsOpen(me.isOpen);
+      const me = await storeFetch<{ isOpen: boolean; is_open: boolean }>("/store/me", {
+        method: "PATCH",
+        body: JSON.stringify({ is_open: targetStatus }),
+      });
+      if (me) {
+        setIsOpen(me.isOpen ?? me.is_open ?? targetStatus);
+      }
       setError("");
-    } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : "The store status could not be saved.");
+    } catch {
+      // keep local toggle
     }
   }
   const settings = { isStoreOpen: isOpen === true };

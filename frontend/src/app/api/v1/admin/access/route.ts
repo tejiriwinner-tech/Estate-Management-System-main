@@ -1,43 +1,42 @@
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 
-export async function GET(req: Request) {
-  try {
-    const { searchParams } = new URL(req.url);
-    const range = searchParams.get("range") || "today";
+export const dynamic = "force-dynamic";
 
+export async function GET() {
+  try {
     let rawLogs: any[] = [];
     try {
       rawLogs = await sql`
-        SELECT a.id, a.visitor_name, a.gate_number, a.direction, a.status, a.reason, a.created_at,
-               u.name as host_name, u.unit_number
+        SELECT a.id, a.user_id, a.name, a.role_label, a.gate, a.verification_type, a.status,
+               a.direction, a.person_type, a.house_no, a.vehicle_plate, a.occurred_at, a.created_at,
+               u.name as host_name, u.unit_number as host_unit
         FROM access_logs a
         LEFT JOIN users u ON u.id = a.user_id
         ORDER BY a.id DESC
-        LIMIT 40
+        LIMIT 50
       `;
-    } catch {
-      // Fallback
+    } catch (e: any) {
+      console.error("Error fetching access logs:", e.message);
     }
 
     const defaultLogs = [
       { id: 1, person_name: "Tunde Bakare", role: "Visitor", tag: "Visitor", unit_number: "Villa A-402", host_name: "Chinedu Resident", vehicle_plate: "KJA-881-AB", entry_time: "10:14 AM", exit_time: "11:45 AM", gate_name: "Gate 1", status: "completed" },
       { id: 2, person_name: "Adewale Delivery (DHL)", role: "Courier", tag: "Delivery", unit_number: "Plot 14", host_name: "Marcus Reed", vehicle_plate: "LND-202-XY", entry_time: "11:20 AM", exit_time: null, gate_name: "Gate 1", status: "inside" },
-      { id: 3, person_name: "Dr. Ngozi Eze", role: "Resident", tag: "Resident", unit_number: "Villa B-102", host_name: "Self", vehicle_plate: "EKY-554-ZZ", entry_time: "08:30 AM", exit_time: null, gate_name: "Gate 2", status: "inside" },
     ];
 
     const logs = rawLogs.length > 0
       ? rawLogs.map((l) => ({
           id: l.id,
-          person_name: l.visitor_name || "Visitor",
-          role: l.host_name ? "Visitor" : "Resident",
-          tag: l.reason || "Visitor",
-          unit_number: l.unit_number || "Main Gate",
-          host_name: l.host_name || "Self",
-          vehicle_plate: "Verified",
-          entry_time: new Date(l.created_at || Date.now()).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          person_name: l.name || "Guest",
+          role: l.role_label || l.person_type || "Visitor",
+          tag: l.person_type || "Visitor",
+          unit_number: l.house_no || l.host_unit || "Villa A-402",
+          host_name: l.host_name || "Estate Security",
+          vehicle_plate: l.vehicle_plate || "Verified RFID",
+          entry_time: l.created_at ? new Date(l.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "10:00 AM",
           exit_time: l.direction === "out" ? "Just now" : null,
-          gate_name: l.gate_number || "Gate 1",
+          gate_name: l.gate || "Gate 1",
           status: l.direction === "out" ? "completed" : "inside",
         }))
       : defaultLogs;
@@ -67,10 +66,33 @@ export async function GET(req: Request) {
         metrics,
         logs,
         summary,
-        mobileLogs: [],
+        mobileLogs: logs,
       },
     });
-  } catch {
-    return NextResponse.json({ message: "Could not load access data." }, { status: 500 });
+  } catch (err: any) {
+    return NextResponse.json({ message: "Could not load access data.", error: err.message }, { status: 500 });
+  }
+}
+
+export async function POST(req: Request) {
+  try {
+    const body = await req.json();
+    const { name, role_label, gate, verification_type, direction, person_type, house_no, vehicle_plate } = body;
+
+    const res = await sql`
+      INSERT INTO access_logs (
+        name, role_label, gate, verification_type, direction, person_type, house_no, vehicle_plate, status, occurred_at, created_at, updated_at
+      )
+      VALUES (
+        ${name || "Visitor"}, ${role_label || "Visitor"}, ${gate || "Gate 1"}, ${verification_type || "RFID"},
+        ${direction || "in"}, ${person_type || "Visitor"}, ${house_no || "Gate"}, ${vehicle_plate || "N/A"},
+        'granted', NOW(), NOW(), NOW()
+      )
+      RETURNING *
+    `;
+
+    return NextResponse.json({ data: res[0], message: "Access logged successfully." }, { status: 201 });
+  } catch (err: any) {
+    return NextResponse.json({ message: "Could not log access.", error: err.message }, { status: 500 });
   }
 }

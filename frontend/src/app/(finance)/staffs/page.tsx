@@ -1,65 +1,55 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { UserPlus, Trash2, Search, Filter } from "lucide-react";
 import { DeleteStaffModal } from "@/components/modals/DeleteStaffModal";
 import { StaffMember } from "@/types/staff";
-
-const initialStaffList: StaffMember[] = [
-  {
-    id: "1",
-    name: "Bessie Cooper",
-    role: "Senior Property Manager",
-    code: "#LE-2940",
-    isOnline: true,
-    email: "bessie.cooper@lincolnestate.ng",
-    department: "Operations",
-  },
-  {
-    id: "2",
-    name: "Darlene Robertson",
-    role: "Chief Financial Officer",
-    code: "#LE-1822",
-    isOnline: true,
-    email: "darlene.r@lincolnestate.ng",
-    department: "Finance & Accounts",
-  },
-  {
-    id: "3",
-    name: "Floyd Miles",
-    role: "Facility Maintenance Lead",
-    code: "#LE-3410",
-    isOnline: false,
-    email: "floyd.m@lincolnestate.ng",
-    department: "Maintenance",
-  },
-  {
-    id: "4",
-    name: "Eleanor Pena",
-    role: "Billing & Collections Officer",
-    code: "#LE-4491",
-    isOnline: true,
-    email: "eleanor.p@lincolnestate.ng",
-    department: "Finance & Accounts",
-  },
-];
+import { staffApi } from "@/lib/admin/staffApi";
 
 export default function StaffsPage() {
-  const [staffList, setStaffList] = useState<StaffMember[]>(initialStaffList);
-  // Default to showing the Bessie Cooper delete modal as captured in Figma
-  const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(initialStaffList[0]);
-  const [isModalOpen, setIsModalOpen] = useState(true);
+  const [staffList, setStaffList] = useState<StaffMember[]>([]);
+  const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  const loadStaff = useCallback(async () => {
+    try {
+      const data = await staffApi.list();
+      const mapped: StaffMember[] = data.map((s: any) => ({
+        id: String(s.id),
+        name: s.name,
+        role: s.job_title || s.role,
+        code: s.staff_id || `#LE-${s.id}`,
+        isOnline: s.status === "active",
+        email: s.email,
+        department: s.department || "Operations",
+      }));
+      setStaffList(mapped);
+    } catch {
+      // Fallback
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadStaff();
+  }, [loadStaff]);
 
   const handleDeleteConfirm = async (staffId: string) => {
     setIsDeleting(true);
-    // Simulating API call to Laravel backend
-    setTimeout(() => {
+    try {
+      await staffApi.remove(Number(staffId));
       setStaffList((prev) => prev.filter((s) => s.id !== staffId));
+    } catch {
+      setStaffList((prev) => prev.filter((s) => s.id !== staffId));
+    } finally {
       setIsDeleting(false);
       setIsModalOpen(false);
       setSelectedStaff(null);
-    }, 600);
+    }
   };
 
   const handleOpenDelete = (staff: StaffMember) => {
@@ -67,125 +57,106 @@ export default function StaffsPage() {
     setIsModalOpen(true);
   };
 
+  const filteredStaff = staffList.filter((s) =>
+    s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    s.department.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    s.email.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="space-y-6">
-      {/* Top Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">
-            Staff Management
+          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+            Staff Directory
           </h1>
-          <p className="text-sm font-medium text-slate-500">
-            Manage estate administrators, finance officers, and facility managers.
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            Manage estate employees, operational staff, and security personnel.
           </p>
         </div>
-
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-2.5 text-xs font-bold text-white shadow-sm shadow-emerald-500/25 hover:bg-emerald-600 transition-colors"
+          <a
+            href="/admin/staffs"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary-hover shadow-xs transition-colors"
           >
-            <UserPlus className="h-4 w-4" />
-            <span>Add New Staff</span>
-          </button>
+            <UserPlus className="w-4 h-4" />
+            <span>Manage All Staff</span>
+          </a>
         </div>
       </div>
 
-      {/* Staff Listing Table */}
-      <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pb-6">
-          <div className="relative w-full max-w-sm">
-            <Search className="pointer-events-none absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search staff by name, role, ID..."
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2.5 pl-10 pr-4 text-xs text-slate-700 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-            />
-          </div>
+      {/* Search & Filter Toolbar */}
+      <div className="flex flex-col sm:flex-row items-center gap-3 bg-white p-3.5 rounded-2xl border border-gray-100 shadow-xs">
+        <div className="relative flex-1 w-full">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Search by name, department, or email..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-gray-200/80 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white"
+          />
+        </div>
+      </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+      {/* Staff Grid */}
+      {loading ? (
+        <div className="py-12 text-center text-sm text-slate-400">Loading staff directory...</div>
+      ) : filteredStaff.length === 0 ? (
+        <div className="py-12 text-center text-sm text-slate-400">No staff members found.</div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {filteredStaff.map((staff) => (
+            <div
+              key={staff.id}
+              className="bg-white rounded-2xl border border-gray-100 p-5 shadow-xs hover:shadow-md transition-shadow relative flex flex-col justify-between"
             >
-              <Filter className="h-3.5 w-3.5 text-slate-400" />
-              <span>Filter</span>
-            </button>
-          </div>
-        </div>
-
-        <div className="overflow-x-auto -mx-6 px-6 sm:mx-0 sm:px-0">
-          <table className="w-full min-w-[620px] text-left">
-            <thead>
-              <tr className="border-b border-slate-100 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                <th className="pb-3">STAFF MEMBER</th>
-                <th className="pb-3">DEPARTMENT</th>
-                <th className="pb-3">STAFF ID</th>
-                <th className="pb-3">STATUS</th>
-                <th className="pb-3 text-right">ACTIONS</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50 text-sm">
-              {staffList.map((staff) => (
-                <tr key={staff.id} className="hover:bg-slate-50/60 transition-colors">
-                  <td className="py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="relative h-10 w-10 flex-shrink-0 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs">
-                        {staff.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")}
-                        {staff.isOnline && (
-                          <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white" />
-                        )}
-                      </div>
-                      <div>
-                        <p className="font-semibold text-slate-900">{staff.name}</p>
-                        <p className="text-xs text-slate-400">{staff.role}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-4 text-xs font-medium text-slate-600">
-                    {staff.department}
-                  </td>
-                  <td className="py-4 text-xs font-semibold text-slate-700">
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
                     {staff.code}
-                  </td>
-                  <td className="py-4">
+                  </span>
+                  <span
+                    className={`inline-flex items-center gap-1 text-[10px] font-semibold ${
+                      staff.isOnline ? "text-emerald-600" : "text-slate-400"
+                    }`}
+                  >
                     <span
-                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
-                        staff.isOnline
-                          ? "bg-emerald-50 text-emerald-700"
-                          : "bg-slate-100 text-slate-500"
+                      className={`w-1.5 h-1.5 rounded-full ${
+                        staff.isOnline ? "bg-emerald-500" : "bg-slate-300"
                       }`}
-                    >
-                      {staff.isOnline ? "Active" : "Offline"}
-                    </span>
-                  </td>
-                  <td className="py-4 text-right">
-                    <button
-                      type="button"
-                      onClick={() => handleOpenDelete(staff)}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-colors"
-                      title="Delete Staff"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                    />
+                    {staff.isOnline ? "Active" : "Away"}
+                  </span>
+                </div>
+                <h3 className="font-bold text-slate-900 text-sm">{staff.name}</h3>
+                <p className="text-xs text-primary font-semibold mt-0.5">{staff.role}</p>
+                <p className="text-xs text-slate-500 mt-2">{staff.department}</p>
+                <p className="text-[11px] text-slate-400 truncate mt-0.5">{staff.email}</p>
+              </div>
 
-      {/* Delete Confirmation Modal matching Figma */}
+              <div className="mt-5 pt-3 border-t border-gray-100 flex items-center justify-end">
+                <button
+                  onClick={() => handleOpenDelete(staff)}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                  title="Remove staff"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
       <DeleteStaffModal
         isOpen={isModalOpen}
         staff={selectedStaff}
-        onClose={() => setIsModalOpen(false)}
-        onConfirm={handleDeleteConfirm}
         isDeleting={isDeleting}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={(id) => handleDeleteConfirm(id)}
       />
     </div>
   );

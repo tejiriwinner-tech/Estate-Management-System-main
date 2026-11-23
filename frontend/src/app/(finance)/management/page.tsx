@@ -22,30 +22,47 @@ import { ManagementBottomNav } from "@/components/management/ManagementBottomNav
 
 export default function ManagementDashboardPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [stats, setStats] = useState({
+    total_users: 142,
+    active_staff: 28,
+    pending_approval: 4,
+    blocked_accounts: 2,
+  });
+
+  React.useEffect(() => {
+    fetch("/api/v1/admin/users/stats")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.data) {
+          setStats(data.data);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const systemMetrics = [
     {
       id: "total-residents",
       label: "Total Residents",
-      value: "1248",
+      value: String(stats.total_users),
       icon: User,
     },
     {
       id: "active-users",
-      label: "Active Users",
-      value: "1,102",
+      label: "Active Staff",
+      value: String(stats.active_staff),
       icon: Users,
     },
     {
       id: "pending-approvals",
       label: "Pending Approvals",
-      value: "24",
+      value: String(stats.pending_approval),
       icon: UserCheck,
     },
     {
       id: "active-blacklist",
       label: "Active Blacklist",
-      value: "7",
+      value: String(stats.blocked_accounts),
       icon: ShieldAlert,
     },
   ];

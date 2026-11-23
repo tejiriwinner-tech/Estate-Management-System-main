@@ -4,7 +4,7 @@ export function Avatar({ name, src, size = 42 }: { name: string; src?: string | 
     // eslint-disable-next-line @next/next/no-img-element
     <img src={src} alt="" width={size} height={size} className="rounded-full object-cover" style={{ width: size, height: size }} />
   ) : (
-    <span className="flex shrink-0 items-center justify-center rounded-full bg-[#cafad5] font-semibold text-[#0ca348]" style={{ width: size, height: size, fontSize: size * 0.38 }}>
+    <span className="flex shrink-0 items-center justify-center rounded-full bg-[#FEF2F2] font-bold text-[#B22222] border border-[#B22222]/20 shadow-2xs" style={{ width: size, height: size, fontSize: size * 0.38 }}>
       {initials || "?"}
     </span>
   );

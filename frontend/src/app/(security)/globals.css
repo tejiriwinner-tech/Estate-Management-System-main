@@ -1,11 +1,13 @@
 @import "tailwindcss";
 
 @theme inline {
-  /* Lincoln Estate Security Command Palette */
-  --color-primary:        #0f172a;
-  --color-primary-dark:   #020617;
-  --color-primary-light:  #f1f5f9;
-  --color-primary-mid:    #1e293b;
+  /* Lincoln Estate Unified Luxury Brand Palette - Security Command */
+  --color-primary:        #B22222;
+  --color-primary-dark:   #991B1B;
+  --color-primary-light:  #FEF2F2;
+  --color-primary-mid:    #7F1D1D;
+  --color-accent:         #C9A227;
+  --color-accent-light:   #FDF8EA;
 
   /* Tactical Security Status Accents */
   --color-danger:         #dc2626;
@@ -21,16 +23,16 @@
   --color-surface:        #ffffff;
   --color-bg:             #f8fafc;
   --color-border:         #e2e8f0;
-  --color-text:           #0f172a;
+  --color-text:           #1a1a1a;
   --color-text-muted:     #64748b;
   --color-text-subtle:    #94a3b8;
-  --color-text-dark:      #020617;
+  --color-text-dark:      #111827;
   --color-text-slate:     #334155;
   --color-text-charcoal:  #1e293b;
 
   /* Sidebar */
   --color-sidebar-bg:     #ffffff;
-  --color-sidebar-active: #0f172a;
+  --color-sidebar-active: #B22222;
 
   /* Typography */
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;

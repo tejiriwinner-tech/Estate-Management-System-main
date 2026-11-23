@@ -360,78 +360,40 @@ export default function StoreDashboard() {
         />
       )}
       <aside className={`sidebar${isMobileNavOpen ? " sidebar--mobile-open" : ""}`} id="primary-sidebar">
-        <Link className="brand" href="/admin/dashboard" aria-label="LincolnEstate home" onClick={() => setIsMobileNavOpen(false)}>
+        <Link className="brand" href="/store-app" aria-label="LincolnEstate Store Portal" onClick={() => setIsMobileNavOpen(false)}>
           <span className="brand-mark">
             <span className="brand-initial">LE</span>
             <span className="brand-badge-dot" />
           </span>
           <span className="brand-copy">
             <strong>Lincoln<span style={{ color: "var(--primary)" }}>Estate</span></strong>
-            <small>ADMIN DASHBOARD</small>
+            <small style={{ color: "#C9A227", fontWeight: "700", letterSpacing: "0.05em" }}>STORE OWNER HUB</small>
           </span>
         </Link>
 
         <nav aria-label="Main navigation" className="side-nav">
           {[
-            { label: "Dashboard", href: "/admin/dashboard", icon: "dashboard" as const },
-            { label: "Finance", href: "/admin/finance", icon: "finance" as const },
-            { label: "Store", href: "/admin/store", icon: "store" as const, isDropdown: true },
-            { label: "Messages", href: "/admin/messages", icon: "messages" as const },
-            { label: "Reports", href: "/admin/reports", icon: "reports" as const },
-            { label: "Staffs", href: "/admin/staffs", icon: "staff" as const },
+            { label: "Store Dashboard", href: "/store-app", icon: "dashboard" as const },
+            { label: "Orders & Fulfillment", href: "/store-app/dashboard", icon: "orders" as const },
+            { label: "Product Catalog", href: "/store-app/products", icon: "products" as const },
+            { label: "Inventory & Stock", href: "/store-app/products/manage", icon: "stock" as const },
+            { label: "Settlements & Payouts", href: "/store-app/subscription", icon: "settlement" as const },
+            { label: "Store Settings", href: "/store-app/settings", icon: "store" as const },
           ].map((item) => {
-            if (item.isDropdown) {
-              return (
-                <details className="store-menu" open key={item.label}>
-                  <summary aria-label="Toggle Store menu" className="store-menu-trigger is-active" style={{ background: "var(--primary)", color: "#fff", borderRadius: "12px", padding: "10px 14px", fontWeight: "600" }}>
-                    <Icon name="store" size={19} />
-                    <span>Store</span>
-                    <span aria-hidden="true" className="store-menu-chevron" style={{ marginLeft: "auto" }}>⌄</span>
-                  </summary>
-                  <div className="store-menu-items" style={{ paddingLeft: "16px", borderLeft: "2px solid rgba(178,34,34,0.2)", marginLeft: "20px", marginTop: "6px", marginBottom: "6px" }}>
-                    {[
-                      { label: "Store Overview", href: "/admin/store" },
-                      { label: "Inventory Management", href: "/store-app/products/manage" },
-                      { label: "Product Catalog", href: "/store-app/products" },
-                      { label: "Orders & Analytics", href: "/store-app/dashboard" },
-                      { label: "Subscription", href: "/store-app/subscription" },
-                      { label: "Store Settings", href: "/store-app/settings" },
-                    ].map((sub) => {
-                      const isSubActive = pathname === sub.href;
-                      return (
-                        <Link
-                          aria-current={isSubActive ? "page" : undefined}
-                          className={`nav-item store-menu-link${isSubActive ? " is-active" : ""}`}
-                          href={sub.href}
-                          key={sub.href}
-                          onClick={() => setIsMobileNavOpen(false)}
-                          style={{
-                            padding: "8px 12px",
-                            fontSize: "12px",
-                            fontWeight: isSubActive ? "700" : "500",
-                            color: isSubActive ? "var(--primary)" : "#4b5563",
-                            background: isSubActive ? "#fbf1f1" : "transparent",
-                            borderRadius: "8px",
-                            display: "block",
-                            marginBottom: "2px",
-                          }}
-                        >
-                          <span>{sub.label}</span>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </details>
-              );
-            }
-
+            const isActive = pathname === item.href;
             return (
               <Link
-                aria-current={pathname === item.href ? "page" : undefined}
-                className={`nav-item store-menu-link${pathname === item.href ? " is-active" : ""}`}
+                aria-current={isActive ? "page" : undefined}
+                className={`nav-item store-menu-link${isActive ? " is-active" : ""}`}
                 href={item.href}
                 key={item.href}
                 onClick={() => setIsMobileNavOpen(false)}
+                style={isActive ? {
+                  background: "var(--primary)",
+                  color: "#ffffff",
+                  borderRadius: "12px",
+                  fontWeight: "600",
+                } : undefined}
               >
                 <Icon name={item.icon} size={17} />
                 <span>{item.label}</span>
@@ -444,12 +406,12 @@ export default function StoreDashboard() {
           className="logout-button"
           onClick={() => {
             setIsMobileNavOpen(false);
-            window.location.assign("/admin/dashboard");
+            window.location.assign("/login");
           }}
           type="button"
         >
           <Icon name="logout" size={18} />
-          <span>Return to Admin</span>
+          <span>Sign Out</span>
         </button>
       </aside>
 
@@ -504,17 +466,12 @@ export default function StoreDashboard() {
             <span className="topbar-divider" />
             <div className="admin-profile">
               <div style={{ textAlign: "right" }}>
-                <strong style={{ display: "block", fontSize: "13px", color: "#1a1a1a" }}>Administrator</strong>
-                <small style={{ color: "#6b7280", fontSize: "11px" }}>Estate Manager</small>
+                <strong style={{ display: "block", fontSize: "13px", color: "#1a1a1a" }}>{dashboard?.merchant.name || "Lincoln Central Mart"}</strong>
+                <small style={{ color: "#6b7280", fontSize: "11px" }}>Verified Store Merchant</small>
               </div>
-              <Image
-                alt="Administrator"
-                className="admin-avatar"
-                height={40}
-                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80"
-                width={40}
-                unoptimized
-              />
+              <div style={{ width: "38px", height: "38px", borderRadius: "10px", background: "#FEF2F2", border: "1px solid rgba(178,34,34,0.2)", display: "flex", alignItems: "center", justifyContent: "center", color: "#B22222", fontWeight: "bold", fontSize: "13px" }}>
+                LM
+              </div>
             </div>
           </div>
         </header>
@@ -543,10 +500,10 @@ export default function StoreDashboard() {
           <div className="page-heading">
             <div className="heading-copy">
               <div className="breadcrumbs">
-                <span>Store</span>
+                <span>Estate Marketplace</span>
                 <Icon name="chevron" size={7} />
                 <strong>
-                  {settings.siteName || "Your business"}
+                  {dashboard?.merchant.name || settings.siteName || "Lincoln Central Mart"}
                 </strong>
               </div>
               <h1>Store Dashboard</h1>
