@@ -1,6 +1,6 @@
 import { readSession } from "@/components/auth/session";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+const API = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
 
 /** Authenticated JSON call for the agent admin dashboard and the agent portal. Returns the full body. */
 export async function agentsFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
