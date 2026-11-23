@@ -51,14 +51,19 @@ export function EstateMembersView() {
   }, [members, searchQuery]);
 
   const handleAddMember = async (p: NewMemberInput) => {
-    await adminUsers.create({
-      name: p.name,
-      email: p.email,
-      role: "resident",
-      unit_number: p.house_no || undefined,
-      moved_in_at: p.date_moved_in || undefined,
-    });
-    await load();
+    try {
+      await adminUsers.create({
+        name: p.name,
+        email: p.email,
+        role: "resident",
+        unit_number: p.house_no || undefined,
+        moved_in_at: p.date_moved_in || undefined,
+      });
+      await load();
+      setError(null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not add member.");
+    }
   };
 
   const handleDeleteMember = async (record: MemberRow) => {

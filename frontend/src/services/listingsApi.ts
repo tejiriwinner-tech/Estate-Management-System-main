@@ -1,7 +1,7 @@
 import { readSession } from "@/components/auth/session";
 import type { NewListingInput } from "@/types/agentPortal";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+const API = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
 
 export interface ApiListing {
   id: number;
@@ -124,13 +124,14 @@ async function call<T>(path: string, init: RequestInit = {}, auth = false): Prom
 
 // ---- public landing page (no login) ----
 export async function fetchPublicListings(params: Record<string, string>) {
-  if (process.env.NEXT_PUBLIC_API_URL) {
-    try {
-      const qs = new URLSearchParams(Object.entries(params).filter(([, v]) => v)).toString();
-      return await call<{ data: ApiListing[]; meta: { page: number; last_page: number; total: number } }>(`/public/listings?${qs}`);
-    } catch {
-      // Fall through to sample listings if API is unreachable
+  try {
+    const qs = new URLSearchParams(Object.entries(params).filter(([, v]) => v)).toString();
+    const res = await call<{ data: ApiListing[]; meta: { page: number; last_page: number; total: number } }>(`/public/listings${qs ? `?${qs}` : ""}`);
+    if (res && res.data && res.data.length > 0) {
+      return res;
     }
+  } catch {
+    // Fall through to sample listings if API is unreachable
   }
 
   // Fallback to sample listings
@@ -158,24 +159,23 @@ export async function fetchPublicListings(params: Record<string, string>) {
 }
 
 export async function fetchPublicListing(id: string) {
-  if (process.env.NEXT_PUBLIC_API_URL) {
-    try {
-      return await call<{ data: ApiListing }>(`/public/listings/${id}`);
-    } catch {
-      // Fall through to sample listings
+  try {
+    const res = await call<{ data: ApiListing }>(`/public/listings/${id}`);
+    if (res && res.data) {
+      return res;
     }
+  } catch {
+    // Fall through to sample listings
   }
   const match = SAMPLE_LISTINGS.find((i) => String(i.id) === String(id)) || SAMPLE_LISTINGS[0];
   return { data: match };
 }
 
 export async function sendInquiry(id: number, body: { name: string; phone: string; message?: string }) {
-  if (process.env.NEXT_PUBLIC_API_URL) {
-    try {
-      return await call(`/public/listings/${id}/inquire`, { method: "POST", body: JSON.stringify(body) });
-    } catch {
-      // Fall through
-    }
+  try {
+    return await call(`/public/listings/${id}/inquire`, { method: "POST", body: JSON.stringify(body) });
+  } catch {
+    // Fall through
   }
   return { message: "Inquiry submitted successfully." };
 }

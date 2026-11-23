@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { Bell, ShieldAlert } from "lucide-react";
+import Link from "next/link";
+import { Bell, ShieldAlert, ArrowLeft } from "lucide-react";
 import { useAdminReports } from "@/lib/admin/reportsApi";
 import { LifeThreatAlertItem } from "@/types/admin/reports";
 import { cn } from "@/lib/admin/utils";
@@ -14,7 +15,17 @@ export function AdminReportTableView() {
   const [showAlertToast, setShowAlertToast] = useState(false);
 
   return (
-    <div className="space-y-5 animate-in fade-in duration-300 pb-8">
+    <div className="space-y-4 animate-in fade-in duration-300 pb-8">
+      <div>
+        <Link
+          href="/admin/reports"
+          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-xs"
+        >
+          <ArrowLeft className="w-3.5 h-3.5 text-slate-500" />
+          Back to Reports Overview
+        </Link>
+      </div>
+
       {/* ================= SUB-HEADER BAR: LIST OF LIFE THREAT ALERTS ================= */}
       <div className="bg-surface-card rounded-2xl border border-border/80 px-5 sm:px-7 py-4 shadow-2xs flex items-center justify-between gap-4">
         <h1 className="text-lg sm:text-xl font-extrabold text-dark tracking-tight">

@@ -37,18 +37,15 @@ export default function Sidebar() {
     <aside className="flex flex-col w-[220px] min-h-screen bg-white border-r border-gray-200 shrink-0">
       {/* Logo */}
       <div className="flex items-center gap-2.5 px-5 py-5 border-b border-gray-200">
-        <div
-          className="flex items-center justify-center w-9 h-9 rounded-full shrink-0"
-          style={{ backgroundColor: "#0CA348" }}
-        >
-          <Shield className="w-5 h-5 text-white" />
+        <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-slate-900 text-emerald-400 shadow-sm shrink-0">
+          <Shield className="w-5 h-5" />
         </div>
         <div className="leading-tight">
-          <span className="block text-sm font-extrabold" style={{ color: "#0CA348" }}>
+          <span className="block text-sm font-extrabold text-slate-900">
             LincolnEstate
           </span>
-          <span className="block text-[10px] font-medium" style={{ color: "#9F9C9C" }}>
-            Admin Dashboard
+          <span className="block text-[10px] font-semibold uppercase tracking-wider text-emerald-600">
+            Security Command
           </span>
         </div>
       </div>
@@ -62,12 +59,13 @@ export default function Sidebar() {
               key={href}
               href={href}
               className={cn(
-                "flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all w-full text-white",
-                active ? "shadow-sm" : "hover:brightness-110"
+                "flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all w-full",
+                active
+                  ? "bg-slate-900 text-white shadow-sm"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
               )}
-              style={{ backgroundColor: "#0CA348", opacity: active ? 1 : 0.75 }}
             >
-              <Icon className="w-4 h-4 shrink-0" />
+              <Icon className={cn("w-4 h-4 shrink-0", active ? "text-emerald-400" : "text-slate-400")} />
               {label}
             </Link>
           );
@@ -77,8 +75,10 @@ export default function Sidebar() {
       {/* Logout */}
       <div className="px-3 py-4 border-t border-gray-200">
         <button
-          className="flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-sm font-semibold transition-colors hover:bg-green-50"
-          style={{ color: "#0CA348" }}
+          onClick={() => {
+            window.location.href = "/login";
+          }}
+          className="flex items-center gap-3 w-full px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 transition-colors hover:bg-red-50 hover:text-red-600"
         >
           <LogOut className="w-4 h-4 shrink-0" />
           Logout

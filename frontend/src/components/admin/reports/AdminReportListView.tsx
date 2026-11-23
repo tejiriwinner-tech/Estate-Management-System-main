@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { FileText, X, Home, Calendar } from "lucide-react";
+import Link from "next/link";
+import { FileText, X, Home, Calendar, ArrowLeft } from "lucide-react";
 import { useAdminReports } from "@/lib/admin/reportsApi";
 import { IntelligenceReportItem } from "@/types/admin/reports";
 import { cn } from "@/lib/admin/utils";
@@ -14,7 +15,17 @@ export function AdminReportListView() {
     useState<IntelligenceReportItem | null>(null);
 
   return (
-    <div className="animate-in fade-in duration-300 pb-8">
+    <div className="animate-in fade-in duration-300 pb-8 space-y-4">
+      <div>
+        <Link
+          href="/admin/reports"
+          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-xs"
+        >
+          <ArrowLeft className="w-3.5 h-3.5 text-slate-500" />
+          Back to Reports Overview
+        </Link>
+      </div>
+
       {/* ================= MAIN CARD: LIST OF INTELLIGENCE REPORT ================= */}
       <div className="bg-surface-card rounded-2xl border border-border/80 shadow-xs overflow-hidden">
         {/* Card Header Area */}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ShieldCheck,
   LayoutDashboard,
@@ -18,34 +18,34 @@ import { EstateMembersView } from "@/components/admin/members/EstateMembersView"
 import { MetricCardData } from "@/types/admin/dashboard";
 import { cn } from "@/lib/admin/utils";
 
-const metrics: MetricCardData[] = [
+const defaultMetrics: MetricCardData[] = [
   {
     id: "residents",
     label: "TOTAL RESIDENTS",
-    value: "1,248",
-    trend: "+24",
+    value: "142",
+    trend: "+12 this month",
     trendType: "positive",
     iconType: "residents",
   },
   {
     id: "houses",
-    label: "OCCUPIED HOUSES",
-    value: "356",
-    badge: "94%",
+    label: "REGISTERED VEHICLES",
+    value: "86",
+    badge: "Active RFID",
     iconType: "houses",
   },
   {
     id: "revenue",
-    label: "MONTHLY REVENUE",
-    value: "₦15.2M",
-    trend: "+8.4%",
+    label: "ACTIVE AWAY ALERTS",
+    value: "4",
+    trend: "Monitored",
     trendType: "positive",
     iconType: "revenue",
   },
   {
     id: "requests",
-    label: "PENDING REQUESTS",
-    value: "18",
+    label: "SECURITY CLEARANCE",
+    value: "Operational",
     iconType: "requests",
   },
 ];
@@ -54,6 +54,16 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<
     "members" | "away" | "vehicles" | "checkin" | "overview"
   >("members");
+  const [metrics, setMetrics] = useState<MetricCardData[]>(defaultMetrics);
+
+  useEffect(() => {
+    fetch("/api/v1/admin/dashboard")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.data?.metrics) setMetrics(data.data.metrics);
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <div className="space-y-6">

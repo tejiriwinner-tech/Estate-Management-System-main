@@ -164,22 +164,33 @@ export function AgentPortalShell({ children }: { children: React.ReactNode }) {
             </div>
           </div>
 
-          {/* Mobile section tabs */}
-          <nav className="flex gap-1 overflow-x-auto border-t border-slate-100 px-3 py-2 md:hidden">
-            {NAV.map((item) => (
+          {/* Desktop/Tablet Header info */}
+        </header>
+
+        {/* Mobile Fixed Bottom Navigation Bar (replaces horizontal scroll) */}
+        <nav className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-slate-200 bg-white/95 px-2 py-2 backdrop-blur-md shadow-lg md:hidden">
+          {NAV.map((item) => {
+            const isActive = active === item.href;
+            return (
               <a
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold ${
-                  active === item.href ? "bg-primary text-white" : "text-slate-500"
+                className={`flex flex-col items-center gap-1 rounded-xl px-2 py-1 text-[10px] font-bold transition-all ${
+                  isActive ? "text-primary font-extrabold" : "text-slate-500 hover:text-slate-800"
                 }`}
               >
-                <item.icon className="h-3.5 w-3.5" />
-                {item.label}
+                <div
+                  className={`flex h-7 w-7 items-center justify-center rounded-lg transition-transform ${
+                    isActive ? "bg-primary text-white scale-110 shadow-sm shadow-primary/30" : "bg-transparent"
+                  }`}
+                >
+                  <item.icon className="h-4 w-4" />
+                </div>
+                <span>{item.label}</span>
               </a>
-            ))}
-          </nav>
-        </header>
+            );
+          })}
+        </nav>
 
         <div className="flex">
           {/* Sidebar */}
@@ -218,7 +229,7 @@ export function AgentPortalShell({ children }: { children: React.ReactNode }) {
             </div>
           </aside>
 
-          <main className="w-full max-w-[1500px] flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
+          <main className="w-full max-w-[1500px] flex-1 p-4 sm:p-6 lg:p-8 pb-24 md:pb-8">{children}</main>
         </div>
       </div>
     </PortalAgentContext.Provider>

@@ -1,7 +1,7 @@
 "use client";
 
-import { X, Upload, AlertTriangle } from "lucide-react";
-import { useState } from "react";
+import { X, Upload, AlertTriangle, FileCheck, Trash2 } from "lucide-react";
+import { useRef, useState } from "react";
 import { cn } from "@/lib/security/utils";
 
 interface Props {
@@ -17,9 +17,15 @@ interface BlacklistFormData {
   riskLevel: string;
   details: string;
   notifyOfficers: boolean;
+  evidenceFileName?: string;
+  evidencePreview?: string;
 }
 
 export default function AddToBlacklistDrawer({ open, onClose, onSubmit }: Props) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [evidenceName, setEvidenceName] = useState<string | null>(null);
+  const [evidencePreview, setEvidencePreview] = useState<string | null>(null);
+
   const [form, setForm] = useState<BlacklistFormData>({
     name: "",
     entityId: "",
@@ -29,9 +35,27 @@ export default function AddToBlacklistDrawer({ open, onClose, onSubmit }: Props)
     notifyOfficers: true,
   });
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setEvidenceName(file.name);
+      if (file.type.startsWith("image/")) {
+        const reader = new FileReader();
+        reader.onload = () => setEvidencePreview(reader.result as string);
+        reader.readAsDataURL(file);
+      } else {
+        setEvidencePreview(null);
+      }
+    }
+  };
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    onSubmit?.(form);
+    onSubmit?.({
+      ...form,
+      evidenceFileName: evidenceName || undefined,
+      evidencePreview: evidencePreview || undefined,
+    });
     onClose();
   }
 
@@ -136,13 +160,46 @@ export default function AddToBlacklistDrawer({ open, onClose, onSubmit }: Props)
           {/* Photo upload */}
           <div>
             <label className="block text-xs font-semibold text-[--color-text] mb-1.5">Supporting Evidence (optional)</label>
-            <button
-              type="button"
-              className="w-full py-4 rounded-lg border-2 border-dashed border-[--color-border] flex flex-col items-center gap-1.5 text-[--color-text-muted] hover:border-[--color-primary] hover:text-[--color-primary] transition-colors"
-            >
-              <Upload className="w-5 h-5" />
-              <span className="text-xs font-medium">Upload Photo or Document</span>
-            </button>
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept="image/*,application/pdf"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+            {evidenceName ? (
+              <div className="flex items-center justify-between p-3 rounded-xl border border-emerald-200 bg-emerald-50">
+                <div className="flex items-center gap-2.5 overflow-hidden">
+                  {evidencePreview ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={evidencePreview} alt="Preview" className="h-10 w-10 rounded-lg object-cover border border-emerald-300" />
+                  ) : (
+                    <FileCheck className="h-6 w-6 text-emerald-600 shrink-0" />
+                  )}
+                  <span className="truncate text-xs font-bold text-emerald-900">{evidenceName}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEvidenceName(null);
+                    setEvidencePreview(null);
+                    if (fileInputRef.current) fileInputRef.current.value = "";
+                  }}
+                  className="p-1 rounded-md text-emerald-700 hover:bg-emerald-100"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full py-4 rounded-xl border-2 border-dashed border-slate-200 flex flex-col items-center gap-1.5 text-slate-500 hover:border-slate-800 hover:text-slate-900 transition-colors"
+              >
+                <Upload className="w-5 h-5" />
+                <span className="text-xs font-semibold">Upload Photo or Document</span>
+              </button>
+            )}
           </div>
 
           {/* Notify toggle */}

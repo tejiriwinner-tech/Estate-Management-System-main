@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { readSession } from "@/components/auth/session";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+const API = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
 
 /** Finance API call. Sends the Sanctum token; throws Error with the server's message. */
 export async function financeFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
