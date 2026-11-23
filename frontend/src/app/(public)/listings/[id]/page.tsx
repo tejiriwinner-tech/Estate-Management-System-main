@@ -35,7 +35,18 @@ export default function ListingDetailPage() {
   return (
     <main className="mx-auto max-w-4xl px-4 py-8">
       <Link href="/" className="mb-4 inline-flex items-center gap-1 text-xs font-bold text-primary"><ArrowLeft className="h-4 w-4" />All listings</Link>
-      <div className="h-64 rounded-2xl bg-gradient-to-br from-rose-200 to-red-300" />
+      {l.photos && l.photos.length > 0 ? (
+        <div className="relative h-72 w-full overflow-hidden rounded-2xl bg-slate-100 shadow-md">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={l.photos[0]}
+            alt={l.title}
+            className="h-full w-full object-cover"
+          />
+        </div>
+      ) : (
+        <div className="h-64 rounded-2xl bg-gradient-to-br from-rose-200 to-red-300" />
+      )}
       <div className="mt-6 grid gap-8 md:grid-cols-3">
         <div className="md:col-span-2">
           <h1 className="text-2xl font-extrabold text-slate-800">{l.title}</h1>

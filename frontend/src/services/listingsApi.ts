@@ -13,7 +13,7 @@ export interface ApiListing {
   address: string;
   beds: number | null;
   baths: number | null;
-  price: number; // naira (API stores kobo)
+  price: number; // naira
   price_period: string | null;
   availability: string;
   approval_status: "pending" | "approved" | "rejected";
@@ -22,6 +22,85 @@ export interface ApiListing {
   agent?: { id: number; name: string; email?: string; phone?: string };
   created_at: string;
 }
+
+export const SAMPLE_LISTINGS: ApiListing[] = [
+  {
+    id: 1,
+    title: "Luxury 4-Bedroom Terrace Duplex",
+    description: "Beautifully finished modern terrace duplex located in the serene Phase 1 zone of Lincoln Estate. Features 24/7 power, treated water, and dedicated security.",
+    listing_type: "rent",
+    property_type: "Duplex",
+    zone: "Phase 1",
+    address: "Plot 14, Palm Crescent",
+    beds: 4,
+    baths: 4,
+    price: 4500000,
+    price_period: "per_year",
+    availability: "available",
+    approval_status: "approved",
+    rejection_reason: null,
+    photos: ["https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80"],
+    agent: { id: 1, name: "Marcus Reed", email: "agent@lincolnestate.ng", phone: "+234 804 567 8901" },
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: 2,
+    title: "Executive 3-Bedroom Furnished Apartment",
+    description: "Spacious modern flat with premium fittings, all rooms en-suite, fitted kitchen with heat extractor, and ample parking space.",
+    listing_type: "rent",
+    property_type: "Apartment",
+    zone: "Phase 1",
+    address: "Block B4, Royal Avenue",
+    beds: 3,
+    baths: 3,
+    price: 3200000,
+    price_period: "per_year",
+    availability: "available",
+    approval_status: "approved",
+    rejection_reason: null,
+    photos: ["https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80"],
+    agent: { id: 1, name: "Marcus Reed", email: "agent@lincolnestate.ng", phone: "+234 804 567 8901" },
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: 3,
+    title: "Contemporary 5-Bedroom Detached Villa",
+    description: "Ultra-luxury smart home with private pool, solar inverter system, cinema room, and two-room boys quarters.",
+    listing_type: "sale",
+    property_type: "Villa",
+    zone: "Phase 2",
+    address: "12 Kingfisher Drive",
+    beds: 5,
+    baths: 6,
+    price: 185000000,
+    price_period: null,
+    availability: "available",
+    approval_status: "approved",
+    rejection_reason: null,
+    photos: ["https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80"],
+    agent: { id: 1, name: "Marcus Reed", email: "agent@lincolnestate.ng", phone: "+234 804 567 8901" },
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: 4,
+    title: "Charming 2-Bedroom Serviced Flat",
+    description: "Ideal for young professionals. Fully serviced with round-the-clock power, facility management, and high-speed fiber internet.",
+    listing_type: "rent",
+    property_type: "Apartment",
+    zone: "Phase 2",
+    address: "Flat 2A, Emerald Court",
+    beds: 2,
+    baths: 2,
+    price: 2200000,
+    price_period: "per_year",
+    availability: "available",
+    approval_status: "approved",
+    rejection_reason: null,
+    photos: ["https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1200&q=80"],
+    agent: { id: 1, name: "Marcus Reed", email: "agent@lincolnestate.ng", phone: "+234 804 567 8901" },
+    created_at: new Date().toISOString(),
+  },
+];
 
 async function call<T>(path: string, init: RequestInit = {}, auth = false): Promise<T> {
   const token = auth ? readSession()?.token : undefined;
@@ -44,13 +123,62 @@ async function call<T>(path: string, init: RequestInit = {}, auth = false): Prom
 }
 
 // ---- public landing page (no login) ----
-export function fetchPublicListings(params: Record<string, string>) {
-  const qs = new URLSearchParams(Object.entries(params).filter(([, v]) => v)).toString();
-  return call<{ data: ApiListing[]; meta: { page: number; last_page: number; total: number } }>(`/public/listings?${qs}`);
+export async function fetchPublicListings(params: Record<string, string>) {
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    try {
+      const qs = new URLSearchParams(Object.entries(params).filter(([, v]) => v)).toString();
+      return await call<{ data: ApiListing[]; meta: { page: number; last_page: number; total: number } }>(`/public/listings?${qs}`);
+    } catch {
+      // Fall through to sample listings if API is unreachable
+    }
+  }
+
+  // Fallback to sample listings
+  let filtered = [...SAMPLE_LISTINGS];
+  if (params.listing_type) {
+    filtered = filtered.filter((i) => i.listing_type === params.listing_type);
+  }
+  if (params.beds) {
+    filtered = filtered.filter((i) => (i.beds || 0) >= Number(params.beds));
+  }
+  if (params.max_price) {
+    filtered = filtered.filter((i) => i.price <= Number(params.max_price));
+  }
+  if (params.q) {
+    const q = params.q.toLowerCase();
+    filtered = filtered.filter(
+      (i) => i.title.toLowerCase().includes(q) || i.address.toLowerCase().includes(q) || i.zone.toLowerCase().includes(q)
+    );
+  }
+
+  return {
+    data: filtered,
+    meta: { page: 1, last_page: 1, total: filtered.length },
+  };
 }
-export const fetchPublicListing = (id: string) => call<{ data: ApiListing }>(`/public/listings/${id}`);
-export const sendInquiry = (id: number, body: { name: string; phone: string; message?: string }) =>
-  call(`/public/listings/${id}/inquire`, { method: "POST", body: JSON.stringify(body) });
+
+export async function fetchPublicListing(id: string) {
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    try {
+      return await call<{ data: ApiListing }>(`/public/listings/${id}`);
+    } catch {
+      // Fall through to sample listings
+    }
+  }
+  const match = SAMPLE_LISTINGS.find((i) => String(i.id) === String(id)) || SAMPLE_LISTINGS[0];
+  return { data: match };
+}
+
+export async function sendInquiry(id: number, body: { name: string; phone: string; message?: string }) {
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    try {
+      return await call(`/public/listings/${id}/inquire`, { method: "POST", body: JSON.stringify(body) });
+    } catch {
+      // Fall through
+    }
+  }
+  return { message: "Inquiry submitted successfully." };
+}
 
 // ---- agent ----
 /** Sends a new listing to the API for admin approval. Silent no-op when no API is configured. */

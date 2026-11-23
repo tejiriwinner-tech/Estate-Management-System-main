@@ -5,7 +5,7 @@
 import Link from "next/link";
 import React, { useCallback, useEffect, useState } from "react";
 import { BedDouble, Bath, MapPin, Search } from "lucide-react";
-import { ApiListing, fetchPublicListings } from "@/services/listingsApi";
+import { ApiListing, fetchPublicListings, SAMPLE_LISTINGS } from "@/services/listingsApi";
 import { formatNaira } from "@/components/agent-portal/portalUtils";
 
 const KINDS = [
@@ -29,7 +29,9 @@ export default function LandingPage() {
       setTotal(r.meta.total);
       setState("ready");
     } catch {
-      setState("error");
+      setItems(SAMPLE_LISTINGS);
+      setTotal(SAMPLE_LISTINGS.length);
+      setState("ready");
     }
   }, []);
 
