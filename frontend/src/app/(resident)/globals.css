@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+/* Resident app palette, taken from the Figma frames (user dashboard / About / Settings / Activity). */
+@theme inline {
+  --color-brand: #0ca348;
+  --color-brand-dark: #087a35;
+  --color-mint: #cafad5;
+  --color-page: #f9f9f9;
+  --color-muted: #9f9c9c;
+  --color-row: #ebebeb;
+  --color-head: #e0e5ec;
+  --color-alert: #ea4335;
+  --color-panic: #ff1111;
+  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+}
+
+html, body { height: 100%; }
+body { background: var(--color-page); font-family: var(--font-sans); color: #000; }

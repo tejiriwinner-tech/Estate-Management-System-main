@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+@theme inline {
+  /* Brand — from Figma */
+  --color-primary:        #0CA348;
+  --color-primary-dark:   #006B2E;
+  --color-primary-light:  #e6f4ec;
+  --color-primary-mid:    #10A352;
+
+  /* Status */
+  --color-danger:         #BA1A1A;
+  --color-danger-light:   #FFDADA;
+  --color-warning:        #D97706;
+  --color-warning-light:  #fef3c7;
+  --color-success:        #0CA348;
+  --color-success-light:  #dcfce7;
+  --color-info:           #2563EB;
+  --color-info-light:     #EAF1FF;
+
+  /* Neutrals — from Figma */
+  --color-surface:        #ffffff;
+  --color-bg:             #F8F9FA;
+  --color-border:         #e5e7eb;
+  --color-text:           #151C27;
+  --color-text-muted:     #9F9C9C;
+  --color-text-subtle:    #9ca3af;
+  --color-text-dark:      #121C2A;
+  --color-text-slate:     #475569;
+  --color-text-charcoal:  #45464D;
+
+  /* Sidebar */
+  --color-sidebar-bg:     #ffffff;
+  --color-sidebar-active: #0CA348;
+
+  /* Typography */
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #9ca3af; }

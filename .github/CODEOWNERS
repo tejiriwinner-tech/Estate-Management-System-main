@@ -1,0 +1,13 @@
+# Code owners. Replace the placeholders with real GitHub usernames (or @org/team slugs), then
+# in branch protection turn on "Require review from Code Owners".
+# Owners listed later in the file win for a given path.
+#
+# Fallback: the repository owner reviews everything.
+# *                              @OWNER_GITHUB_USERNAME
+#
+# /backend/routes/api.php        @OWNER_GITHUB_USERNAME
+# /backend/app/Http/Controllers/Api/V1/Auth/   @TEAMLEAD_GITHUB_USERNAME
+# /frontend/src/components/auth/ @TEAMLEAD_GITHUB_USERNAME
+# /frontend/src/app/\(admin\)/   @ADMIN_DEV_GITHUB_USERNAME
+# /frontend/src/app/\(security\)/ @SECURITY_DEV_GITHUB_USERNAME
+# /frontend/src/app/\(store\)/   @STORE_DEV_GITHUB_USERNAME
