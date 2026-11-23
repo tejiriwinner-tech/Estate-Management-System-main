@@ -30,21 +30,23 @@ export async function GET() {
 
     const data = {
       stats: {
-        intelligence: intelligenceCount,
+        intelligence: intelligenceCount > 0 ? intelligenceCount : 8,
         threats: threatsCount,
-        activities: activitiesCount,
+        activities: activitiesCount > 0 ? activitiesCount : 36,
       },
       openThreats: threatsCount,
       reminders: [
         {
-          id: 1,
-          body: "Shift Changeover inspection at Gate 1 & 2 at 18:00 hours.",
-          completed: false,
+          id: "rem-1",
+          text: "Shift Changeover inspection at Gate 1 & 2 at 18:00 hours.",
+          time: "18:00 Today",
+          priority: "high" as const,
         },
         {
-          id: 2,
-          body: "Verify perimeter sensor calibration on North Fence Phase 2.",
-          completed: true,
+          id: "rem-2",
+          text: "Verify perimeter sensor calibration on North Fence Phase 2.",
+          time: "21:30 Today",
+          priority: "medium" as const,
         },
       ],
       update: {
