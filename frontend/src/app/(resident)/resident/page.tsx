@@ -21,6 +21,8 @@ import {
 import { DashboardData, naira } from "@/lib/resident/api";
 import { useResident } from "@/lib/resident/useResident";
 import { readSession } from "@/components/auth/session";
+import { QrCodeDisplay } from "@/components/qr/QrCodeDisplay";
+import { ResidentGatePassModal } from "@/components/qr/ResidentGatePassModal";
 
 interface PassModalData {
   visitorName: string;
@@ -34,6 +36,9 @@ export default function ResidentDashboard() {
   const session = readSession();
   const residentName = session?.name || "Chinedu Resident";
 
+  // Resident personal exit/entry QR modal
+  const [myGatePassOpen, setMyGatePassOpen] = useState(false);
+
   // Quick visitor pass generator modal
   const [passModalOpen, setPassModalOpen] = useState(false);
   const [passForm, setPassForm] = useState<PassModalData>({
@@ -43,6 +48,27 @@ export default function ResidentDashboard() {
     purpose: "Social Visit",
   });
   const [generatedPass, setGeneratedPass] = useState<{ code: string; pin: string } | null>(null);
+
+  const [activePasses, setActivePasses] = useState([
+    {
+      id: "P-101",
+      visitor: "Engr. Tunde Bakare",
+      type: "Facility Maintenance",
+      code: "LP-8841",
+      pin: "491028",
+      validTill: "Today, 6:00 PM",
+      status: "Active",
+    },
+    {
+      id: "P-102",
+      visitor: "Chiamaka Okafor",
+      type: "Personal Guest",
+      code: "LP-6290",
+      pin: "739201",
+      validTill: "Today, 10:00 PM",
+      status: "Checked In",
+    },
+  ]);
 
   // Away notification modal
   const [awayModalOpen, setAwayModalOpen] = useState(false);
@@ -62,32 +88,43 @@ export default function ResidentDashboard() {
     );
   };
 
-  const handleGeneratePass = (e: React.FormEvent) => {
+  const handleGeneratePass = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!passForm.visitorName.trim()) return;
     const randomCode = "LP-" + Math.floor(1000 + Math.random() * 9000);
     const randomPin = Math.floor(100000 + Math.random() * 900000).toString();
     setGeneratedPass({ code: randomCode, pin: randomPin });
-  };
 
-  const activePasses = [
-    {
-      id: "P-101",
-      visitor: "Engr. Tunde Bakare",
-      type: "Facility Maintenance",
-      code: "LP-8841",
-      validTill: "Today, 6:00 PM",
-      status: "Active",
-    },
-    {
-      id: "P-102",
-      visitor: "Chiamaka Okafor",
-      type: "Personal Guest",
-      code: "LP-6290",
-      validTill: "Today, 10:00 PM",
-      status: "Checked In",
-    },
-  ];
+    // Add to active passes list immediately
+    setActivePasses((prev) => [
+      {
+        id: `P-${Date.now()}`,
+        visitor: passForm.visitorName.trim(),
+        type: passForm.purpose,
+        code: randomCode,
+        pin: randomPin,
+        validTill: "24 Hours",
+        status: "Active",
+      },
+      ...prev,
+    ]);
+
+    // Sync visitor pass to security gate database
+    try {
+      await fetch("/api/v1/security/access/passes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: passForm.visitorName.trim(),
+          invited_by: `${residentName} (Villa A-402)`,
+          code: randomCode,
+          expires_in_minutes: 1440,
+        }),
+      });
+    } catch {
+      // Non-blocking fallback
+    }
+  };
 
   // Resolve dynamic stats with fallbacks
   const totalPaid = data?.total_paid ? naira(data.total_paid) : "₦485,000";
@@ -124,6 +161,14 @@ export default function ResidentDashboard() {
 
         <div className="flex flex-wrap items-center gap-2.5">
           <button
+            onClick={() => setMyGatePassOpen(true)}
+            className="flex items-center gap-2 rounded-xl bg-slate-900 hover:bg-slate-800 px-4 py-2.5 text-xs font-bold text-white shadow-xs transition-all"
+          >
+            <QrCode className="w-4 h-4 text-[#C9A227]" />
+            <span>My Gate Pass (Exit QR)</span>
+          </button>
+
+          <button
             onClick={() => {
               setGeneratedPass(null);
               setPassForm({
@@ -152,7 +197,7 @@ export default function ResidentDashboard() {
 
       {/* 4 Executive Resident Status Cards */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Card 1: Unit Security Clearance */}
+        {/* Card 1: Unit Security Clearance & Exit QR */}
         <div className="rounded-2xl border border-gray-200/80 bg-white p-5 shadow-2xs flex flex-col justify-between hover:shadow-xs transition-shadow">
           <div className="flex items-start justify-between">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
@@ -165,15 +210,16 @@ export default function ResidentDashboard() {
           <div className="mt-4">
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Unit Clearance</p>
             <p className="text-2xl font-extrabold text-gray-900 mt-0.5">Villa A-402</p>
-            <p className="text-[11px] text-slate-400 mt-1 font-medium">Biometric & RFID Access Active</p>
+            <p className="text-[11px] text-slate-400 mt-1 font-medium">Biometric & Exit QR Active</p>
           </div>
-          <Link
-            href="/resident/messages"
+          <button
+            type="button"
+            onClick={() => setMyGatePassOpen(true)}
             className="mt-4 flex items-center justify-between border-t border-gray-100 pt-3 text-xs font-bold text-[#B22222] hover:text-[#991B1B]"
           >
-            <span>Security Bulletins</span>
-            <ChevronRight className="w-4 h-4" />
-          </Link>
+            <span>Open My Exit / Entry QR</span>
+            <QrCode className="w-4 h-4" />
+          </button>
         </div>
 
         {/* Card 2: Active Passes */}
@@ -256,17 +302,34 @@ export default function ResidentDashboard() {
         </h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <button
-            onClick={() => setPassModalOpen(true)}
+            type="button"
+            onClick={() => setMyGatePassOpen(true)}
+            className="flex flex-col items-center justify-center rounded-xl border border-gray-200/80 bg-slate-50/60 p-4 text-center hover:bg-[#FEF2F2] hover:border-[#B22222]/30 transition-all group"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-[#C9A227] shadow-2xs group-hover:bg-[#B22222] group-hover:text-white transition-colors">
+              <QrCode className="h-5 w-5" />
+            </div>
+            <span className="mt-2 text-xs font-bold text-gray-900">My Exit QR Pass</span>
+            <span className="text-[10px] text-slate-400 font-medium">Instant gate exit/entry</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setGeneratedPass(null);
+              setPassModalOpen(true);
+            }}
             className="flex flex-col items-center justify-center rounded-xl border border-gray-200/80 bg-slate-50/60 p-4 text-center hover:bg-[#FEF2F2] hover:border-[#B22222]/30 transition-all group"
           >
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-gray-700 shadow-2xs group-hover:text-[#B22222] group-hover:bg-[#FEF2F2]">
               <KeyRound className="h-5 w-5" />
             </div>
-            <span className="mt-2 text-xs font-bold text-gray-900">Generate Pass</span>
-            <span className="text-[10px] text-slate-400 font-medium">Issue visitor code</span>
+            <span className="mt-2 text-xs font-bold text-gray-900">Visitor QR Pass</span>
+            <span className="text-[10px] text-slate-400 font-medium">Generate visitor scan</span>
           </button>
 
           <button
+            type="button"
             onClick={() => setAwayModalOpen(true)}
             className="flex flex-col items-center justify-center rounded-xl border border-gray-200/80 bg-slate-50/60 p-4 text-center hover:bg-[#FEF2F2] hover:border-[#B22222]/30 transition-all group"
           >
@@ -287,17 +350,6 @@ export default function ResidentDashboard() {
             <span className="mt-2 text-xs font-bold text-gray-900">Messages & Notices</span>
             <span className="text-[10px] text-slate-400 font-medium">Official bulletins</span>
           </Link>
-
-          <Link
-            href="/resident/direction"
-            className="flex flex-col items-center justify-center rounded-xl border border-gray-200/80 bg-slate-50/60 p-4 text-center hover:bg-[#FEF2F2] hover:border-[#B22222]/30 transition-all group"
-          >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-gray-700 shadow-2xs group-hover:text-[#B22222] group-hover:bg-[#FEF2F2]">
-              <Users className="h-5 w-5" />
-            </div>
-            <span className="mt-2 text-xs font-bold text-gray-900">Estate Directions</span>
-            <span className="text-[10px] text-slate-400 font-medium">Gate & landmark maps</span>
-          </Link>
         </div>
       </div>
 
@@ -310,10 +362,13 @@ export default function ResidentDashboard() {
             <div className="flex items-center justify-between border-b border-gray-100 pb-4">
               <div>
                 <h2 className="text-base font-bold text-gray-900">Active Visitor Passes</h2>
-                <p className="text-xs text-slate-500">Security Gate clearance passes for your unit</p>
+                <p className="text-xs text-slate-500">Click any visitor pass to view or share its scannable QR code</p>
               </div>
               <button
-                onClick={() => setPassModalOpen(true)}
+                onClick={() => {
+                  setGeneratedPass(null);
+                  setPassModalOpen(true);
+                }}
                 className="flex items-center gap-1.5 rounded-lg bg-[#FEF2F2] px-3 py-1.5 text-xs font-bold text-[#B22222] hover:bg-red-100 transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" />
@@ -334,7 +389,24 @@ export default function ResidentDashboard() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPassForm({
+                          visitorName: p.visitor,
+                          visitorPhone: "",
+                          expectedDate: new Date().toISOString().split("T")[0],
+                          purpose: p.type,
+                        });
+                        setGeneratedPass({ code: p.code, pin: p.pin });
+                        setPassModalOpen(true);
+                      }}
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 hover:border-[#B22222]/40 hover:bg-[#FEF2F2] text-xs font-bold text-slate-700 hover:text-[#B22222] transition-all"
+                    >
+                      <QrCode className="w-3.5 h-3.5" />
+                      <span>QR</span>
+                    </button>
                     <div className="text-right">
                       <span className="font-mono text-xs font-extrabold text-[#B22222] bg-[#FEF2F2] px-2 py-1 rounded-md border border-[#B22222]/20">
                         {p.code}
@@ -550,46 +622,30 @@ export default function ResidentDashboard() {
                 </div>
               </form>
             ) : (
-              <div className="mt-4 text-center space-y-4">
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FEF2F2] text-[#B22222]">
-                  <QrCode className="h-8 w-8" />
-                </div>
-                <div>
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Gate Clearance Code</p>
-                  <p className="font-mono text-3xl font-extrabold text-[#B22222] tracking-wider mt-1">
-                    {generatedPass.code}
-                  </p>
-                  <p className="text-xs text-slate-600 font-medium mt-1">
-                    Security PIN: <strong>{generatedPass.pin}</strong> • Unit: <strong>Villa A-402</strong>
-                  </p>
-                </div>
-                <div className="rounded-xl bg-slate-50 p-3 text-xs text-slate-600 text-left space-y-1 border border-slate-200">
-                  <p><strong>Visitor:</strong> {passForm.visitorName}</p>
-                  <p><strong>Purpose:</strong> {passForm.purpose}</p>
-                  <p><strong>Valid for:</strong> 24 Hours from generation</p>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => {
-                      if (typeof navigator !== "undefined") {
-                        navigator.clipboard?.writeText(
-                          `Lincoln Estate Gate Pass for ${passForm.visitorName}\nCode: ${generatedPass.code}\nPIN: ${generatedPass.pin}\nDestination: Villa A-402`
-                        );
-                        alert("Pass details copied to clipboard!");
-                      }
-                    }}
-                    className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-gray-200 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50"
-                  >
-                    <Copy className="w-3.5 h-3.5" />
-                    <span>Copy Text</span>
-                  </button>
-                  <button
-                    onClick={() => setPassModalOpen(false)}
-                    className="flex-1 rounded-xl bg-[#B22222] py-2.5 text-xs font-bold text-white hover:bg-[#991B1B]"
-                  >
-                    Done
-                  </button>
-                </div>
+              <div className="mt-4 space-y-4">
+                <QrCodeDisplay
+                  value={`LINCOLN-PASS:${generatedPass.code}:PIN-${generatedPass.pin}:Villa-A-402:${passForm.visitorName.replace(/\s+/g, "-")}:${passForm.purpose.replace(/\s+/g, "-")}`}
+                  size={196}
+                  title={`Visitor Pass: ${passForm.visitorName}`}
+                  code={generatedPass.code}
+                  pin={generatedPass.pin}
+                  subtitle="Share this QR pass with your visitor. Security will scan it at Gate 1 / Gate 2."
+                  downloadName={`Lincoln-Visitor-Pass-${generatedPass.code}`}
+                  metadata={[
+                    { label: "Visitor", value: passForm.visitorName },
+                    { label: "Destination", value: "Villa A-402 (Phase 1)" },
+                    { label: "Purpose", value: passForm.purpose },
+                    { label: "Validity", value: "24 Hours from issue" },
+                  ]}
+                />
+
+                <button
+                  type="button"
+                  onClick={() => setPassModalOpen(false)}
+                  className="w-full rounded-xl bg-slate-900 py-2.5 text-xs font-bold text-white hover:bg-slate-800 transition-colors"
+                >
+                  Done
+                </button>
               </div>
             )}
           </div>
@@ -695,6 +751,15 @@ export default function ResidentDashboard() {
           </div>
         </div>
       )}
+
+      {/* Resident Personal Gate Pass (Exit & Entry QR) Modal */}
+      <ResidentGatePassModal
+        isOpen={myGatePassOpen}
+        onClose={() => setMyGatePassOpen(false)}
+        residentName={residentName}
+        unitNumber="Villa A-402"
+        vehiclePlate="KJA-492AA"
+      />
     </div>
   );
 }

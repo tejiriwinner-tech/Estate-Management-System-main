@@ -2,11 +2,12 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { securityFetch } from "@/lib/security/api";
-import { Plus, X } from "lucide-react";
+import { Plus, X, QrCode } from "lucide-react";
 import LiveVerificationCard from "@/components/security/access/LiveVerificationCard";
 import AccessAlertPanel from "@/components/security/access/AccessAlertPanel";
 import GuestPassesPanel, { type GuestPass } from "@/components/security/access/GuestPassesPanel";
 import AccessLogsTable, { type AccessLogRow } from "@/components/security/access/AccessLogsTable";
+import { QrScannerModal } from "@/components/security/access/QrScannerModal";
 
 interface AccessData {
   logs: AccessLogRow[];
@@ -22,6 +23,7 @@ export default function AccessControlPage() {
   const [data, setData] = useState<AccessData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [scannerOpen, setScannerOpen] = useState(false);
   const [pass, setPass] = useState({ name: "", invited_by: "", minutes: "" });
   const [saving, setSaving] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
@@ -70,7 +72,13 @@ export default function AccessControlPage() {
           <h2 className="text-xl font-bold text-[--color-text]">Access Control Monitoring</h2>
           <p className="text-sm text-[--color-text-muted] mt-0.5">Live surveillance and entry authorisation management.</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={() => setScannerOpen(true)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#B22222] text-white text-xs font-bold hover:bg-[#991B1B] transition-colors shadow-xs"
+          >
+            <QrCode className="w-4 h-4" /> Scan / Verify QR Pass
+          </button>
           <button
             onClick={() => setShowFilters(!showFilters)}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border text-xs font-semibold transition-colors ${
@@ -190,6 +198,12 @@ export default function AccessControlPage() {
           </form>
         </div>
       )}
+
+      <QrScannerModal
+        isOpen={scannerOpen}
+        onClose={() => setScannerOpen(false)}
+        onVerified={load}
+      />
     </div>
   );
 }
