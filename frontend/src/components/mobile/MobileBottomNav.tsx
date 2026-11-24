@@ -12,8 +12,8 @@ export function MobileBottomNav({ activeTab = "dashboard" }: MobileBottomNavProp
   const tabs = [
     { id: "dashboard", label: "Dashboard", href: "/management", icon: LayoutGrid },
     { id: "finance", label: "Finance", href: "/finance", icon: Wallet },
-    { id: "store", label: "Store", href: "/outstanding/resident", icon: Store },
-    { id: "messages", label: "Messages", href: "/payments", icon: MessageSquare, hasBadge: true },
+    { id: "store", label: "Store", href: "/store-app", icon: Store },
+    { id: "messages", label: "Messages", href: "/admin/messages", icon: MessageSquare, hasBadge: true },
     { id: "more", label: "More", href: "/staffs", icon: Menu },
   ];
 

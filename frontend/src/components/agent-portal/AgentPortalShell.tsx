@@ -1,7 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutGrid,
   Home,
@@ -9,10 +10,12 @@ import {
   CalendarClock,
   Wallet,
   LogOut,
-  Bell,
+  MessageSquare,
 } from "lucide-react";
 import { clearSession, readSession } from "@/components/auth/session";
 import { initialsFor } from "@/components/agents/initials";
+import { NotificationPopover } from "@/components/chat/NotificationPopover";
+import { useChatSummary } from "@/lib/chat/useChatSummary";
 
 export interface PortalAgent {
   id: string;
@@ -33,14 +36,14 @@ export function usePortalAgent(): PortalAgent {
 }
 
 const NAV = [
-  { label: "Overview", href: "#overview", icon: LayoutGrid },
-  { label: "My Listings", href: "#listings", icon: Home },
-  { label: "Client Requests", href: "#requests", icon: Users },
-  { label: "Viewings", href: "#viewings", icon: CalendarClock },
-  { label: "Earnings", href: "#earnings", icon: Wallet },
+  { label: "Overview", href: "/agent-portal#overview", hash: "#overview", icon: LayoutGrid },
+  { label: "My Listings", href: "/agent-portal#listings", hash: "#listings", icon: Home },
+  { label: "Client Requests", href: "/agent-portal#requests", hash: "#requests", icon: Users },
+  { label: "Viewings", href: "/agent-portal#viewings", hash: "#viewings", icon: CalendarClock },
+  { label: "Earnings", href: "/agent-portal#earnings", hash: "#earnings", icon: Wallet },
+  { label: "Messages & Notices", href: "/agent-portal/messages", hash: "", icon: MessageSquare },
 ];
 
-/** Build the signed-in agent's display profile from their email (the portal page shows the real name from the API). */
 function resolveAgent(email: string): PortalAgent {
   const local = email.split("@")[0] ?? "agent";
   const name =
@@ -61,10 +64,11 @@ function resolveAgent(email: string): PortalAgent {
 
 export function AgentPortalShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
+  const { summary, refresh } = useChatSummary();
   const [agent, setAgent] = useState<PortalAgent | null>(null);
   const [active, setActive] = useState("#overview");
 
-  // Only agents may open the portal
   useEffect(() => {
     const session = readSession();
     if (!session || session.role !== "Agent") {
@@ -74,20 +78,18 @@ export function AgentPortalShell({ children }: { children: React.ReactNode }) {
     setAgent(resolveAgent(session.email));
   }, [router]);
 
-  // Highlight the section currently in view
   useEffect(() => {
-    if (!agent) return;
+    if (!agent || pathname !== "/agent-portal") return;
+    const hashLinks = NAV.filter((n) => n.hash);
     const update = () => {
-      // The active section is the last one whose top has scrolled past the sticky header
       const line = 140;
-      let current = NAV[0].href;
-      for (const n of NAV) {
-        const el = document.querySelector(n.href);
-        if (el && el.getBoundingClientRect().top <= line) current = n.href;
+      let current = hashLinks[0].hash;
+      for (const n of hashLinks) {
+        const el = document.querySelector(n.hash);
+        if (el && el.getBoundingClientRect().top <= line) current = n.hash;
       }
-      // Near the page bottom the last section may never reach the line
       if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) {
-        current = NAV[NAV.length - 1].href;
+        current = hashLinks[hashLinks.length - 1].hash;
       }
       setActive(current);
     };
@@ -98,7 +100,7 @@ export function AgentPortalShell({ children }: { children: React.ReactNode }) {
       window.removeEventListener("scroll", update);
       window.removeEventListener("resize", update);
     };
-  }, [agent]);
+  }, [agent, pathname]);
 
   const logout = () => {
     clearSession();
@@ -119,7 +121,7 @@ export function AgentPortalShell({ children }: { children: React.ReactNode }) {
         {/* Top bar */}
         <header className="sticky top-0 z-30 border-b border-slate-100 bg-white">
           <div className="flex h-16 items-center justify-between px-4 sm:px-8">
-            <div className="flex items-center gap-2.5">
+            <Link href="/agent-portal" className="flex items-center gap-2.5">
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-lg font-bold text-white shadow-sm shadow-primary/20">
                 <span className="font-serif italic">LE</span>
               </div>
@@ -132,21 +134,18 @@ export function AgentPortalShell({ children }: { children: React.ReactNode }) {
                   Agent Portal
                 </p>
               </div>
-            </div>
+            </Link>
 
             <div className="flex items-center gap-3 sm:gap-4">
-              <button
-                type="button"
-                aria-label="Notifications"
-                className="relative rounded-full p-2 text-slate-500 hover:bg-slate-100"
-              >
-                <Bell className="h-5 w-5" />
-                <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-primary ring-2 ring-white" />
-              </button>
+              <NotificationPopover
+                unread={summary.unread_total}
+                onSeeAll={() => router.push("/agent-portal/messages")}
+                onChanged={refresh}
+              />
               <div className="hidden text-right sm:block">
                 <p className="text-sm font-bold leading-tight text-dark">{agent.name}</p>
                 <p className="text-[11px] font-medium text-slate-400">
-                  Letting Agent · {agent.id}
+                  Letting Agent {agent.id ? `· ${agent.id}` : ""}
                 </p>
               </div>
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-dark text-xs font-bold text-white ring-2 ring-accent">
@@ -163,19 +162,19 @@ export function AgentPortalShell({ children }: { children: React.ReactNode }) {
               </button>
             </div>
           </div>
-
-          {/* Desktop/Tablet Header info */}
         </header>
 
-        {/* Mobile Fixed Bottom Navigation Bar (replaces horizontal scroll) */}
+        {/* Mobile Fixed Bottom Navigation Bar */}
         <nav className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-slate-200 bg-white/95 px-2 py-2 backdrop-blur-md shadow-lg md:hidden">
           {NAV.map((item) => {
-            const isActive = active === item.href;
+            const isActive = item.hash
+              ? pathname === "/agent-portal" && active === item.hash
+              : pathname.startsWith(item.href);
             return (
-              <a
+              <Link
                 key={item.href}
                 href={item.href}
-                className={`flex flex-col items-center gap-1 rounded-xl px-2 py-1 text-[10px] font-bold transition-all ${
+                className={`flex flex-col items-center gap-1 rounded-xl px-1.5 py-1 text-[9px] font-bold transition-all ${
                   isActive ? "text-primary font-extrabold" : "text-slate-500 hover:text-slate-800"
                 }`}
               >
@@ -186,20 +185,22 @@ export function AgentPortalShell({ children }: { children: React.ReactNode }) {
                 >
                   <item.icon className="h-4 w-4" />
                 </div>
-                <span>{item.label}</span>
-              </a>
+                <span className="truncate max-w-[54px]">{item.label.split(" ")[0]}</span>
+              </Link>
             );
           })}
         </nav>
 
         <div className="flex">
           {/* Sidebar */}
-          <aside className="sticky top-16 hidden h-[calc(100vh-4rem)] w-56 flex-shrink-0 flex-col justify-between border-r border-slate-100 bg-white px-4 py-6 md:flex">
+          <aside className="sticky top-16 hidden h-[calc(100vh-4rem)] w-60 flex-shrink-0 flex-col justify-between border-r border-slate-100 bg-white px-4 py-6 md:flex">
             <nav className="space-y-1.5">
               {NAV.map((item) => {
-                const isActive = active === item.href;
+                const isActive = item.hash
+                  ? pathname === "/agent-portal" && active === item.hash
+                  : pathname.startsWith(item.href);
                 return (
-                  <a
+                  <Link
                     key={item.href}
                     href={item.href}
                     className={`group flex items-center gap-3.5 rounded-xl px-4 py-3 text-sm font-medium transition-all ${
@@ -211,8 +212,8 @@ export function AgentPortalShell({ children }: { children: React.ReactNode }) {
                     <item.icon
                       className={`h-5 w-5 ${isActive ? "text-white" : "text-accent group-hover:text-primary"}`}
                     />
-                    {item.label}
-                  </a>
+                    <span>{item.label}</span>
+                  </Link>
                 );
               })}
             </nav>

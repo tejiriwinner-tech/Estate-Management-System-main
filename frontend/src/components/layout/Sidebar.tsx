@@ -39,7 +39,7 @@ const navItems: NavItem[] = [
   },
   { label: "Agents", href: "/agents", icon: BriefcaseBusiness },
   { label: "Store", href: "/store-app", icon: Store },
-  { label: "Messages", href: "/admin/messages", icon: MessageSquare, badge: 6 },
+  { label: "Messages", href: "/admin/messages", icon: MessageSquare },
   { label: "Reports", href: "/finance/reports", icon: BarChart3 },
   { label: "Staffs", href: "/staffs", icon: Users },
 ];

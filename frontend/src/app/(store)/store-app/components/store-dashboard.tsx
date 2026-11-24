@@ -377,6 +377,7 @@ export default function StoreDashboard() {
             { label: "Orders & Fulfillment", href: "/store-app/orders", icon: "orders" as const },
             { label: "Product Catalog", href: "/store-app/products", icon: "products" as const },
             { label: "Inventory & Stock", href: "/store-app/products/manage", icon: "stock" as const },
+            { label: "Messages & Notices", href: "/store-app/messages", icon: "messages" as const },
             { label: "Settlements & Payouts", href: "/store-app/subscription", icon: "settlement" as const },
             { label: "Store Settings", href: "/store-app/settings", icon: "store" as const },
           ].map((item) => {
@@ -452,17 +453,14 @@ export default function StoreDashboard() {
               <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#C9A227", display: "inline-block" }} />
               <span>OPERATIONAL</span>
             </div>
-            <button
-              aria-label="Notifications"
+            <Link
+              aria-label="Messages & Notifications"
               className="notification-button"
-              onClick={() =>
-                setNotice("You are all caught up on store notifications.")
-              }
-              type="button"
+              href="/store-app/messages"
             >
               <Icon name="notification" size={20} />
               <span className="notification-dot" />
-            </button>
+            </Link>
             <span className="topbar-divider" />
             <div className="admin-profile">
               <div style={{ textAlign: "right" }}>

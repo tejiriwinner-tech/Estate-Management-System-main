@@ -13,7 +13,7 @@ export function PaymentMobileBottomNav({ onAddClick }: PaymentMobileBottomNavPro
     <nav className="sticky bottom-0 z-40 flex items-center justify-around border-t border-slate-100 bg-white/95 backdrop-blur-md px-3 py-2">
       {/* 1. Dashboard */}
       <Link
-        href="/dashboard"
+        href="/admin/dashboard"
         className="flex flex-col items-center justify-center gap-1 px-3 py-1 text-[10px] font-bold text-slate-500 hover:text-slate-800 transition-colors"
       >
         <LayoutGrid className="h-5 w-5 text-slate-500" />

@@ -199,6 +199,7 @@ export async function submitListingToApi(input: NewListingInput) {
           baths: input.baths,
           price: input.rentPerYear,
           price_period: kind === "rent" ? "per_year" : null,
+          image: input.image || undefined,
         }),
       },
       true

@@ -2,13 +2,18 @@
 
 import React from "react";
 import Link from "next/link";
-import { Search, Bell, Menu } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Search, Menu } from "lucide-react";
+import { NotificationPopover } from "@/components/chat/NotificationPopover";
+import { useChatSummary } from "@/lib/chat/useChatSummary";
 
 interface NavbarProps {
   onOpenMobileDrawer?: () => void;
 }
 
 export function Navbar({ onOpenMobileDrawer }: NavbarProps) {
+  const router = useRouter();
+  const { summary, refresh } = useChatSummary();
   return (
     <header className="sticky top-0 z-30 flex h-16 sm:h-20 w-full items-center justify-between border-b border-slate-100 bg-white px-4 sm:px-8">
       {/* Left: Mobile Hamburger & Brand Logo */}
@@ -58,14 +63,11 @@ export function Navbar({ onOpenMobileDrawer }: NavbarProps) {
 
       {/* Right Controls: Notifications & Profile */}
       <div className="flex items-center gap-3 sm:gap-6">
-        <button
-          type="button"
-          aria-label="Notifications"
-          className="relative rounded-full p-2 text-dark hover:bg-slate-100 transition-colors"
-        >
-          <Bell className="h-5 w-5" />
-          <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-primary ring-2 ring-white" />
-        </button>
+        <NotificationPopover
+          unread={summary.unread_total}
+          onSeeAll={() => router.push("/admin/messages")}
+          onChanged={refresh}
+        />
 
         <div className="flex items-center gap-3 pl-2 sm:border-l sm:border-slate-100">
           <div className="text-right hidden sm:block">
