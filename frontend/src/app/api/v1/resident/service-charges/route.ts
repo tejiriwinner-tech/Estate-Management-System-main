@@ -17,10 +17,18 @@ async function ensureServiceChargeTable() {
       status VARCHAR(30) DEFAULT 'Pending',
       invoice_no VARCHAR(80),
       notes TEXT,
+      receipt_url TEXT,
+      receipt_name VARCHAR(255),
+      payment_reference VARCHAR(120),
+      paid_at TIMESTAMP,
       created_at TIMESTAMP DEFAULT NOW(),
       updated_at TIMESTAMP DEFAULT NOW()
     )
   `;
+  await sql`ALTER TABLE service_charges ADD COLUMN IF NOT EXISTS receipt_url TEXT`;
+  await sql`ALTER TABLE service_charges ADD COLUMN IF NOT EXISTS receipt_name VARCHAR(255)`;
+  await sql`ALTER TABLE service_charges ADD COLUMN IF NOT EXISTS payment_reference VARCHAR(120)`;
+  await sql`ALTER TABLE service_charges ADD COLUMN IF NOT EXISTS paid_at TIMESTAMP`;
 }
 
 export async function GET(req: NextRequest) {
@@ -98,6 +106,10 @@ export async function GET(req: NextRequest) {
         status: r.status || "Pending",
         invoice_no: r.invoice_no || `SC-2026-${r.id}`,
         notes: r.notes || "",
+        receipt_url: r.receipt_url || null,
+        receipt_name: r.receipt_name || null,
+        payment_reference: r.payment_reference || null,
+        paid_at: r.paid_at || null,
       })),
     });
   } catch (err: any) {
@@ -115,6 +127,10 @@ export async function GET(req: NextRequest) {
           status: "Pending",
           invoice_no: "SC-2026-1041",
           notes: "24/7 perimeter patrol, ANPR gate maintenance & street illumination",
+          receipt_url: null,
+          receipt_name: null,
+          payment_reference: null,
+          paid_at: null,
         },
       ],
     });
@@ -124,12 +140,25 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}));
-    const { id } = body;
+    const { id, receipt_url = null, receipt_name = null, payment_reference = null } = body;
+    if (!id) {
+      return NextResponse.json({ message: "Service charge ID is required." }, { status: 400 });
+    }
     await ensureServiceChargeTable();
+
+    const ref =
+      (typeof payment_reference === "string" && payment_reference.trim()) ||
+      `RCP-SC-${Date.now().toString().slice(-6)}`;
 
     await sql`
       UPDATE service_charges
-      SET status = 'Paid', updated_at = NOW()
+      SET
+        status = 'Paid',
+        receipt_url = COALESCE(${receipt_url || null}, receipt_url),
+        receipt_name = COALESCE(${receipt_name || null}, receipt_name),
+        payment_reference = ${ref},
+        paid_at = COALESCE(paid_at, NOW()),
+        updated_at = NOW()
       WHERE id = ${Number(id)}
     `;
 
@@ -137,9 +166,13 @@ export async function POST(req: NextRequest) {
       data: {
         id: Number(id),
         status: "Paid",
-        receipt_no: `RCP-SC-${Date.now().toString().slice(-6)}`,
+        receipt_no: ref,
+        receipt_url: receipt_url || null,
+        receipt_name: receipt_name || null,
       },
-      message: "Service charge cleared successfully.",
+      message: receipt_url
+        ? "Payment confirmed and receipt uploaded successfully."
+        : "Service charge cleared successfully.",
     });
   } catch (err: any) {
     return NextResponse.json({ message: "Could not process service charge payment.", error: err.message }, { status: 500 });

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Receipt, Plus, Search, CheckCircle2, Clock, Trash2 } from "lucide-react";
+import { Receipt, Plus, Search, CheckCircle2, Clock, Trash2, Eye, X, FileText } from "lucide-react";
 import { ServiceChargeModal, type ServiceChargeRecord } from "./ServiceChargeModal";
 
 export function AdminServiceChargesView() {
@@ -10,6 +10,7 @@ export function AdminServiceChargesView() {
   const [filter, setFilter] = useState<"All" | "Pending" | "Paid">("All");
   const [search, setSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
+  const [previewReceipt, setPreviewReceipt] = useState<ServiceChargeRecord | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -179,6 +180,16 @@ export function AdminServiceChargesView() {
                     </td>
                     <td className="py-3.5 px-5 text-right">
                       <div className="inline-flex items-center gap-1.5">
+                        {c.receipt_url && (
+                          <button
+                            type="button"
+                            onClick={() => setPreviewReceipt(c)}
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-[11px] font-bold"
+                          >
+                            <Eye className="w-3 h-3" />
+                            <span>Receipt</span>
+                          </button>
+                        )}
                         {c.status !== "Paid" && (
                           <button
                             type="button"
@@ -211,6 +222,63 @@ export function AdminServiceChargesView() {
         member={null}
         onSaved={load}
       />
+
+      {previewReceipt && previewReceipt.receipt_url && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 backdrop-blur-xs p-4"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) setPreviewReceipt(null);
+          }}
+        >
+          <div className="w-full max-w-lg rounded-2xl bg-white p-5 shadow-2xl border border-slate-200 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h3 className="text-base font-black text-slate-900">Resident Payment Receipt</h3>
+                <p className="text-xs text-slate-500">
+                  {previewReceipt.resident_name} ({previewReceipt.unit_number}) • {previewReceipt.invoice_no}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPreviewReceipt(null)}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-800 hover:bg-slate-100"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {previewReceipt.payment_reference && (
+              <p className="text-xs font-mono text-slate-600 bg-slate-50 px-3 py-2 rounded-lg border border-slate-200">
+                Payment Ref: <strong>{previewReceipt.payment_reference}</strong>
+              </p>
+            )}
+
+            {previewReceipt.receipt_url.startsWith("data:image/") ? (
+              <div className="max-h-[60vh] overflow-auto rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-center p-2">
+                <img
+                  src={previewReceipt.receipt_url}
+                  alt={previewReceipt.receipt_name || "Service charge receipt"}
+                  className="max-w-full max-h-[55vh] rounded-lg object-contain"
+                />
+              </div>
+            ) : (
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-6 text-center space-y-3">
+                <FileText className="w-10 h-10 text-[#B22222] mx-auto" />
+                <p className="text-xs font-bold text-slate-800">
+                  {previewReceipt.receipt_name || "Uploaded Receipt Document"}
+                </p>
+                <a
+                  href={previewReceipt.receipt_url}
+                  download={previewReceipt.receipt_name || `${previewReceipt.invoice_no}-receipt`}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#B22222] text-white text-xs font-bold"
+                >
+                  Download Receipt
+                </a>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

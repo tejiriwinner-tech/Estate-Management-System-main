@@ -17,10 +17,18 @@ async function ensureTable() {
       status VARCHAR(30) DEFAULT 'Pending',
       invoice_no VARCHAR(80),
       notes TEXT,
+      receipt_url TEXT,
+      receipt_name VARCHAR(255),
+      payment_reference VARCHAR(120),
+      paid_at TIMESTAMP,
       created_at TIMESTAMP DEFAULT NOW(),
       updated_at TIMESTAMP DEFAULT NOW()
     )
   `;
+  await sql`ALTER TABLE service_charges ADD COLUMN IF NOT EXISTS receipt_url TEXT`;
+  await sql`ALTER TABLE service_charges ADD COLUMN IF NOT EXISTS receipt_name VARCHAR(255)`;
+  await sql`ALTER TABLE service_charges ADD COLUMN IF NOT EXISTS payment_reference VARCHAR(120)`;
+  await sql`ALTER TABLE service_charges ADD COLUMN IF NOT EXISTS paid_at TIMESTAMP`;
 }
 
 export async function GET(req: NextRequest) {
@@ -65,6 +73,10 @@ export async function GET(req: NextRequest) {
         status: r.status,
         invoice_no: r.invoice_no,
         notes: r.notes,
+        receipt_url: r.receipt_url || null,
+        receipt_name: r.receipt_name || null,
+        payment_reference: r.payment_reference || null,
+        paid_at: r.paid_at || null,
         created_at: r.created_at,
       })),
     });

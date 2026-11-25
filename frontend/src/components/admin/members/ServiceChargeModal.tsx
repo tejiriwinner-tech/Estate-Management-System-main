@@ -15,6 +15,9 @@ export interface ServiceChargeRecord {
   status: string;
   invoice_no: string;
   notes: string | null;
+  receipt_url?: string | null;
+  receipt_name?: string | null;
+  payment_reference?: string | null;
 }
 
 interface ServiceChargeModalProps {
