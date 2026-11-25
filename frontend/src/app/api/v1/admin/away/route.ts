@@ -5,9 +5,9 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    let notices: any[] = [];
+    let rows: any[] = [];
     try {
-      const rows = await sql`
+      rows = await sql`
         SELECT a.id, a.user_id, a.resident_name, a.unit, a.departure_date, a.expected_return_date,
                a.emergency_contact_name, a.emergency_contact_phone, a.notes, a.status, a.created_at,
                u.name as user_name, u.unit_number as user_unit
@@ -15,21 +15,72 @@ export async function GET() {
         LEFT JOIN users u ON u.id = a.user_id
         ORDER BY a.id DESC
       `;
-      notices = rows.map((r: any) => ({
-        id: r.id,
-        resident_name: r.resident_name || r.user_name || "Resident",
-        unit_number: r.unit || r.user_unit || "Villa A-402",
-        start_date: r.departure_date ? new Date(r.departure_date).toISOString().split("T")[0] : "",
-        end_date: r.expected_return_date ? new Date(r.expected_return_date).toISOString().split("T")[0] : "",
-        emergency_contact: r.emergency_contact_phone || r.emergency_contact_name || "+234 800 000 0000",
-        instructions: r.notes || "Hold deliveries",
-        status: r.status || "active",
-      }));
     } catch (e: any) {
       console.error("Error loading away notices:", e.message);
     }
 
-    return NextResponse.json({ data: notices });
+    const fmt = (d: any) =>
+      d ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—";
+
+    const residents = (rows.length > 0
+      ? rows
+      : [
+          {
+            id: 1,
+            resident_name: "Chinedu Resident",
+            unit: "Villa A-402",
+            departure_date: new Date(Date.now() - 2 * 86400000),
+            expected_return_date: new Date(Date.now() + 5 * 86400000),
+            emergency_contact_phone: "+234 801 234 5678",
+            notes: "Hold courier deliveries at Gate 1",
+            status: "active",
+          },
+        ]
+    ).map((r: any) => {
+      const statusNorm =
+        r.status === "returned"
+          ? "returned"
+          : r.status === "check_required"
+          ? "check_required"
+          : "away";
+      return {
+        id: Number(r.id),
+        resident_name: r.resident_name || r.user_name || "Resident",
+        house_no: r.unit || r.user_unit || "Villa A-402",
+        departure_date: fmt(r.departure_date),
+        expected_return_date: fmt(r.expected_return_date),
+        status: statusNorm,
+        emergency_contact: r.emergency_contact_phone || r.emergency_contact_name || "+234 800 000 0000",
+        instructions: r.notes || "Hold deliveries",
+      };
+    });
+
+    const activeAway = residents.filter((r) => r.status !== "returned");
+    const checkRequired = residents.filter((r) => r.status === "check_required");
+
+    const metrics = [
+      { id: "away", label: "CURRENTLY AWAY", value: String(activeAway.length), badge: "Active Notices", iconType: "away" },
+      { id: "returns", label: "UPCOMING RETURNS", value: String(activeAway.length), badge: "Next 7 Days", iconType: "returns" },
+      { id: "alerts", label: "CHECK REQUIRED", value: String(checkRequired.length), badge: "Security Watch", iconType: "alerts" },
+    ];
+
+    const upcoming = activeAway.slice(0, 5).map((r) => ({
+      id: r.id,
+      resident_name: r.resident_name,
+      house_no: r.house_no,
+      return_date: r.expected_return_date,
+    }));
+
+    return NextResponse.json({
+      data: {
+        metrics,
+        residents,
+        upcoming,
+        mobileMetrics: metrics.map((m) => ({ id: m.id, label: m.label, value: m.value })),
+        mobileLogs: activeAway,
+        options: residents.map((r) => ({ id: r.id, name: r.resident_name, house_no: r.house_no })),
+      },
+    });
   } catch (err: any) {
     return NextResponse.json({ message: "Could not fetch away notices", error: err.message }, { status: 500 });
   }
@@ -60,29 +111,10 @@ export async function POST(req: Request) {
         )
         RETURNING *
       `;
-      const row = res[0];
-      insertedNotice = {
-        id: row.id,
-        resident_name: row.resident_name,
-        unit_number: row.unit,
-        start_date: row.departure_date ? new Date(row.departure_date).toISOString().split("T")[0] : depDate,
-        end_date: row.expected_return_date ? new Date(row.expected_return_date).toISOString().split("T")[0] : retDate,
-        emergency_contact: row.emergency_contact_phone,
-        instructions: row.notes,
-        status: row.status,
-      };
+      insertedNotice = res[0];
     } catch (dbErr: any) {
       console.error("Error inserting away notice:", dbErr.message);
-      insertedNotice = {
-        id: Date.now(),
-        resident_name: resident_name || "Resident",
-        unit_number: unit_number || "Villa A-402",
-        start_date,
-        end_date,
-        emergency_contact,
-        instructions,
-        status: "active",
-      };
+      insertedNotice = { id: Date.now(), resident_name: resident_name || "Resident", unit: unit_number || "Villa A-402", status: "active" };
     }
 
     return NextResponse.json({ data: insertedNotice, message: "Away notice saved successfully." }, { status: 201 });

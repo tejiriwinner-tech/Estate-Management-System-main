@@ -282,91 +282,115 @@ export function StoreShell({
           type="button"
         />
       )}
-      <aside className={`sidebar${isMobileNavOpen ? " sidebar--mobile-open" : ""}`} id="primary-sidebar">
-        <Link className="brand" href={isStoreApp ? "/store-app" : "/admin/dashboard"} aria-label="LincolnEstate home" onClick={() => setIsMobileNavOpen(false)}>
-          <span className="brand-mark">
-            <span className="brand-initial">LE</span>
-            <span className="brand-badge-dot" />
-          </span>
-          <span className="brand-copy">
-            <strong>Lincoln<span style={{ color: "var(--primary)" }}>Estate</span></strong>
-            <small style={isStoreApp ? { color: "#C9A227", fontWeight: "700" } : undefined}>
-              {isStoreApp ? "STORE OWNER HUB" : "ADMIN DASHBOARD"}
-            </small>
-          </span>
-        </Link>
-        <nav className="side-nav" aria-label="Main navigation" id="primary-navigation">
-          {navItemsList.map((item) => {
-            if ("isDropdown" in item && item.isDropdown) {
-              return (
-                <details className="store-menu" open key={item.label}>
-                  <summary aria-label="Toggle Store menu" className="store-menu-trigger is-active" style={{ background: "var(--primary)", color: "#fff", borderRadius: "12px", padding: "10px 14px", fontWeight: "600" }}>
-                    <ShellIcon name="store" />
-                    <span>Store</span>
-                    <span aria-hidden="true" className="store-menu-chevron" style={{ marginLeft: "auto" }}>⌄</span>
-                  </summary>
-                  <div className="store-menu-items" style={{ paddingLeft: "16px", borderLeft: "2px solid rgba(178,34,34,0.2)", marginLeft: "20px", marginTop: "6px", marginBottom: "6px" }}>
-                    {storeDropdownSubLinks.map((sub) => {
-                      const isSubActive = pathname === sub.href || sub.label === activeNav;
-                      return (
-                        <Link
-                          aria-current={isSubActive ? "page" : undefined}
-                          className={`nav-item store-menu-link${isSubActive ? " is-active" : ""}`}
-                          href={sub.href}
-                          key={sub.href}
-                          onClick={() => setIsMobileNavOpen(false)}
-                          style={{
-                            padding: "8px 12px",
-                            fontSize: "12px",
-                            fontWeight: isSubActive ? "700" : "500",
-                            color: isSubActive ? "var(--primary)" : "#4b5563",
-                            background: isSubActive ? "#fbf1f1" : "transparent",
-                            borderRadius: "8px",
-                            display: "block",
-                            marginBottom: "2px",
-                          }}
-                        >
-                          <span>{sub.label}</span>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </details>
-              );
-            }
+      <aside className={`sidebar${isMobileNavOpen ? " sidebar--mobile-open" : ""}`} id="primary-sidebar" style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", background: "#ffffff", borderRight: "1px solid #e2e8f0" }}>
+        <div>
+          <Link className="brand" href={isStoreApp ? "/store-app" : "/admin/dashboard"} aria-label="LincolnEstate home" onClick={() => setIsMobileNavOpen(false)} style={{ padding: "18px 20px", borderBottom: "1px solid #f1f5f9", marginBottom: "8px" }}>
+            <span className="brand-mark">
+              <span className="brand-initial">LE</span>
+              <span className="brand-badge-dot" />
+            </span>
+            <span className="brand-copy">
+              <strong>Lincoln<span style={{ color: "var(--primary)" }}>Estate</span></strong>
+              <small style={isStoreApp ? { color: "#C9A227", fontWeight: "700", letterSpacing: "0.05em" } : undefined}>
+                {isStoreApp ? "STORE OWNER HUB" : "ADMIN DASHBOARD"}
+              </small>
+            </span>
+          </Link>
+          <nav aria-label="Main navigation" id="primary-navigation" style={{ display: "flex", flexDirection: "column", gap: "4px", padding: "8px 12px" }}>
+            {navItemsList.map((item) => {
+              if ("isDropdown" in item && item.isDropdown) {
+                return (
+                  <details className="store-menu" open key={item.label}>
+                    <summary aria-label="Toggle Store menu" className="store-menu-trigger is-active" style={{ background: "var(--primary)", color: "#fff", borderRadius: "10px", padding: "10px 14px", fontWeight: "600", fontSize: "13px" }}>
+                      <ShellIcon name="store" />
+                      <span>Store</span>
+                      <span aria-hidden="true" className="store-menu-chevron" style={{ marginLeft: "auto" }}>⌄</span>
+                    </summary>
+                    <div className="store-menu-items" style={{ paddingLeft: "14px", borderLeft: "2px solid rgba(178,34,34,0.2)", marginLeft: "18px", marginTop: "6px", marginBottom: "6px" }}>
+                      {storeDropdownSubLinks.map((sub) => {
+                        const isSubActive = pathname === sub.href || sub.label === activeNav;
+                        return (
+                          <Link
+                            aria-current={isSubActive ? "page" : undefined}
+                            href={sub.href}
+                            key={sub.href}
+                            onClick={() => setIsMobileNavOpen(false)}
+                            style={{
+                              padding: "8px 12px",
+                              fontSize: "12px",
+                              fontWeight: isSubActive ? "700" : "500",
+                              color: isSubActive ? "var(--primary)" : "#4b5563",
+                              background: isSubActive ? "#fbf1f1" : "transparent",
+                              borderRadius: "8px",
+                              display: "block",
+                              marginBottom: "2px",
+                              textDecoration: "none",
+                            }}
+                          >
+                            <span>{sub.label}</span>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </details>
+                );
+              }
 
-            const isItemActive = pathname === item.href;
-            return (
-              <Link
-                aria-current={isItemActive ? "page" : undefined}
-                className={`nav-item store-menu-link${isItemActive ? " is-active" : ""}`}
-                href={item.href}
-                key={item.href}
-                onClick={() => setIsMobileNavOpen(false)}
-                style={isItemActive ? {
-                  background: "var(--primary)",
-                  color: "#ffffff",
-                  borderRadius: "10px",
-                  fontWeight: "700",
-                } : undefined}
-              >
-                <ShellIcon name={item.icon} />
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
-        <button
-          className="logout-button"
-          onClick={() => {
-            setIsMobileNavOpen(false);
-            window.location.assign(isStoreApp ? "/login" : "/admin/dashboard");
-          }}
-          type="button"
-        >
-          <ShellIcon name="logout" />
-          <span>{isStoreApp ? "Sign Out" : "Return to Admin"}</span>
-        </button>
+              const isItemActive = pathname === item.href;
+              return (
+                <Link
+                  aria-current={isItemActive ? "page" : undefined}
+                  href={item.href}
+                  key={item.href}
+                  onClick={() => setIsMobileNavOpen(false)}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "12px",
+                    padding: "10px 14px",
+                    borderRadius: "10px",
+                    fontSize: "13px",
+                    fontWeight: isItemActive ? 700 : 600,
+                    color: isItemActive ? "#ffffff" : "#475569",
+                    background: isItemActive ? "#B22222" : "transparent",
+                    textDecoration: "none",
+                    transition: "all 0.15s ease",
+                    boxShadow: isItemActive ? "0 2px 6px rgba(178, 34, 34, 0.22)" : "none",
+                  }}
+                >
+                  <ShellIcon name={item.icon} />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+        <div style={{ padding: "14px 12px", borderTop: "1px solid #f1f5f9" }}>
+          <button
+            onClick={() => {
+              setIsMobileNavOpen(false);
+              window.location.assign(isStoreApp ? "/login" : "/admin/dashboard");
+            }}
+            type="button"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              width: "100%",
+              padding: "10px 14px",
+              borderRadius: "10px",
+              border: "none",
+              background: "transparent",
+              color: "#B22222",
+              fontSize: "13px",
+              fontWeight: 700,
+              cursor: "pointer",
+            }}
+          >
+            <ShellIcon name="logout" />
+            <span>{isStoreApp ? "Sign Out" : "Return to Admin"}</span>
+          </button>
+        </div>
       </aside>
       <div className="workspace">
         <header className="topbar">

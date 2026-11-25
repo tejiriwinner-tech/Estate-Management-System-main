@@ -386,61 +386,85 @@ export default function StoreDashboard() {
           type="button"
         />
       )}
-      <aside className={`sidebar${isMobileNavOpen ? " sidebar--mobile-open" : ""}`} id="primary-sidebar">
-        <Link className="brand" href="/store-app" aria-label="LincolnEstate Store Portal" onClick={() => setIsMobileNavOpen(false)}>
-          <span className="brand-mark">
-            <span className="brand-initial">LE</span>
-            <span className="brand-badge-dot" />
-          </span>
-          <span className="brand-copy">
-            <strong>Lincoln<span style={{ color: "var(--primary)" }}>Estate</span></strong>
-            <small style={{ color: "#C9A227", fontWeight: "700", letterSpacing: "0.05em" }}>STORE OWNER HUB</small>
-          </span>
-        </Link>
+      <aside className={`sidebar${isMobileNavOpen ? " sidebar--mobile-open" : ""}`} id="primary-sidebar" style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", background: "#ffffff", borderRight: "1px solid #e2e8f0" }}>
+        <div>
+          <Link className="brand" href="/store-app" aria-label="LincolnEstate Store Portal" onClick={() => setIsMobileNavOpen(false)} style={{ padding: "18px 20px", borderBottom: "1px solid #f1f5f9", marginBottom: "8px" }}>
+            <span className="brand-mark">
+              <span className="brand-initial">LE</span>
+              <span className="brand-badge-dot" />
+            </span>
+            <span className="brand-copy">
+              <strong>Lincoln<span style={{ color: "var(--primary)" }}>Estate</span></strong>
+              <small style={{ color: "#C9A227", fontWeight: "700", letterSpacing: "0.05em" }}>STORE OWNER HUB</small>
+            </span>
+          </Link>
 
-        <nav aria-label="Main navigation" className="side-nav">
-          {[
-            { label: "Store Dashboard", href: "/store-app", icon: "dashboard" as const },
-            { label: "Orders & Fulfillment", href: "/store-app/orders", icon: "orders" as const },
-            { label: "Product Catalog", href: "/store-app/products", icon: "products" as const },
-            { label: "Inventory & Stock", href: "/store-app/products/manage", icon: "stock" as const },
-            { label: "Messages & Notices", href: "/store-app/messages", icon: "messages" as const },
-            { label: "Settlements & Payouts", href: "/store-app/subscription", icon: "settlement" as const },
-            { label: "Store Settings", href: "/store-app/settings", icon: "store" as const },
-          ].map((item) => {
-            const isActive = pathname === item.href;
-            return (
-              <Link
-                aria-current={isActive ? "page" : undefined}
-                className={`nav-item store-menu-link${isActive ? " is-active" : ""}`}
-                href={item.href}
-                key={item.href}
-                onClick={() => setIsMobileNavOpen(false)}
-                style={isActive ? {
-                  background: "#B22222",
-                  color: "#ffffff",
-                  borderRadius: "10px",
-                  fontWeight: "700",
-                } : undefined}
-              >
-                <Icon name={item.icon} size={17} />
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
+          <nav aria-label="Main navigation" style={{ display: "flex", flexDirection: "column", gap: "4px", padding: "8px 12px" }}>
+            {[
+              { label: "Store Dashboard", href: "/store-app", icon: "dashboard" as const },
+              { label: "Orders & Fulfillment", href: "/store-app/orders", icon: "orders" as const },
+              { label: "Product Catalog", href: "/store-app/products", icon: "products" as const },
+              { label: "Inventory & Stock", href: "/store-app/products/manage", icon: "stock" as const },
+              { label: "Messages & Notices", href: "/store-app/messages", icon: "messages" as const },
+              { label: "Settlements & Payouts", href: "/store-app/subscription", icon: "settlement" as const },
+              { label: "Store Settings", href: "/store-app/settings", icon: "store" as const },
+            ].map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  aria-current={isActive ? "page" : undefined}
+                  href={item.href}
+                  key={item.href}
+                  onClick={() => setIsMobileNavOpen(false)}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "12px",
+                    padding: "10px 14px",
+                    borderRadius: "10px",
+                    fontSize: "13px",
+                    fontWeight: isActive ? 700 : 600,
+                    color: isActive ? "#ffffff" : "#475569",
+                    background: isActive ? "#B22222" : "transparent",
+                    textDecoration: "none",
+                    transition: "all 0.15s ease",
+                    boxShadow: isActive ? "0 2px 6px rgba(178, 34, 34, 0.22)" : "none",
+                  }}
+                >
+                  <Icon name={item.icon} size={16} />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
 
-        <button
-          className="logout-button"
-          onClick={() => {
-            setIsMobileNavOpen(false);
-            window.location.assign("/login");
-          }}
-          type="button"
-        >
-          <Icon name="logout" size={18} />
-          <span>Sign Out</span>
-        </button>
+        <div style={{ padding: "14px 12px", borderTop: "1px solid #f1f5f9" }}>
+          <button
+            onClick={() => {
+              setIsMobileNavOpen(false);
+              window.location.assign("/login");
+            }}
+            type="button"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              width: "100%",
+              padding: "10px 14px",
+              borderRadius: "10px",
+              border: "none",
+              background: "transparent",
+              color: "#B22222",
+              fontSize: "13px",
+              fontWeight: 700,
+              cursor: "pointer",
+            }}
+          >
+            <Icon name="logout" size={16} />
+            <span>Sign Out</span>
+          </button>
+        </div>
       </aside>
 
       <div className="workspace">

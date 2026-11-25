@@ -10,7 +10,7 @@ export async function GET() {
       rawLogs = await sql`
         SELECT a.id, a.user_id, a.name, a.role_label, a.gate, a.verification_type, a.status,
                a.direction, a.person_type, a.house_no, a.vehicle_plate, a.occurred_at, a.created_at,
-               u.name as host_name, u.unit_number as host_unit
+               u.name as host_name, u.unit_number as host_unit, u.avatar_url
         FROM access_logs a
         LEFT JOIN users u ON u.id = a.user_id
         ORDER BY a.id DESC
@@ -21,52 +21,86 @@ export async function GET() {
     }
 
     const defaultLogs = [
-      { id: 1, person_name: "Tunde Bakare", role: "Visitor", tag: "Visitor", unit_number: "Villa A-402", host_name: "Chinedu Resident", vehicle_plate: "KJA-881-AB", entry_time: "10:14 AM", exit_time: "11:45 AM", gate_name: "Gate 1", status: "completed" },
-      { id: 2, person_name: "Adewale Delivery (DHL)", role: "Courier", tag: "Delivery", unit_number: "Plot 14", host_name: "Marcus Reed", vehicle_plate: "LND-202-XY", entry_time: "11:20 AM", exit_time: null, gate_name: "Gate 1", status: "inside" },
+      {
+        id: 1,
+        name: "Tunde Bakare",
+        person_type: "Visitor",
+        house_no: "Villa A-402",
+        check_in: "10:14 AM",
+        check_out: "11:45 AM",
+        gate: "Main Gate",
+        status: "checked_out" as const,
+        avatar_url: null,
+      },
+      {
+        id: 2,
+        name: "Adewale Delivery (DHL)",
+        person_type: "Service Provider",
+        house_no: "Plot 14",
+        check_in: "11:20 AM",
+        check_out: "—",
+        gate: "Main Gate",
+        status: "in_estate" as const,
+        avatar_url: null,
+      },
     ];
 
     const logs = rawLogs.length > 0
-      ? rawLogs.map((l) => ({
-          id: l.id,
-          person_name: l.name || "Guest",
-          role: l.role_label || l.person_type || "Visitor",
-          tag: l.person_type || "Visitor",
-          unit_number: l.house_no || l.host_unit || "Villa A-402",
-          host_name: l.host_name || "Estate Security",
-          vehicle_plate: l.vehicle_plate || "Verified RFID",
-          entry_time: l.created_at ? new Date(l.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "10:00 AM",
-          exit_time: l.direction === "out" ? "Just now" : null,
-          gate_name: l.gate || "Gate 1",
-          status: l.direction === "out" ? "completed" : "inside",
-        }))
+      ? rawLogs.map((l) => {
+          const isOut = l.direction === "out";
+          const timeStr = l.occurred_at || l.created_at
+            ? new Date(l.occurred_at || l.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+            : "10:00 AM";
+          return {
+            id: Number(l.id),
+            name: l.name || "Guest",
+            person_type: l.person_type || l.role_label || "Visitor",
+            house_no: l.house_no || l.host_unit || "Villa A-402",
+            check_in: isOut ? "08:30 AM" : timeStr,
+            check_out: isOut ? timeStr : "—",
+            gate: l.gate || "Main Gate",
+            status: isOut ? ("checked_out" as const) : ("in_estate" as const),
+            avatar_url: l.avatar_url || null,
+          };
+        })
       : defaultLogs;
 
     const metrics = [
       { id: "total-checkins", label: "TOTAL CHECK-INS", value: String(logs.length + 12), iconType: "checkin" as const },
-      { id: "total-checkouts", label: "TOTAL CHECK-OUTS", value: String(Math.max(logs.length - 2, 0)), iconType: "checkout" as const },
+      { id: "total-checkouts", label: "TOTAL CHECK-OUTS", value: String(logs.filter((l) => l.status === "checked_out").length + 4), iconType: "checkout" as const },
       { id: "residents-inside", label: "RESIDENTS INSIDE", value: "84", iconType: "residents" as const },
-      { id: "visitors-inside", label: "VISITORS INSIDE", value: String(logs.filter((l: any) => !l.exit_time).length || 5), iconType: "visitors" as const },
+      { id: "visitors-inside", label: "VISITORS INSIDE", value: String(logs.filter((l) => l.status === "in_estate").length || 5), iconType: "visitors" as const },
     ];
 
     const summary = {
       vehicles_entered: 42,
       pedestrians: 18,
       alert_title: "Normal Security Posture",
-      alert_description: "All automated boom barriers and biometric scanners operational at 100%.",
+      alert_description: "All automated boom barriers and biometric scanners are active.",
       incidents: [],
       active_personnel: [
-        { name: "Officer Mike Warden", post: "Gate 1", status: "On Duty" },
-        { name: "Officer John Okon", post: "Gate 2", status: "On Duty" },
+        { id: 1, name: "Mike Warden", role: "Gate 1 Lead", avatar_url: null },
+        { id: 2, name: "John Okon", role: "Gate 2 Patrol", avatar_url: null },
       ],
       extra_personnel_count: 2,
     };
+
+    const mobileLogs = logs.map((l) => ({
+      id: l.id,
+      name: l.name,
+      house_no: l.house_no,
+      person_type: l.person_type,
+      time: l.status === "in_estate" ? l.check_in : l.check_out,
+      gate: l.gate,
+      status: l.status,
+    }));
 
     return NextResponse.json({
       data: {
         metrics,
         logs,
         summary,
-        mobileLogs: logs,
+        mobileLogs,
       },
     });
   } catch (err: any) {
@@ -84,7 +118,7 @@ export async function POST(req: Request) {
         name, role_label, gate, verification_type, direction, person_type, house_no, vehicle_plate, status, occurred_at, created_at, updated_at
       )
       VALUES (
-        ${name || "Visitor"}, ${role_label || "Visitor"}, ${gate || "Gate 1"}, ${verification_type || "RFID"},
+        ${name || "Visitor"}, ${role_label || "Visitor"}, ${gate || "Main Gate"}, ${verification_type || "RFID"},
         ${direction || "in"}, ${person_type || "Visitor"}, ${house_no || "Gate"}, ${vehicle_plate || "N/A"},
         'granted', NOW(), NOW(), NOW()
       )
