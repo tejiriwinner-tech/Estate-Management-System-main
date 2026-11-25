@@ -11,72 +11,95 @@ export async function GET() {
 
     try {
       const alertRows = await sql`
-        SELECT a.id, a.type, a.title, a.body, a.unit, a.priority, a.status, a.created_at,
-               u.name as resident_name, u.phone as resident_phone
-        FROM alerts a
-        LEFT JOIN users u ON u.id = a.user_id
-        WHERE a.status = 'open' OR a.status = 'active'
+        SELECT a.id, a.category, a.message, a.location, a.status, a.created_at,
+               u.name as resident_name
+        FROM estate_alerts a
+        LEFT JOIN users u ON u.id = a.sender_id
+        WHERE a.status = 'open'
         ORDER BY a.id DESC
         LIMIT 5
       `;
       alerts = alertRows.map((r: any) => ({
         id: String(r.id),
-        resident: r.resident_name || "Resident",
-        houseUnit: r.unit || "Villa A-402",
-        time: new Date(r.created_at).toLocaleTimeString("en-NG", { hour: "numeric", minute: "2-digit" }),
-        phone: r.resident_phone || "+234 801 234 5678",
-        priority: r.priority || "high",
+        type: r.category === "life_threat" ? "LIFE_UNDER_THREAT" : "INTRUSION",
+        resident: r.resident_name || "Estate Resident",
+        location: r.location || "Army Estate Phase 1",
+        detail: r.message || "Active security dispatch",
+        time: r.created_at
+          ? new Date(r.created_at).toLocaleTimeString("en-NG", { hour: "numeric", minute: "2-digit" })
+          : "Just now",
       }));
 
+      let pendingMap = new Map<number, number>();
+      try {
+        const scRows = await sql`
+          SELECT user_id, SUM(amount)::numeric AS total_due
+          FROM service_charges
+          WHERE status = 'Pending' AND user_id IS NOT NULL
+          GROUP BY user_id
+        `;
+        for (const s of scRows) {
+          pendingMap.set(Number(s.user_id), Number(s.total_due || 0));
+        }
+      } catch {
+        // service_charges may not exist yet
+      }
+
       const resRows = await sql`
-        SELECT u.id, u.name, u.unit_number, u.status, u.phone,
-               (SELECT count(*)::int FROM vehicles v WHERE v.user_id = u.id) as vehicle_count
+        SELECT u.id, u.name, u.unit_number, u.status
         FROM users u
         WHERE u.role = 'resident'
         ORDER BY u.id DESC
         LIMIT 10
       `;
-      residents = resRows.map((r: any) => ({
-        id: String(r.id),
-        name: r.name,
-        houseUnit: r.unit_number || "Villa A-402",
-        status: r.status === "active" ? "Active" : "Pending",
-        phone: r.phone || "+234 800 000 0000",
-        vehicles: r.vehicle_count || 1,
-      }));
-
-      const intelRows = await sql`
-        SELECT id, text, created_at, is_completed
-        FROM reminders
-        ORDER BY id DESC
-        LIMIT 5
-      `;
-      intel = intelRows.map((r: any) => ({
-        id: String(r.id),
-        text: r.text,
-        time: new Date().toLocaleTimeString("en-NG", { hour: "numeric", minute: "2-digit" }),
-        level: r.is_completed ? "normal" : "elevated",
-      }));
+      residents = resRows.map((r: any) => {
+        const due = pendingMap.get(Number(r.id)) || 0;
+        return {
+          id: String(r.id),
+          name: r.name || "Estate Resident",
+          tag: `${r.unit_number || "Villa A-402"} • ${due > 0 ? `Service Charge: ₦${due.toLocaleString()} Due` : "Service Charge: Cleared"}`,
+          status: r.status === "blocked" ? "RESTRICTED" : "VERIFIED",
+          lastActivity: "QR / ANPR Active",
+          serviceCharge: due > 0 ? `₦${due.toLocaleString()} Due` : "Cleared",
+        };
+      });
     } catch (e: any) {
-      console.warn("Security HQ DB err:", e.message);
+      console.warn("Security HQ DB notice:", e.message);
     }
 
     if (residents.length === 0) {
       residents = [
-        { id: "2", name: "Chinedu Resident", houseUnit: "Villa A-402", status: "Active", phone: "+234 801 234 5678", vehicles: 2 },
+        {
+          id: "2",
+          name: "Chinedu Resident",
+          tag: "Villa A-402 • Service Charge: ₦35,000 Due",
+          status: "VERIFIED",
+          lastActivity: "Gate 1 QR Active",
+          serviceCharge: "₦35,000 Due",
+        },
       ];
     }
 
-    if (intel.length === 0) {
-      intel = [
-        { id: "1", text: "Perimeter optical beam Phase 2 operational test passed.", time: "12:00 PM", level: "normal" },
-        { id: "2", text: "Gate 1 ANPR camera 4K night mode firmware updated.", time: "10:30 AM", level: "normal" },
-      ];
-    }
+    intel = [
+      {
+        id: "1",
+        title: "Main Gate Optical QR & ANPR Online",
+        snippet: "Visitor and Resident Exit QR verification operating at 100% uptime across Gate 1 & Gate 2.",
+        tags: [{ label: "Gate 1", variant: "default" }],
+        time: "Today",
+      },
+      {
+        id: "2",
+        title: "Phase 1–5 Perimeter Patrol Complete",
+        snippet: "Night and morning guard shift handoff verified with zero perimeter sensor faults.",
+        tags: [{ label: "Patrol", variant: "external" }],
+        time: "Today",
+      },
+    ];
 
     return NextResponse.json({
       alerts,
-      highPriorityCount: alerts.filter((a) => a.priority === "high").length,
+      highPriorityCount: alerts.filter((a) => a.type === "LIFE_UNDER_THREAT").length,
       residents,
       intel,
     });

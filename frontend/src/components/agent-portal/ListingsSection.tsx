@@ -124,8 +124,13 @@ export function ListingsSection({ listings, onStatusChange, onAdd }: ListingsSec
               key={l.id}
               className="flex flex-col overflow-hidden rounded-xl border border-slate-100 transition-shadow hover:shadow-md"
             >
-              <div className={`relative flex h-28 items-center justify-center bg-gradient-to-br ${TONES[i % TONES.length]}`}>
-                <Home className="h-10 w-10 text-white/80" strokeWidth={1.5} />
+              <div className={`relative flex h-32 items-center justify-center overflow-hidden bg-gradient-to-br ${TONES[i % TONES.length]}`}>
+                {l.image ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={l.image} alt={l.title} className="h-full w-full object-cover" />
+                ) : (
+                  <Home className="h-10 w-10 text-white/80" strokeWidth={1.5} />
+                )}
                 {l.approval && l.approval !== "approved" && (
                   <span className={`absolute right-3 top-3 rounded-full px-2.5 py-1 text-[10px] font-bold ${l.approval === "pending" ? "bg-amber-100 text-amber-800" : "bg-rose-100 text-rose-800"}`}>
                     {l.approval === "pending" ? "Awaiting approval" : "Rejected"}
@@ -149,6 +154,12 @@ export function ListingsSection({ listings, onStatusChange, onAdd }: ListingsSec
                 <p className="mt-3 text-lg font-extrabold text-primary">
                   {formatNaira(l.rentPerYear)}
                   <span className="text-xs font-semibold text-slate-400"> / year</span>
+                </p>
+                <p className="mt-0.5 text-[11px] font-semibold text-slate-500">
+                  Estate Service Charge:{" "}
+                  <strong className="text-slate-700">
+                    {formatNaira(l.serviceCharge ?? 420000)}/yr
+                  </strong>
                 </p>
 
                 <div className="mt-2 flex items-center gap-4 text-xs font-semibold text-slate-600">

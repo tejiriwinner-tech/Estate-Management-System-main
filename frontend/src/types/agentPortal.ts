@@ -28,6 +28,7 @@ export interface Listing {
   /** Admin review state. Only approved listings appear on the public landing page. */
   approval?: ApprovalStatus;
   listingType?: ListingKind;
+  serviceCharge?: number;
   image?: string;
   images?: string[];
 }
@@ -79,6 +80,7 @@ export interface NewListingInput {
   baths: number;
   rentPerYear: number;
   listingType?: ListingKind;
+  serviceCharge?: number;
   image?: string;
   images?: string[];
 }

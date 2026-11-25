@@ -23,6 +23,7 @@ import { useResident } from "@/lib/resident/useResident";
 import { readSession } from "@/components/auth/session";
 import { QrCodeDisplay } from "@/components/qr/QrCodeDisplay";
 import { ResidentGatePassModal } from "@/components/qr/ResidentGatePassModal";
+import { ResidentServiceChargePanel } from "@/components/resident/ResidentServiceChargePanel";
 
 interface PassModalData {
   visitorName: string;
@@ -417,6 +418,22 @@ export default function ResidentDashboard() {
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* My Unit Service Charges Card */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between px-1">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                Unit Service Charge Assessment
+              </span>
+              <Link
+                href="/resident/service-charges"
+                className="text-xs font-bold text-[#B22222] hover:underline"
+              >
+                View Full Ledger →
+              </Link>
+            </div>
+            <ResidentServiceChargePanel scope="resident" compact />
           </div>
 
           {/* Household Gate Activity Summary */}

@@ -10,6 +10,7 @@ export interface ResidentRow {
   tag: string;
   status: "RESTRICTED" | "ACTIVE_EMERGENCY" | "PENDING_EXIT" | "VERIFIED";
   lastActivity: string;
+  serviceCharge?: string;
   avatarUrl?: string;
 }
 
@@ -54,13 +55,14 @@ export default function ResidentAccessTable({ rows }: ResidentAccessTableProps) 
             <tr className="border-b border-[--color-border] bg-[--color-bg]">
               <th className="text-left text-xs font-semibold text-[--color-text-muted] px-5 py-2.5">RESIDENT / USER</th>
               <th className="text-left text-xs font-semibold text-[--color-text-muted] px-4 py-2.5">STATUS</th>
+              <th className="text-left text-xs font-semibold text-[--color-text-muted] px-4 py-2.5">SERVICE CHARGE</th>
               <th className="text-left text-xs font-semibold text-[--color-text-muted] px-4 py-2.5">LAST ACTIVITY</th>
-              <th className="text-left text-xs font-semibold text-[--color-text-muted] px-4 py-2.5">ACTIONS</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[--color-border]">
             {visible.map((row) => {
-              const s = STATUS_STYLES[row.status];
+              const s = STATUS_STYLES[row.status] || STATUS_STYLES.VERIFIED;
+              const isCleared = !row.serviceCharge || row.serviceCharge === "Cleared";
               return (
                 <tr key={row.id} className="hover:bg-gray-50 transition-colors">
                   {/* Name */}
@@ -81,12 +83,21 @@ export default function ResidentAccessTable({ rows }: ResidentAccessTableProps) 
                       {s.label}
                     </span>
                   </td>
+                  {/* Service Charge Standing */}
+                  <td className="px-4 py-3">
+                    <span
+                      className={cn(
+                        "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap border",
+                        isCleared
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                          : "bg-amber-50 text-amber-800 border-amber-200"
+                      )}
+                    >
+                      {row.serviceCharge || "Cleared"}
+                    </span>
+                  </td>
                   {/* Last activity */}
                   <td className="px-4 py-3 text-xs text-[--color-text-muted] whitespace-nowrap">{row.lastActivity}</td>
-                  {/* Actions */}
-                  <td className="px-4 py-3">
-                    <button className="text-xs font-semibold text-[--color-primary] hover:underline">Profile</button>
-                  </td>
                 </tr>
               );
             })}

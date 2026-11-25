@@ -6,6 +6,7 @@ import { MetricCards } from "@/components/finance/MetricCards";
 import { RevenueHistoryChart } from "@/components/finance/RevenueHistoryChart";
 import { RevenueByServiceChart } from "@/components/finance/RevenueByServiceChart";
 import { RevenueBreakdownsTable } from "@/components/finance/RevenueBreakdownsTable";
+import { AdminServiceChargesView } from "@/components/admin/members/AdminServiceChargesView";
 import { MobileMetricCards } from "@/components/mobile/MobileMetricCards";
 import { MobileRevenueTrends } from "@/components/mobile/MobileRevenueTrends";
 import { MobileTransactionsList } from "@/components/mobile/MobileTransactionsList";
@@ -77,6 +78,10 @@ export function FinanceOverviewView() {
         </div>
 
         <RevenueBreakdownsTable breakdowns={desktopData.breakdowns} />
+
+        <div className="pt-2">
+          <AdminServiceChargesView />
+        </div>
       </div>
     </div>
   );

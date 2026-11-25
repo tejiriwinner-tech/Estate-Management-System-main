@@ -20,6 +20,7 @@ interface FormState {
   beds: string;
   baths: string;
   rent: string;
+  serviceCharge: string;
   listingType: ListingKind;
   image: string;
 }
@@ -32,6 +33,7 @@ const EMPTY: FormState = {
   beds: "2",
   baths: "2",
   rent: "",
+  serviceCharge: "420000",
   listingType: "rent",
   image: "",
 };
@@ -101,6 +103,7 @@ export function AddListingModal({ isOpen, onClose, onCreate }: AddListingModalPr
       beds: Number(form.beds),
       baths: Number(form.baths),
       rentPerYear: Number(form.rent.replace(/[,\s]/g, "")),
+      serviceCharge: Number(form.serviceCharge.replace(/[,\s]/g, "")) || 420000,
       listingType: form.listingType,
       image: form.image || undefined,
     });
@@ -162,15 +165,18 @@ export function AddListingModal({ isOpen, onClose, onCreate }: AddListingModalPr
             <input id="l-address" value={form.address} onChange={(e) => update("address", e.target.value)} placeholder="e.g. Block C12, Admiralty Way" className={cls("address")} />
           </Field>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <Field label="Bedrooms" htmlFor="l-beds" error={errors.beds}>
               <input id="l-beds" type="number" min={1} max={12} value={form.beds} onChange={(e) => update("beds", e.target.value)} className={cls("beds")} />
             </Field>
             <Field label="Bathrooms" htmlFor="l-baths" error={errors.baths}>
               <input id="l-baths" type="number" min={1} max={12} value={form.baths} onChange={(e) => update("baths", e.target.value)} className={cls("baths")} />
             </Field>
-            <Field label={form.listingType === "rent" ? "Rent / year (₦)" : "Price (₦)"} htmlFor="l-rent" error={errors.rent}>
+            <Field label={form.listingType === "rent" ? "Rent / yr (₦)" : "Price (₦)"} htmlFor="l-rent" error={errors.rent}>
               <input id="l-rent" inputMode="numeric" value={form.rent} onChange={(e) => update("rent", e.target.value)} placeholder="3,500,000" className={cls("rent")} />
+            </Field>
+            <Field label="Service Charge / yr (₦)" htmlFor="l-sc">
+              <input id="l-sc" inputMode="numeric" value={form.serviceCharge} onChange={(e) => update("serviceCharge", e.target.value)} placeholder="420,000" className={cls("serviceCharge")} />
             </Field>
           </div>
 

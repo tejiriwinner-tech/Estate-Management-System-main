@@ -7,6 +7,7 @@ import {
   Car,
   PlaneTakeoff,
   Users,
+  Receipt,
 } from "lucide-react";
 import { SummaryCard } from "@/components/admin/dashboard/SummaryCard";
 import { RemindersWidget } from "@/components/admin/dashboard/RemindersWidget";
@@ -15,6 +16,7 @@ import { CheckInOutDashboardView } from "@/components/admin/access/CheckInOutDas
 import { VehicleManagementView } from "@/components/admin/vehicles/VehicleManagementView";
 import { AwayNotificationView } from "@/components/admin/away/AwayNotificationView";
 import { EstateMembersView } from "@/components/admin/members/EstateMembersView";
+import { AdminServiceChargesView } from "@/components/admin/members/AdminServiceChargesView";
 import { MetricCardData } from "@/types/admin/dashboard";
 import { cn } from "@/lib/admin/utils";
 
@@ -52,7 +54,7 @@ const defaultMetrics: MetricCardData[] = [
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<
-    "members" | "away" | "vehicles" | "checkin" | "overview"
+    "members" | "service_charges" | "away" | "vehicles" | "checkin" | "overview"
   >("members");
   const [metrics, setMetrics] = useState<MetricCardData[]>(defaultMetrics);
 
@@ -81,6 +83,20 @@ export default function DashboardPage() {
         >
           <Users className="w-4 h-4" />
           <span>Members of Estate</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("service_charges")}
+          className={cn(
+            "flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all",
+            activeTab === "service_charges"
+              ? "bg-primary text-white shadow-xs"
+              : "text-muted hover:text-dark hover:bg-surface-subtle"
+          )}
+        >
+          <Receipt className="w-4 h-4" />
+          <span>Service Charges</span>
         </button>
 
         <button
@@ -142,6 +158,8 @@ export default function DashboardPage() {
 
       {activeTab === "members" ? (
         <EstateMembersView />
+      ) : activeTab === "service_charges" ? (
+        <AdminServiceChargesView />
       ) : activeTab === "away" ? (
         <AwayNotificationView />
       ) : activeTab === "vehicles" ? (

@@ -8,6 +8,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { getOriginalSiteUrl, useSiteSettings } from "./site-settings";
 import { StoreAvailabilityControl } from "./store-screens";
+import { ResidentServiceChargePanel } from "@/components/resident/ResidentServiceChargePanel";
 
 const iconFiles = {
   chevron: "d5eaf6f4-5173-4beb-846a-6b5eb8fa18a8",
@@ -622,6 +623,11 @@ export default function StoreDashboard() {
                     variant="blue"
                   />
                 </div>
+              </div>
+
+              {/* Commercial Shop Service Charge Panel */}
+              <div style={{ marginTop: "24px", marginBottom: "24px" }}>
+                <ResidentServiceChargePanel scope="store" compact />
               </div>
 
               <div className="details-grid">
