@@ -41,7 +41,7 @@ export default function StaffPage() {
   const router = useRouter();
   const [viewMode, setViewMode] = useState<
     "staffs_list" | "list" | "table" | "grid"
-  >("staffs_list");
+  >("grid");
   const [staffList, setStaffList] = useState<StaffMember[]>([]);
   const [metrics, setMetrics] = useState<StaffMetrics>({ total_staff: 0, active: 0, active_pct: "0%", suspended: 0, new_joining: 0 });
   const [deptAnalytics, setDeptAnalytics] = useState<DepartmentAnalyticsData>({ departments: [] });
@@ -238,48 +238,6 @@ export default function StaffPage() {
       {/* ================= TOP VIEW & MODULE SWITCHER ================= */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-1.5 p-1.5 bg-surface-card border border-border/70 rounded-2xl w-fit shadow-xs">
-          <button
-            type="button"
-            onClick={() => setViewMode("staffs_list")}
-            className={cn(
-              "flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all",
-              viewMode === "staffs_list"
-                ? "bg-primary text-white shadow-xs"
-                : "text-muted hover:text-dark hover:bg-surface-subtle"
-            )}
-          >
-            <ListChecks className="w-4 h-4" />
-            <span>Staffs List</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setViewMode("list")}
-            className={cn(
-              "flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all",
-              viewMode === "list"
-                ? "bg-primary text-white shadow-xs"
-                : "text-muted hover:text-dark hover:bg-surface-subtle"
-            )}
-          >
-            <Rows3 className="w-4 h-4" />
-            <span>Staff Cards</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setViewMode("table")}
-            className={cn(
-              "flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all",
-              viewMode === "table"
-                ? "bg-primary text-white shadow-xs"
-                : "text-muted hover:text-dark hover:bg-surface-subtle"
-            )}
-          >
-            <Table2 className="w-4 h-4" />
-            <span>Staff Table</span>
-          </button>
-
           <button
             type="button"
             onClick={() => setViewMode("grid")}

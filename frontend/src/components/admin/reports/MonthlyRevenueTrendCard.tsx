@@ -4,35 +4,38 @@ import React, { useState } from "react";
 import { MonthlyRevenuePoint } from "@/types/admin/reports";
 
 interface MonthlyRevenueTrendCardProps {
-  points: MonthlyRevenuePoint[];
+  points: (MonthlyRevenuePoint & { revenue?: number })[];
 }
-
-const Y_TICKS = [1.6, 1.4, 1.2, 1.0, 0.8, 0.6, 0.4, 0.2, 0.0];
 
 export function MonthlyRevenueTrendCard({
   points,
 }: MonthlyRevenueTrendCardProps) {
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
-  // SVG coordinate space
+  const normalized = points.map((pt) => ({
+    ...pt,
+    val: Number(pt.valueM ?? pt.revenue ?? 0),
+  }));
+
+  const rawMax = Math.max(1.6, ...normalized.map((p) => p.val));
+  const maxVal = Math.ceil(rawMax / 4) * 4 || 16;
+  const ticks = [maxVal, maxVal * 0.75, maxVal * 0.5, maxVal * 0.25, 0];
+
   const width = 660;
   const height = 240;
   const padLeft = 10;
   const padRight = 10;
-  const padTop = 8;
-  const padBottom = 10;
+  const padTop = 12;
+  const padBottom = 12;
   const plotW = width - padLeft - padRight;
   const plotH = height - padTop - padBottom;
-  const maxVal = 1.6;
 
-  const coords = points.map((pt, i) => {
-    const x =
-      padLeft + (i / Math.max(1, points.length - 1)) * plotW;
-    const y = padTop + (1 - pt.valueM / maxVal) * plotH;
+  const coords = normalized.map((pt, i) => {
+    const x = padLeft + (i / Math.max(1, normalized.length - 1)) * plotW;
+    const y = padTop + (1 - Math.min(1, pt.val / maxVal)) * plotH;
     return { x, y, pt };
   });
 
-  // Smooth cubic bezier path through points
   const buildSmoothPath = () => {
     if (coords.length === 0) return "";
     let d = `M ${coords[0].x.toFixed(1)} ${coords[0].y.toFixed(1)}`;
@@ -43,9 +46,7 @@ export function MonthlyRevenueTrendCard({
       const cy1 = p0.y;
       const cx2 = p0.x + (p1.x - p0.x) * 0.55;
       const cy2 = p1.y;
-      d += ` C ${cx1.toFixed(1)} ${cy1.toFixed(1)}, ${cx2.toFixed(
-        1
-      )} ${cy2.toFixed(1)}, ${p1.x.toFixed(1)} ${p1.y.toFixed(1)}`;
+      d += ` C ${cx1.toFixed(1)} ${cy1.toFixed(1)}, ${cx2.toFixed(1)} ${cy2.toFixed(1)}, ${p1.x.toFixed(1)} ${p1.y.toFixed(1)}`;
     }
     return d;
   };
@@ -53,16 +54,11 @@ export function MonthlyRevenueTrendCard({
   const linePath = buildSmoothPath();
   const areaPath =
     coords.length > 0
-      ? `${linePath} L ${coords[coords.length - 1].x.toFixed(1)} ${(
-          padTop + plotH
-        ).toFixed(1)} L ${coords[0].x.toFixed(1)} ${(padTop + plotH).toFixed(
-          1
-        )} Z`
+      ? `${linePath} L ${coords[coords.length - 1].x.toFixed(1)} ${(padTop + plotH).toFixed(1)} L ${coords[0].x.toFixed(1)} ${(padTop + plotH).toFixed(1)} Z`
       : "";
 
   return (
     <div className="bg-surface-card rounded-2xl border border-border/80 p-5 sm:p-6 shadow-xs flex flex-col justify-between h-full">
-      {/* Card Header */}
       <div className="flex items-center justify-between gap-3 mb-5">
         <h2 className="text-base sm:text-lg font-extrabold text-dark tracking-tight">
           Monthly Revenue Trend
@@ -74,16 +70,13 @@ export function MonthlyRevenueTrendCard({
         </div>
       </div>
 
-      {/* Chart Container */}
       <div className="flex items-stretch gap-2 sm:gap-3">
-        {/* Y-Axis Labels */}
-        <div className="flex flex-col justify-between py-1 text-[10px] sm:text-[11px] font-bold text-primary select-none shrink-0 text-right w-11">
-          {Y_TICKS.map((tick) => (
+        <div className="flex flex-col justify-between py-1 text-[10px] sm:text-[11px] font-bold text-primary select-none shrink-0 text-right w-12">
+          {ticks.map((tick) => (
             <span key={tick}>₦{tick.toFixed(1)}M</span>
           ))}
         </div>
 
-        {/* Plot Area + X-Axis Labels */}
         <div className="flex-1 min-w-0 flex flex-col">
           <div className="relative w-full h-[210px] sm:h-[240px]">
             <svg
@@ -92,21 +85,14 @@ export function MonthlyRevenueTrendCard({
               className="w-full h-full overflow-visible"
             >
               <defs>
-                <linearGradient
-                  id="monthlyRevenueAreaGrad"
-                  x1="0"
-                  y1="0"
-                  x2="0"
-                  y2="1"
-                >
+                <linearGradient id="monthlyRevenueAreaGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="#B22222" stopOpacity="0.22" />
                   <stop offset="65%" stopColor="#B22222" stopOpacity="0.06" />
                   <stop offset="100%" stopColor="#B22222" stopOpacity="0.0" />
                 </linearGradient>
               </defs>
 
-              {/* Horizontal Grid Lines */}
-              {Y_TICKS.map((tick) => {
+              {ticks.map((tick) => {
                 const y = padTop + (1 - tick / maxVal) * plotH;
                 return (
                   <line
@@ -121,23 +107,20 @@ export function MonthlyRevenueTrendCard({
                 );
               })}
 
-              {/* Gradient Area under Curve */}
-              <path d={areaPath} fill="url(#monthlyRevenueAreaGrad)" />
+              {areaPath && <path d={areaPath} fill="url(#monthlyRevenueAreaGrad)" />}
+              {linePath && (
+                <path
+                  d={linePath}
+                  fill="none"
+                  stroke="#B22222"
+                  strokeWidth="4.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              )}
 
-              {/* Primary Smooth Line */}
-              <path
-                d={linePath}
-                fill="none"
-                stroke="#B22222"
-                strokeWidth="5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-
-              {/* Elliptical / Pill Data Markers matching Figma */}
               {coords.map(({ x, y, pt }, idx) => {
                 const isHovered = hoveredIdx === idx;
-                if (!pt.showMarker && !isHovered) return null;
                 return (
                   <g
                     key={pt.month}
@@ -145,36 +128,37 @@ export function MonthlyRevenueTrendCard({
                     onMouseEnter={() => setHoveredIdx(idx)}
                     onMouseLeave={() => setHoveredIdx(null)}
                   >
-                    <ellipse
+                    <circle
                       cx={x}
                       cy={y}
-                      rx={isHovered ? 9 : 7}
-                      ry={isHovered ? 5 : 3.5}
-                      fill="#B22222"
+                      r={isHovered ? 7 : pt.showMarker ? 4.5 : 3}
+                      fill={isHovered ? "#C9A227" : "#B22222"}
+                      stroke="#FFFFFF"
+                      strokeWidth="2"
                     />
                   </g>
                 );
               })}
             </svg>
 
-            {/* Hover Tooltip */}
             {hoveredIdx !== null && coords[hoveredIdx] && (
               <div
                 style={{
                   left: `${(coords[hoveredIdx].x / width) * 100}%`,
-                  top: `${Math.max(0, (coords[hoveredIdx].y / height) * 100 - 16)}%`,
+                  top: `${Math.max(8, (coords[hoveredIdx].y / height) * 100 - 14)}%`,
                 }}
                 className="absolute -translate-x-1/2 -translate-y-full pointer-events-none px-2.5 py-1 rounded-lg bg-dark text-white text-[11px] font-bold shadow-md whitespace-nowrap z-10"
               >
-                {coords[hoveredIdx].pt.month}: ₦
-                {coords[hoveredIdx].pt.valueM.toFixed(2)}M
+                {coords[hoveredIdx].pt.month}: ₦{coords[hoveredIdx].pt.val.toFixed(1)}M
               </div>
             )}
           </div>
 
-          {/* X-Axis Labels */}
-          <div className="grid grid-cols-12 pt-2 text-[10px] sm:text-[11px] font-semibold text-primary text-center select-none">
-            {points.map((pt, idx) => (
+          <div
+            className="grid pt-2 text-[10px] sm:text-[11px] font-semibold text-primary text-center select-none"
+            style={{ gridTemplateColumns: `repeat(${Math.max(1, normalized.length)}, minmax(0, 1fr))` }}
+          >
+            {normalized.map((pt, idx) => (
               <button
                 key={pt.month}
                 type="button"

@@ -18,7 +18,8 @@ export default function IntelligenceFeedPage() {
     items: FeedItem[];
     stats: { urgentReports: number; resolvedToday: number; pendingReview: number };
   }>("/security/intelligence", { items: [], stats: { urgentReports: 0, resolvedToday: 0, pendingReview: 0 } });
-  const items = data.items;
+  const items = data?.items ?? [];
+  const stats = data?.stats ?? { urgentReports: 0, resolvedToday: 0, pendingReview: 0 };
 
   const filtered = items.filter((item) => {
     if (urgency !== "All Levels" && (urgency === "Urgent") !== (item.status === "URGENT")) return false;
@@ -45,7 +46,11 @@ export default function IntelligenceFeedPage() {
       </div>
 
       {/* Stats */}
-      <IntelStatCards urgentReports={data.stats.urgentReports} resolvedToday={data.stats.resolvedToday} pendingReview={data.stats.pendingReview} />
+      <IntelStatCards
+        urgentReports={stats.urgentReports}
+        resolvedToday={stats.resolvedToday}
+        pendingReview={stats.pendingReview}
+      />
 
       {/* Filter bar */}
       <div className="flex items-center justify-between gap-3 flex-wrap">

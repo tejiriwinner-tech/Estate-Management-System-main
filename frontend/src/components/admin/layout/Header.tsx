@@ -80,15 +80,6 @@ export function Header({ onMenuToggle }: HeaderProps) {
           </span>
         </div>
 
-        {/* Operational Badge */}
-        <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-subtle border border-border text-[11px] font-bold text-dark tracking-wider">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
-          </span>
-          <span>OPERATIONAL</span>
-        </div>
-
         <NotificationPopover unread={summary.unread_total} onSeeAll={() => router.push("/admin/messages?tab=alerts")} onChanged={refresh} />
 
         {/* User Info & Avatar */}

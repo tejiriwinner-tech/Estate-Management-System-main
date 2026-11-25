@@ -23,22 +23,24 @@ export async function GET() {
       {
         id: "INT-101",
         title: "Perimeter Motion Detection - Zone C",
-        description: "Infrared beam breach triggered near Phase 2 fence line. Patrol unit dispatched.",
+        snippet: "Infrared beam breach triggered near Phase 2 fence line. Patrol unit dispatched.",
         category: "PERIMETER_BREACH",
         status: "URGENT",
-        time: "12 mins ago",
+        timeAgo: "12 mins ago",
+        location: "Phase 2 Perimeter",
         reportedBy: "Sensor Array #4",
         resolved: false,
       },
       {
         id: "INT-102",
         title: "Unrecognized Visitor Loitering",
-        description: "Subject without visitor tag observed near Commercial Hub ATM pavilion.",
+        snippet: "Subject without visitor tag observed near Commercial Hub ATM pavilion.",
         category: "SUSPICIOUS_ACTIVITY",
-        status: "ELEVATED",
-        time: "45 mins ago",
+        status: "INVESTIGATING",
+        timeAgo: "45 mins ago",
+        location: "Commercial Hub",
         reportedBy: "Guard Alpha",
-        resolved: true,
+        resolved: false,
       },
     ];
 
@@ -46,21 +48,28 @@ export async function GET() {
       ? alerts.map((a) => ({
           id: `INT-${a.id}`,
           title: a.category === "life_threat" ? `Emergency: ${a.location || "Estate"}` : `Intel: ${a.location || "Lincoln Estate"}`,
-          description: a.message,
+          snippet: a.message || "Field telemetry report logged.",
           category: a.category === "life_threat" ? "PERIMETER_BREACH" : "SUSPICIOUS_ACTIVITY",
-          status: a.category === "life_threat" ? "URGENT" : (a.status === "open" ? "ELEVATED" : "RESOLVED"),
-          time: a.created_at ? new Date(a.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Recently",
+          status: a.status === "resolved" ? "RESOLVED" : a.category === "life_threat" ? "URGENT" : "ACTION_REQUIRED",
+          timeAgo: a.created_at ? new Date(a.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Recently",
+          location: a.location || "Lincoln Estate",
           reportedBy: a.sender_name || "Security Officer",
           resolved: a.status === "resolved",
         }))
       : defaultFeed;
 
+    const urgentReports = items.filter((i) => i.status === "URGENT").length;
+    const resolvedToday = items.filter((i) => i.status === "RESOLVED").length;
+    const pendingReview = items.filter((i) => i.status !== "RESOLVED").length;
+
     return NextResponse.json({
       data: {
         items,
-        activeSensors: 16,
-        anprAccuracy: "99.4%",
-        openIncidents: items.filter((i) => !i.resolved).length,
+        stats: {
+          urgentReports,
+          resolvedToday,
+          pendingReview,
+        },
       },
     });
   } catch (err: any) {

@@ -385,10 +385,6 @@ export function StoreShell({
             <input aria-label="Search products" name="search" placeholder="Search products, orders, or merchants..." />
           </form>
           <div className="topbar-actions">
-            <div style={{ display: "flex", alignItems: "center", gap: "6px", padding: "4px 10px", borderRadius: "9999px", background: "#f3f4f6", border: "1px solid #e5e7eb", fontSize: "11px", fontWeight: "700", color: "#1f2937" }}>
-              <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#C9A227", display: "inline-block" }} />
-              <span>OPERATIONAL</span>
-            </div>
             <details className="notification-menu">
               <summary aria-label="Notifications"><ShellIcon name="notification" /><span className="notification-dot" /></summary>
               <div className="notification-popover"><strong>You’re all caught up</strong><span>New store activity will appear here.</span></div>

@@ -307,11 +307,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
         {/* Security / System Footer */}
         <div className="p-4 border-t border-border/60">
-          <div className="flex items-center gap-2.5 px-3 py-2 mb-2 rounded-lg bg-surface-subtle text-[11px] font-medium text-muted">
-            <ShieldCheck className="w-4 h-4 text-accent" />
-            <span>Lincoln Guard v2.4 Active</span>
-          </div>
-
           <button
             onClick={() => {
               if (confirm("Are you sure you want to log out?")) {

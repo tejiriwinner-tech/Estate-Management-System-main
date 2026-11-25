@@ -101,13 +101,8 @@ export function ResidentShell({ children }: { children: React.ReactNode }) {
           <Search className="absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
         </label>
 
-        {/* Right Status & Actions */}
+        {/* Right Actions */}
         <div className="flex items-center gap-4">
-          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200/60 text-[11px] font-bold text-emerald-800 shadow-2xs">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>SECURED & MONITORED</span>
-          </div>
-
           <NotificationPopover
             unread={summary.unread_total}
             onChanged={refresh}

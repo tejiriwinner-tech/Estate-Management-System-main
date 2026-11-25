@@ -1,19 +1,20 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const emailHeader = (req.headers.get("x-user-email") || "").toLowerCase().trim();
     let profile = {
       id: 2,
       name: "Chinedu Resident",
-      email: "resident@lincolnestate.ng",
+      email: emailHeader || "resident@lincolnestate.ng",
       phone: "+234 801 234 5678",
       unit_number: "Villa A-402",
-      avatar_url: null,
+      avatar_url: null as string | null,
       resident_code: "LE-RES-0402",
-      about: "Homeowner in Phase 1, Palm Crescent.",
+      about: "Homeowner in Army Estate Phase 1, Palm Crescent.",
       settings: {
         sms_notifications: true,
         email_notifications: true,
@@ -22,12 +23,19 @@ export async function GET() {
     };
 
     try {
-      const rows = await sql`
-        SELECT id, name, email, phone, unit_number, avatar_url, job_title
-        FROM users
-        WHERE role = 'resident'
-        LIMIT 1
-      `;
+      const rows = emailHeader
+        ? await sql`
+            SELECT id, name, email, phone, unit_number, avatar_url, job_title
+            FROM users
+            WHERE LOWER(email) = ${emailHeader}
+            LIMIT 1
+          `
+        : await sql`
+            SELECT id, name, email, phone, unit_number, avatar_url, job_title
+            FROM users
+            WHERE role = 'resident'
+            LIMIT 1
+          `;
       if (rows.length > 0) {
         const u = rows[0];
         profile = {
@@ -37,7 +45,8 @@ export async function GET() {
           email: u.email,
           phone: u.phone || profile.phone,
           unit_number: u.unit_number || profile.unit_number,
-          avatar_url: u.avatar_url,
+          avatar_url: u.avatar_url || null,
+          resident_code: `LE-RES-${String(u.id).padStart(4, "0")}`,
         };
       }
     } catch (e: any) {
@@ -50,20 +59,34 @@ export async function GET() {
   }
 }
 
-export async function PUT(req: Request) {
+export async function PUT(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, phone, unit_number, about } = body;
+    const { name, phone, unit_number, avatar_url, email } = body;
+    const targetEmail = (email || req.headers.get("x-user-email") || "").toLowerCase().trim();
 
     try {
-      await sql`
-        UPDATE users
-        SET name = COALESCE(${name}, name),
-            phone = COALESCE(${phone}, phone),
-            unit_number = COALESCE(${unit_number}, unit_number),
-            updated_at = NOW()
-        WHERE role = 'resident'
-      `;
+      if (targetEmail) {
+        await sql`
+          UPDATE users
+          SET name = COALESCE(${name ?? null}, name),
+              phone = COALESCE(${phone ?? null}, phone),
+              unit_number = COALESCE(${unit_number ?? null}, unit_number),
+              avatar_url = COALESCE(${avatar_url ?? null}, avatar_url),
+              updated_at = NOW()
+          WHERE LOWER(email) = ${targetEmail}
+        `;
+      } else {
+        await sql`
+          UPDATE users
+          SET name = COALESCE(${name ?? null}, name),
+              phone = COALESCE(${phone ?? null}, phone),
+              unit_number = COALESCE(${unit_number ?? null}, unit_number),
+              avatar_url = COALESCE(${avatar_url ?? null}, avatar_url),
+              updated_at = NOW()
+          WHERE role = 'resident'
+        `;
+      }
     } catch (e: any) {
       console.error("Profile update error:", e.message);
     }

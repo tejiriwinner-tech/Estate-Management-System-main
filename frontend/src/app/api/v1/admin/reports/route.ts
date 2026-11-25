@@ -4,10 +4,10 @@ import { sql } from "@/lib/db";
 export async function GET() {
   try {
     const kpis = [
-      { label: "TOTAL BILLED", value: "₦142,500,000", change: "+12.4%", isPositive: true },
-      { label: "COLLECTED REVENUE", value: "₦128,400,000", change: "+8.1%", isPositive: true },
-      { label: "OUTSTANDING DUES", value: "₦14,100,000", change: "-4.3%", isPositive: true },
-      { label: "COLLECTION EFFICIENCY", value: "90.1%", change: "+2.5%", isPositive: true },
+      { id: "collection", label: "COLLECTION RATE", value: "90.1%", subtext: "+2.5% vs last month", trendType: "positive", iconType: "collection" },
+      { id: "revenue", label: "COLLECTED REVENUE", value: "₦128,400,000", subtext: "+8.1% vs last month", trendType: "positive", iconType: "revenue" },
+      { id: "top_service", label: "TOP REVENUE STREAM", value: "Service Charge", subtext: "55% of estate inflows", trendType: "positive", iconType: "top_service" },
+      { id: "laggard", label: "OUTSTANDING DUES", value: "₦14,100,000", subtext: "-4.3% vs last month", trendType: "positive", iconType: "laggard" },
     ];
 
     const lifeThreatAlerts = [
@@ -24,16 +24,32 @@ export async function GET() {
       data: {
         kpis,
         monthlyRevenue: [
-          { month: "Jan", revenue: 11.2 }, { month: "Feb", revenue: 12.5 },
-          { month: "Mar", revenue: 10.8 }, { month: "Apr", revenue: 14.1 },
-          { month: "May", revenue: 13.6 }, { month: "Jun", revenue: 15.2 },
+          { month: "Jan", valueM: 9.2, revenue: 9.2, showMarker: true },
+          { month: "Feb", valueM: 10.5, revenue: 10.5 },
+          { month: "Mar", valueM: 10.1, revenue: 10.1 },
+          { month: "Apr", valueM: 11.8, revenue: 11.8, showMarker: true },
+          { month: "May", valueM: 11.4, revenue: 11.4 },
+          { month: "Jun", valueM: 12.6, revenue: 12.6 },
+          { month: "Jul", valueM: 12.1, revenue: 12.1 },
+          { month: "Aug", valueM: 13.4, revenue: 13.4, showMarker: true },
+          { month: "Sep", valueM: 12.9, revenue: 12.9 },
+          { month: "Oct", valueM: 14.1, revenue: 14.1 },
+          { month: "Nov", valueM: 14.8, revenue: 14.8, showMarker: true },
+          { month: "Dec", valueM: 15.2, revenue: 15.2, showMarker: true },
         ],
         serviceShares: [
-          { name: "Service Charge", percentage: 55, color: "#dc2626" },
-          { name: "Power Tariff", percentage: 30, color: "#f59e0b" },
-          { name: "Security Levy", percentage: 15, color: "#10b981" },
+          { id: "service-charge", name: "Service Charge", percentage: 55, strokeColor: "#B22222", dotColorClass: "bg-[#B22222]" },
+          { id: "power-tariff", name: "Power Tariff", percentage: 25, strokeColor: "#C9A227", dotColorClass: "bg-[#C9A227]" },
+          { id: "security-levy", name: "Security Levy", percentage: 12, strokeColor: "#1E293B", dotColorClass: "bg-slate-800" },
+          { id: "sanitation", name: "Waste & Water", percentage: 8, strokeColor: "#10B981", dotColorClass: "bg-emerald-500" },
         ],
-        yearlyBars: [],
+        yearlyBars: [
+          { year: "2022", valueM: 84, isCurrent: false },
+          { year: "2023", valueM: 98, isCurrent: false },
+          { year: "2024", valueM: 115, isCurrent: false },
+          { year: "2025", valueM: 124, isCurrent: false },
+          { year: "2026", valueM: 142.5, isCurrent: true },
+        ],
         collection: {
           statusLabel: "HEALTHY",
           paidPercentage: 90,
@@ -42,8 +58,8 @@ export async function GET() {
           outstandingPercentage: 10,
         },
         defaulters: [
-          { unit: "Flat C-201", resident: "Emeka Okafor", amount: "₦450,000", daysOverdue: 24 },
-          { unit: "Villa D-104", resident: "Babajide Williams", amount: "₦320,000", daysOverdue: 18 },
+          { id: 1, unit: "Flat C-201", resident: "Emeka Okafor", amount: "₦450,000", daysOverdue: 24 },
+          { id: 2, unit: "Villa D-104", resident: "Babajide Williams", amount: "₦320,000", daysOverdue: 18 },
         ],
         mobileKpis: [],
         mobileTrendBars: [],

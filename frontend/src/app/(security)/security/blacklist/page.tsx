@@ -38,7 +38,9 @@ export default function BlacklistPage() {
   const [search, setSearch] = useState("");
   const [riskFilter, setRiskFilter] = useState("ALL");
   const [showFilter, setShowFilter] = useState(false);
-  const entries = data.entries;
+  const entries = data?.entries ?? [];
+  const watchlist = data?.watchlist ?? [];
+  const stats = data?.stats ?? { totalBlacklisted: 0, highRiskAlerts: 0, watchlistEntries: 0, clearedRemoved: 0 };
 
   const load = useCallback(async () => {
     try { setData(await securityFetch<BlacklistData>("/security/blacklist")); setError(null); }
@@ -113,7 +115,7 @@ export default function BlacklistPage() {
       )}
 
       {/* Stats */}
-      <BlacklistStatCards {...data.stats} />
+      <BlacklistStatCards {...stats} />
 
       {/* Search */}
       <div className="flex items-center gap-2 bg-white border border-[--color-border] rounded-lg px-3 py-2.5 w-full max-w-sm">
@@ -131,7 +133,7 @@ export default function BlacklistPage() {
       <BlacklistTable entries={filtered} onViewProfile={() => {}} />
 
       {/* Watchlist */}
-      <WatchlistAccounts accounts={data.watchlist.map(toWatchlist)} />
+      <WatchlistAccounts accounts={watchlist.map(toWatchlist)} />
 
       {/* FAB */}
       <button

@@ -79,12 +79,7 @@ export default function Sidebar() {
       </nav>
 
       {/* Footer Info & Logout */}
-      <div className="px-4 py-4 border-t border-gray-100 space-y-2">
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200/60 text-[10px] font-bold text-slate-600">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span>Lincoln Guard v2.4 Active</span>
-        </div>
-
+      <div className="px-4 py-4 border-t border-gray-100">
         <button
           onClick={() => {
             window.location.href = "/login";

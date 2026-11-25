@@ -41,13 +41,8 @@ export default function Header({ title, onMenuClick }: HeaderProps) {
         />
       </div>
 
-      {/* Right: Operational Status, Alert Bell, and Officer Profile */}
+      {/* Right: Alert Bell, and Officer Profile */}
       <div className="flex items-center gap-4">
-        <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200/60 text-[11px] font-bold text-emerald-800 shadow-2xs">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span>GATE 1 COMMAND • ONLINE</span>
-        </div>
-
         <NotificationPopover
           unread={summary.unread_total}
           onSeeAll={() => router.push("/security/messages?tab=alerts")}

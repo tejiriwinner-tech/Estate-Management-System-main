@@ -226,6 +226,32 @@ export default function StoreDashboard() {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [printingTransaction, setPrintingTransaction] = useState<Transaction | null>(null);
   const [isInvoicePrintReady, setIsInvoicePrintReady] = useState(false);
+  const [recentOrders, setRecentOrders] = useState([
+    { id: "ORD-4821", customer: "Chinedu Resident", unit: "Villa A-402", items: "2x Basmati Rice (5kg), 1x Eggs Crate", total: 28800, status: "Pending", time: "8 mins ago" },
+    { id: "ORD-4820", customer: "Amina Bello", unit: "Phase 2, Plot 14", items: "3x Surface Cleaner, 1x Olive Oil", total: 19400, status: "Preparing", time: "25 mins ago" },
+    { id: "ORD-4819", customer: "Tunde Bakare", unit: "Phase 1, Block C4", items: "1x Inverter Battery Distilled Water (10L)", total: 7500, status: "Out for Delivery", time: "1 hr ago" },
+  ]);
+  const [catalogPreview, setCatalogPreview] = useState<{ id: number; name: string; category: string; price: number; stock: number; image?: string }[]>([]);
+
+  useEffect(() => {
+    fetch("/api/v1/store/products")
+      .then((r) => r.json())
+      .then((j) => {
+        if (Array.isArray(j?.data)) setCatalogPreview(j.data.slice(0, 4));
+      })
+      .catch(() => {});
+  }, []);
+
+  const advanceOrderStatus = (orderId: string) => {
+    const flow = ["Pending", "Preparing", "Out for Delivery", "Delivered"];
+    setRecentOrders((prev) =>
+      prev.map((o) => {
+        if (o.id !== orderId) return o;
+        const idx = flow.indexOf(o.status);
+        return { ...o, status: flow[Math.min(flow.length - 1, idx + 1)] };
+      })
+    );
+  };
 
   useEffect(() => {
     document.title = `${settings.siteName || "Your business"} | Admin Dashboard`;
@@ -432,9 +458,9 @@ export default function StoreDashboard() {
           <label className="search-field">
             <span className="search-icon" aria-hidden="true" />
             <input
-              aria-label="Search transactions"
+              aria-label="Search orders and products"
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search transactions by service, invoice, or status..."
+              placeholder="Search orders, products, SKUs, or customers..."
               value={search}
             />
             {search && (
@@ -450,10 +476,6 @@ export default function StoreDashboard() {
           </label>
 
           <div className="topbar-actions">
-            <div style={{ display: "flex", alignItems: "center", gap: "6px", padding: "4px 10px", borderRadius: "9999px", background: "#f3f4f6", border: "1px solid #e5e7eb", fontSize: "11px", fontWeight: "700", color: "#1f2937" }}>
-              <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#C9A227", display: "inline-block" }} />
-              <span>OPERATIONAL</span>
-            </div>
             <Link
               aria-label="Messages & Notifications"
               className="notification-button"
@@ -508,19 +530,10 @@ export default function StoreDashboard() {
               <h1>Store Dashboard</h1>
             </div>
             <div className="heading-actions">
-              <button
-                className="button button--outline"
-                onClick={() =>
-                  openDialog(
-                    "Send payment reminder",
-                    `Copy a reminder for ${dashboard?.urgentAction?.title ?? "your overdue invoice"} and send it through your usual customer channel.`,
-                  )
-                }
-                type="button"
-              >
-                <Icon name="reminder" size={16} />
-                <span>Send Reminder</span>
-              </button>
+              <Link className="button button--outline" href="/store-app/orders">
+                <Icon name="orders" size={16} />
+                <span>Manage Orders</span>
+              </Link>
               <Link className="button button--primary" href="/store-app/products">
                 <Icon name="add" size={17} />
                 <span>New Product</span>
@@ -623,6 +636,117 @@ export default function StoreDashboard() {
                     variant="blue"
                   />
                 </div>
+              </div>
+
+              {/* E-Commerce Fulfillment & Top Catalog Strip */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "20px", marginTop: "24px" }}>
+                <section className="panel" style={{ padding: "20px" }}>
+                  <div className="panel-heading" style={{ marginBottom: "14px" }}>
+                    <div>
+                      <h2 style={{ margin: 0 }}>Recent Customer Orders</h2>
+                      <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#64748b" }}>
+                        Fulfill resident marketplace orders across Phases 1–5
+                      </p>
+                    </div>
+                    <Link className="text-button" href="/store-app/orders">
+                      All Orders <Icon name="external" size={12} />
+                    </Link>
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                    {recentOrders.map((order) => (
+                      <div
+                        key={order.id}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          gap: "12px",
+                          padding: "12px",
+                          borderRadius: "12px",
+                          border: "1px solid #e2e8f0",
+                          background: "#f8fafc",
+                        }}
+                      >
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <strong style={{ fontSize: "12px", fontFamily: "monospace", color: "#0f172a" }}>{order.id}</strong>
+                            <span style={{ fontSize: "11px", fontWeight: 700, color: "#B22222" }}>{order.unit}</span>
+                            <span style={{ fontSize: "11px", color: "#94a3b8" }}>{order.time}</span>
+                          </div>
+                          <p style={{ margin: "3px 0 0", fontSize: "12px", fontWeight: 600, color: "#1e293b" }}>
+                            {order.customer} — {order.items}
+                          </p>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
+                          <strong style={{ fontSize: "13px", color: "#0f172a" }}>₦{order.total.toLocaleString()}</strong>
+                          {order.status !== "Delivered" ? (
+                            <button
+                              type="button"
+                              onClick={() => advanceOrderStatus(order.id)}
+                              style={{
+                                padding: "6px 10px",
+                                borderRadius: "8px",
+                                border: "none",
+                                background: order.status === "Pending" ? "#B22222" : "#0f172a",
+                                color: "#fff",
+                                fontSize: "11px",
+                                fontWeight: 700,
+                                cursor: "pointer",
+                              }}
+                            >
+                              {order.status === "Pending" ? "Accept & Pack" : order.status === "Preparing" ? "Dispatch" : "Mark Delivered"}
+                            </button>
+                          ) : (
+                            <span style={{ padding: "5px 10px", borderRadius: "999px", background: "#dcfce7", color: "#166534", fontSize: "11px", fontWeight: 700 }}>
+                              Delivered
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+                <section className="panel" style={{ padding: "20px" }}>
+                  <div className="panel-heading" style={{ marginBottom: "14px" }}>
+                    <div>
+                      <h2 style={{ margin: 0 }}>Top Storefront Products</h2>
+                      <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#64748b" }}>
+                        Live inventory &amp; pricing from your store catalog
+                      </p>
+                    </div>
+                    <Link className="text-button" href="/store-app/products">
+                      Edit Catalog <Icon name="external" size={12} />
+                    </Link>
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "10px" }}>
+                    {catalogPreview.map((item) => (
+                      <div
+                        key={item.id}
+                        style={{
+                          padding: "12px",
+                          borderRadius: "12px",
+                          border: "1px solid #e2e8f0",
+                          background: "#fff",
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "6px",
+                        }}
+                      >
+                        <span style={{ fontSize: "10px", fontWeight: 700, textTransform: "uppercase", color: "#C9A227" }}>
+                          {item.category}
+                        </span>
+                        <strong style={{ fontSize: "12px", color: "#0f172a", lineHeight: 1.3 }}>{item.name}</strong>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "auto", paddingTop: "4px" }}>
+                          <strong style={{ fontSize: "13px", color: "#B22222" }}>₦{Number(item.price).toLocaleString()}</strong>
+                          <span style={{ fontSize: "11px", fontWeight: 600, color: item.stock <= 10 ? "#b91c1c" : "#15803d" }}>
+                            {item.stock} in stock
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
               </div>
 
               {/* Commercial Shop Service Charge Panel */}
