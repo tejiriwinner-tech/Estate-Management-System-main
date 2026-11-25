@@ -1,6 +1,6 @@
 import { readSession } from "@/components/auth/session";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
+const API = (process.env.NEXT_PUBLIC_API_URL || "/api/v1").replace(/\/+$/, "");
 
 export async function securityFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
   const token = readSession()?.token;
