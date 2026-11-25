@@ -150,7 +150,7 @@ export default function ResidentDashboard() {
         <div>
           <div className="flex items-center gap-2 text-xs font-semibold text-[#B22222]">
             <span className="w-2 h-2 rounded-full bg-[#B22222]" />
-            <span>Lincoln Estate Resident Residence</span>
+            <span>Post Army House Estate Resident Residence</span>
           </div>
           <h1 className="mt-1 text-2xl font-extrabold text-gray-900 tracking-tight">
             Welcome back, {residentName}
@@ -695,7 +695,7 @@ export default function ResidentDashboard() {
                 className="mt-4 space-y-4"
               >
                 <p className="text-xs text-slate-500">
-                  Notify Lincoln Estate Security Command that Villa A-402 will be unoccupied so perimeter patrols provide extra surveillance.
+                  Notify Post Army House Estate Security Command that Villa A-402 will be unoccupied so perimeter patrols provide extra surveillance.
                 </p>
                 <div className="grid grid-cols-2 gap-3">
                   <div>

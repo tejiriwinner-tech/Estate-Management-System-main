@@ -97,7 +97,7 @@ export function CreateStaffModal({
               Create New Staff
             </h2>
             <p className="text-xs sm:text-sm text-muted font-medium mt-0.5">
-              Register a new employee to the LincolnEstate portal.
+              Register a new employee to the Post Army House Estate portal.
             </p>
           </div>
           <button

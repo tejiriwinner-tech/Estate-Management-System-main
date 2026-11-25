@@ -142,7 +142,7 @@ export async function POST(req: Request) {
         name, email, password, phone, role, status, job_title, department, created_at, updated_at
       )
       VALUES (
-        ${name}, ${email}, 'LincolnEstate2024!', ${phone || null}, 'agent', 'active',
+        ${name}, ${email}, 'Post Army House Estate2024!', ${phone || null}, 'agent', 'active',
         'Certified Estate Agent', ${zone || 'Commercial Hub'}, NOW(), NOW()
       )
       RETURNING *

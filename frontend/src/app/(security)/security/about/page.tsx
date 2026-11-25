@@ -29,7 +29,7 @@ export default function SecurityAboutPage() {
           <div>
             <h1 className="text-xl font-extrabold text-slate-900">Security Command &amp; Operations Guide</h1>
             <p className="text-xs font-semibold text-slate-500 mt-0.5">
-              Standard Operating Procedures (SOP), Emergency Protocol Codes, and Gate Post Orders for Lincoln Estate.
+              Standard Operating Procedures (SOP), Emergency Protocol Codes, and Gate Post Orders for Post Army House Estate.
             </p>
           </div>
         </div>
@@ -101,7 +101,7 @@ export default function SecurityAboutPage() {
             </ul>
           </div>
           <div className="mt-6 pt-4 border-t border-slate-100 text-[11px] text-slate-400">
-            Lincoln Estate Security Command Directive · Revision 2026.4
+            Post Army House Estate Security Command Directive · Revision 2026.4
           </div>
         </div>
       </div>

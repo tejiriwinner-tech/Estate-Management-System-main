@@ -47,12 +47,12 @@ export async function GET() {
     const items = alerts.length > 0
       ? alerts.map((a) => ({
           id: `INT-${a.id}`,
-          title: a.category === "life_threat" ? `Emergency: ${a.location || "Estate"}` : `Intel: ${a.location || "Lincoln Estate"}`,
+          title: a.category === "life_threat" ? `Emergency: ${a.location || "Estate"}` : `Intel: ${a.location || "Post Army House Estate"}`,
           snippet: a.message || "Field telemetry report logged.",
           category: a.category === "life_threat" ? "PERIMETER_BREACH" : "SUSPICIOUS_ACTIVITY",
           status: a.status === "resolved" ? "RESOLVED" : a.category === "life_threat" ? "URGENT" : "ACTION_REQUIRED",
           timeAgo: a.created_at ? new Date(a.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Recently",
-          location: a.location || "Lincoln Estate",
+          location: a.location || "Post Army House Estate",
           reportedBy: a.sender_name || "Security Officer",
           resolved: a.status === "resolved",
         }))

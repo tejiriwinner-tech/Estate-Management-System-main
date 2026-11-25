@@ -27,7 +27,7 @@ export const SAMPLE_LISTINGS: ApiListing[] = [
   {
     id: 1,
     title: "Luxury 4-Bedroom Terrace Duplex",
-    description: "Beautifully finished modern terrace duplex located in the serene Phase 1 zone of Lincoln Estate. Features 24/7 power, treated water, and dedicated security.",
+    description: "Beautifully finished modern terrace duplex located in the serene Phase 1 zone of Post Army House Estate. Features 24/7 power, treated water, and dedicated security.",
     listing_type: "rent",
     property_type: "Duplex",
     zone: "Phase 1",
@@ -215,3 +215,5 @@ export const fetchApprovalQueue = (status: string) =>
 export const approveListing = (id: number) => call(`/admin/listings/${id}/approve`, { method: "POST" }, true);
 export const rejectListing = (id: number, reason: string) =>
   call(`/admin/listings/${id}/reject`, { method: "POST", body: JSON.stringify({ reason }) }, true);
+export const deleteListing = (id: number) =>
+  call(`/admin/listings/${id}`, { method: "DELETE" }, true);

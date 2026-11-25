@@ -15,7 +15,7 @@ export async function GET() {
           title: r.title,
           type: (r.property_type || "Apartment") as any,
           zone: r.zone || "Phase 1",
-          address: r.address || "Lincoln Estate",
+          address: r.address || "Post Army House Estate",
           beds: Number(r.beds || 3),
           baths: Number(r.baths || 2),
           rentPerYear: Number(r.price_kobo ? Number(r.price_kobo) / 100 : r.price || 3500000),

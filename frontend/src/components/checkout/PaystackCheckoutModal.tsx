@@ -235,7 +235,7 @@ export function PaystackCheckoutModal({
                 9948201942
               </p>
               <p className="text-xs font-bold text-dark">
-                Paystack-Titan / LincolnEstate Escrow
+                Paystack-Titan / Post Army House Estate Escrow
               </p>
               <p className="text-[11px] text-slate-500 pt-1">
                 Click confirm below once transfer of ₦

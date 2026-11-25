@@ -348,7 +348,7 @@ export function EstateMembersView() {
         {/* Footer */}
         <div className="px-6 py-3.5 bg-slate-50/50 border-t border-border/60 flex items-center justify-between text-xs font-semibold text-muted">
           <span>Showing {filteredMembers.length} of {totalCount} registered members</span>
-          <span>Lincoln Estate Administration</span>
+          <span>Post Army House Estate Administration</span>
         </div>
       </div>
 

@@ -130,7 +130,7 @@ export default function StoreOrdersPage() {
             <span>Orders &amp; Fulfillment Control</span>
           </h1>
           <p className="text-xs text-muted mt-0.5">
-            Monitor incoming resident grocery orders, prepare shipments, and confirm delivery within Lincoln Estate.
+            Monitor incoming resident grocery orders, prepare shipments, and confirm delivery within Post Army House Estate.
           </p>
         </div>
 

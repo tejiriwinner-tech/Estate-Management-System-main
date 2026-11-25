@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    let storeName = "Lincoln Central Mart";
+    let storeName = "Post Army House Mart";
     let productsCount = 5;
     let transactions: any[] = [];
 

@@ -1,6 +1,6 @@
 "use client";
 
-// Shell for the resident app: luxury Lincoln Estate executive design system
+// Shell for the resident app: luxury Post Army House Estate executive design system
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useState } from "react";
@@ -29,6 +29,7 @@ const NAV = [
   { href: "/resident", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { href: "/resident/activity", label: "Visitor Passes", icon: KeyRound },
   { href: "/resident/service-charges", label: "Service Charges", icon: CreditCard },
+  { href: "/resident/store", label: "Estate Stores", icon: Store },
   { href: "/resident/messages", label: "Messages & Notices", icon: Mail },
   { href: "/resident/direction", label: "Estate Directions", icon: Compass },
   { href: "/resident/profile", label: "Profile & Settings", icon: UserCheck },
@@ -82,7 +83,7 @@ export function ResidentShell({ children }: { children: React.ReactNode }) {
             </div>
             <div className="flex flex-col">
               <span className="font-extrabold text-base tracking-tight text-gray-900 leading-tight">
-                Lincoln<span className="text-[#B22222]">Estate</span>
+                Post Army House<span className="text-[#B22222]"> Estate</span>
               </span>
               <span className="text-[10px] font-semibold tracking-wider text-[#C9A227] uppercase">
                 Resident Portal
@@ -220,7 +221,7 @@ export function ResidentShell({ children }: { children: React.ReactNode }) {
                   Transmit SOS Panic Alert?
                 </h2>
                 <p className="mt-2 text-xs text-slate-500 leading-relaxed">
-                  Lincoln Estate Central Security Command and patrol officers will immediately receive your unit coordinates (Villa A-402) with emergency priority.
+                  Post Army House Estate Central Security Command and patrol officers will immediately receive your unit coordinates (Villa A-402) with emergency priority.
                 </p>
                 <div className="mt-6 flex gap-3">
                   <button

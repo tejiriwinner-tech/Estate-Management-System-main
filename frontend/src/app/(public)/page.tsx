@@ -47,7 +47,7 @@ export default function LandingPage() {
     <>
       <header className="border-b border-slate-100 bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-          <span className="text-lg font-extrabold text-primary">LincolnEstate</span>
+          <span className="text-lg font-extrabold text-primary">Post Army House Estate</span>
           <Link href="/login" className="rounded-xl bg-primary px-4 py-2 text-xs font-bold text-white hover:bg-primary-hover">
             Sign in
           </Link>
@@ -64,7 +64,7 @@ export default function LandingPage() {
 
         <div className="relative z-10 mx-auto max-w-4xl">
           <span className="inline-block rounded-full bg-red-600/30 border border-red-500/40 px-4 py-1 text-xs font-bold uppercase tracking-wider text-red-200">
-            Lincoln Estate Residential & Commercial
+            Post Army House Estate Residential & Commercial
           </span>
           <h1 className="mt-4 text-4xl font-extrabold tracking-tight text-white drop-shadow-md sm:text-5xl">
             Find your dream home in the estate

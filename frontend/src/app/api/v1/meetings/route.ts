@@ -59,7 +59,7 @@ export async function GET() {
         {
           id: 3,
           title: "Visitor & Commercial Delivery Gate Protocol Reminder",
-          body: "All guests, artisans, and dispatch riders must present an active Lincoln Estate QR Gate Pass generated from the Resident Portal upon arrival at Main Gate 1.",
+          body: "All guests, artisans, and dispatch riders must present an active Post Army House Estate QR Gate Pass generated from the Resident Portal upon arrival at Main Gate 1.",
           category: "security",
           priority: "normal",
           author: "Security Command",

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Calendar,
   Download,
@@ -16,8 +16,10 @@ import {
   Table2,
   ListChecks,
   ChevronDownSquare,
+  Receipt,
 } from "lucide-react";
 import { useAdminReports } from "@/lib/admin/reportsApi";
+import type { ServiceChargeRecord } from "@/components/admin/members/ServiceChargeModal";
 import { ReportKpiMetric, ReportPeriod } from "@/types/admin/reports";
 import { MonthlyRevenueTrendCard } from "./MonthlyRevenueTrendCard";
 import { RevenueByServiceCard } from "./RevenueByServiceCard";
@@ -73,10 +75,19 @@ export function AdminReportsDashboardView() {
   const initialDefaultersList = rd.defaulters;
 
   const [viewMode, setViewMode] = useState<
-    "analytics" | "list" | "table" | "dropdown"
-  >("analytics");
+    "service_charge" | "analytics" | "list" | "table" | "dropdown"
+  >("service_charge");
   const [periodIdx, setPeriodIdx] = useState(0);
   const [isDefaultersModalOpen, setIsDefaultersModalOpen] = useState(false);
+  const [serviceCharges, setServiceCharges] = useState<ServiceChargeRecord[]>([]);
+  const [scFilter, setScFilter] = useState<"All" | "Paid" | "Pending">("All");
+
+  useEffect(() => {
+    fetch("/api/v1/admin/service-charges", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((j) => setServiceCharges(j?.data || []))
+      .catch(() => {});
+  }, []);
 
   const activePeriod = PERIODS[periodIdx];
 
@@ -114,6 +125,19 @@ export function AdminReportsDashboardView() {
         <div className="inline-flex items-center gap-1.5 p-1 rounded-xl bg-surface border border-border/70 flex-wrap">
           <button
             type="button"
+            onClick={() => setViewMode("service_charge")}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all ${
+              viewMode === "service_charge"
+                ? "bg-primary text-white shadow-2xs"
+                : "text-muted hover:text-dark"
+            }`}
+          >
+            <Receipt className="w-3.5 h-3.5" />
+            <span>Service Charge Report</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => setViewMode("analytics")}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all ${
               viewMode === "analytics"
@@ -135,7 +159,7 @@ export function AdminReportsDashboardView() {
             }`}
           >
             <ListChecks className="w-3.5 h-3.5" />
-            <span>Intelligent Reports</span>
+            <span>Security Intelligence Reports</span>
           </button>
 
           <button
@@ -148,25 +172,117 @@ export function AdminReportsDashboardView() {
             }`}
           >
             <Table2 className="w-3.5 h-3.5" />
-            <span>Life Threat Reports</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setViewMode("dropdown")}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all ${
-              viewMode === "dropdown"
-                ? "bg-primary text-white shadow-2xs"
-                : "text-muted hover:text-dark"
-            }`}
-          >
-            <ChevronDownSquare className="w-3.5 h-3.5" />
-            <span>Report Selector</span>
+            <span>Security Threat Reports</span>
           </button>
         </div>
       </div>
 
-      {viewMode === "dropdown" ? (
+      {viewMode === "service_charge" ? (
+        <div className="space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h1 className="text-2xl font-extrabold text-dark tracking-tight">Service Charge Report</h1>
+              <p className="text-xs text-muted">Paid and outstanding estate service charge ledger across Post Army House Estate.</p>
+            </div>
+            <div className="flex items-center gap-2">
+              {(["All", "Paid", "Pending"] as const).map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setScFilter(s)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold ${
+                    scFilter === s ? "bg-dark text-white" : "bg-white border border-border text-muted"
+                  }`}
+                >
+                  {s === "Pending" ? "Outstanding" : s}
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => {
+                  const rows = [
+                    ["Invoice", "Resident", "Unit", "Service", "Amount", "Status", "Due Date"],
+                    ...serviceCharges.map((c) => [c.invoice_no, c.resident_name, c.unit_number, c.service_type, String(c.amount), c.status, c.due_date || ""]),
+                  ];
+                  const csv = rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
+                  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = "post-army-house-service-charge-report.csv";
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+                className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-primary text-white text-xs font-bold"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Export CSV</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="p-5 bg-surface-card rounded-2xl border border-border/80 shadow-2xs">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-muted">Total Paid</span>
+              <p className="text-2xl font-black text-emerald-700 mt-1">
+                ₦{serviceCharges.filter((c) => c.status === "Paid").reduce((s, c) => s + c.amount, 0).toLocaleString()}
+              </p>
+              <span className="text-[11px] text-muted">
+                {serviceCharges.filter((c) => c.status === "Paid").length} cleared invoices
+              </span>
+            </div>
+            <div className="p-5 bg-surface-card rounded-2xl border border-border/80 shadow-2xs">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-muted">Total Outstanding</span>
+              <p className="text-2xl font-black text-primary mt-1">
+                ₦{serviceCharges.filter((c) => c.status !== "Paid").reduce((s, c) => s + c.amount, 0).toLocaleString()}
+              </p>
+              <span className="text-[11px] text-muted">
+                {serviceCharges.filter((c) => c.status !== "Paid").length} pending invoices
+              </span>
+            </div>
+            <div className="p-5 bg-surface-card rounded-2xl border border-border/80 shadow-2xs">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-muted">Collection Rate</span>
+              <p className="text-2xl font-black text-dark mt-1">
+                {serviceCharges.length > 0
+                  ? `${Math.round((serviceCharges.filter((c) => c.status === "Paid").length / serviceCharges.length) * 100)}%`
+                  : "100%"}
+              </p>
+              <span className="text-[11px] text-muted">Across all billed units</span>
+            </div>
+          </div>
+
+          <div className="bg-surface-card rounded-2xl border border-border/80 shadow-xs overflow-x-auto">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="bg-slate-100/80 border-b border-border/70 text-[11px] font-bold uppercase tracking-wider text-slate-600">
+                  <th className="py-3 px-5">Invoice</th>
+                  <th className="py-3 px-4">Resident / Unit</th>
+                  <th className="py-3 px-4">Assessment</th>
+                  <th className="py-3 px-4">Amount</th>
+                  <th className="py-3 px-4">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/60">
+                {serviceCharges
+                  .filter((c) => scFilter === "All" || (scFilter === "Paid" ? c.status === "Paid" : c.status !== "Paid"))
+                  .map((c) => (
+                    <tr key={c.id} className="hover:bg-slate-50/70">
+                      <td className="py-3 px-5 font-mono font-bold text-slate-600">{c.invoice_no}</td>
+                      <td className="py-3 px-4 font-bold text-dark">{c.resident_name} • {c.unit_number}</td>
+                      <td className="py-3 px-4 text-slate-700">{c.service_type}</td>
+                      <td className="py-3 px-4 font-black text-dark">₦{c.amount.toLocaleString()}</td>
+                      <td className="py-3 px-4">
+                        <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${c.status === "Paid" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-800"}`}>
+                          {c.status === "Paid" ? "Paid" : "Outstanding"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : viewMode === "dropdown" ? (
         <AdminReportDropdownView
           onSelectIntelligentReports={() => setViewMode("list")}
           onSelectLifeThreatReports={() => setViewMode("table")}

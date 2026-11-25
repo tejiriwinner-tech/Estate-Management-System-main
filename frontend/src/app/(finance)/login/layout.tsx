@@ -8,8 +8,8 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "LincolnEstate - Sign In",
-  description: "Sign in to the Lincoln Estate management system.",
+  title: "Post Army House Estate - Sign In",
+  description: "Sign in to the Post Army House Estate management system.",
 };
 
 export default function LoginLayout({ children }: { children: React.ReactNode }) {

@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "LincolnEstate - Agent Dashboard",
-  description: "Agent performance, listings, leads and viewings for Lincoln Estate.",
+  title: "Post Army House Estate - Agent Dashboard",
+  description: "Agent performance, listings, leads and viewings for Post Army House Estate.",
 };
 
 export default function AgentsLayout({ children }: { children: React.ReactNode }) {

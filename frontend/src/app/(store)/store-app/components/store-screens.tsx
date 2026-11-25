@@ -284,13 +284,13 @@ export function StoreShell({
       )}
       <aside className={`sidebar${isMobileNavOpen ? " sidebar--mobile-open" : ""}`} id="primary-sidebar" style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", background: "#ffffff", borderRight: "1px solid #e2e8f0" }}>
         <div>
-          <Link className="brand" href={isStoreApp ? "/store-app" : "/admin/dashboard"} aria-label="LincolnEstate home" onClick={() => setIsMobileNavOpen(false)} style={{ padding: "18px 20px", borderBottom: "1px solid #f1f5f9", marginBottom: "8px" }}>
+          <Link className="brand" href={isStoreApp ? "/store-app" : "/admin/dashboard"} aria-label="Post Army House Estate home" onClick={() => setIsMobileNavOpen(false)} style={{ padding: "18px 20px", borderBottom: "1px solid #f1f5f9", marginBottom: "8px" }}>
             <span className="brand-mark">
               <span className="brand-initial">LE</span>
               <span className="brand-badge-dot" />
             </span>
             <span className="brand-copy">
-              <strong>Lincoln<span style={{ color: "var(--primary)" }}>Estate</span></strong>
+              <strong>Post Army House<span style={{ color: "var(--primary)" }}> Estate</span></strong>
               <small style={isStoreApp ? { color: "#C9A227", fontWeight: "700", letterSpacing: "0.05em" } : undefined}>
                 {isStoreApp ? "STORE OWNER HUB" : "ADMIN DASHBOARD"}
               </small>

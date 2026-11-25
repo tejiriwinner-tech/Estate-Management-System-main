@@ -124,7 +124,7 @@ export function QrCodeDisplay({
         <div className="mb-3 px-3 py-1 rounded-full bg-[#FEF2F2] border border-[#B22222]/30 flex items-center gap-1.5">
           <ShieldCheck className="w-3.5 h-3.5 text-[#B22222]" />
           <span className="text-[10px] font-black uppercase tracking-wider text-[#B22222]">
-            Lincoln Estate Verified
+            Post Army House Estate Verified
           </span>
         </div>
 
@@ -162,7 +162,7 @@ export function QrCodeDisplay({
               })
             )}
 
-            {/* Central Lincoln Estate Emblem */}
+            {/* Central Post Army House Estate Emblem */}
             <g
               transform={`translate(${viewBoxSize / 2 - 16}, ${viewBoxSize / 2 - 16})`}
             >

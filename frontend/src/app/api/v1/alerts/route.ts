@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
         )
         VALUES (
           ${senderId}, ${category || "intelligence"}, ${message || "Security Alert"},
-          ${location || "Lincoln Estate"}, 'open', NOW(), NOW()
+          ${location || "Post Army House Estate"}, 'open', NOW(), NOW()
         )
         RETURNING id
       `;

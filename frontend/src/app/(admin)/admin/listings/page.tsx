@@ -2,8 +2,8 @@
 
 // KAN-66: admin approval queue. A listing only appears on the public landing page once approved here.
 import React, { useCallback, useEffect, useState } from "react";
-import { Check, X } from "lucide-react";
-import { ApiListing, approveListing, fetchApprovalQueue, rejectListing } from "@/services/listingsApi";
+import { Check, X, Trash2 } from "lucide-react";
+import { ApiListing, approveListing, deleteListing, fetchApprovalQueue, rejectListing } from "@/services/listingsApi";
 
 type Tab = "pending" | "approved" | "rejected";
 const TABS: Tab[] = ["pending", "approved", "rejected"];
@@ -37,6 +37,11 @@ export default function ListingApprovalPage() {
     try { await rejectListing(rejecting.id, reason); setRejecting(null); setReason(""); await load(tab); }
     catch (e) { setError(e instanceof Error ? e.message : "Failed."); }
   };
+  const remove = async (l: ApiListing) => {
+    if (!window.confirm(`Delete "${l.title}" permanently?`)) return;
+    try { await deleteListing(l.id); await load(tab); }
+    catch (e) { setError(e instanceof Error ? e.message : "Failed to delete."); }
+  };
 
   return (
     <div className="space-y-6">
@@ -69,14 +74,15 @@ export default function ListingApprovalPage() {
                 <p className="mt-1 text-xs text-muted">Agent: {l.agent?.name ?? "—"} {l.agent?.phone ? `· ${l.agent.phone}` : ""}</p>
                 {l.rejection_reason && <p className="mt-1 text-xs font-medium text-red-700">Reason: {l.rejection_reason}</p>}
               </div>
-              {l.approval_status !== "approved" && (
-                <div className="flex shrink-0 gap-2">
+              <div className="flex shrink-0 gap-2">
+                {l.approval_status !== "approved" && (
                   <button onClick={() => approve(l)} className="inline-flex items-center gap-1 rounded-xl bg-brand-green px-4 py-2 text-xs font-bold text-white hover:bg-brand-green-hover"><Check className="h-4 w-4" />Approve</button>
-                  {l.approval_status === "pending" && (
-                    <button onClick={() => setRejecting(l)} className="inline-flex items-center gap-1 rounded-xl border border-border bg-white px-4 py-2 text-xs font-bold text-dark hover:bg-surface-subtle"><X className="h-4 w-4" />Reject</button>
-                  )}
-                </div>
-              )}
+                )}
+                {l.approval_status !== "rejected" && (
+                  <button onClick={() => setRejecting(l)} className="inline-flex items-center gap-1 rounded-xl border border-border bg-white px-4 py-2 text-xs font-bold text-dark hover:bg-surface-subtle"><X className="h-4 w-4" />Disapprove</button>
+                )}
+                <button onClick={() => remove(l)} className="inline-flex items-center gap-1 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2 text-xs font-bold text-red-700 hover:bg-red-100"><Trash2 className="h-4 w-4" />Delete</button>
+              </div>
             </li>
           ))}
         </ul>

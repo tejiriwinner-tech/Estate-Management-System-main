@@ -114,7 +114,7 @@ export default function DashboardPage() {
         <div>
           <div className="flex items-center gap-2 text-xs font-bold text-[#B22222]">
             <span className="w-2 h-2 rounded-full bg-[#B22222]" />
-            <span>Lincoln Guard Tactical Command</span>
+            <span>Post Army House Guard Tactical Command</span>
           </div>
           <h2 className="mt-1 text-2xl font-extrabold text-gray-900 tracking-tight">
             Security HQ Central Dashboard

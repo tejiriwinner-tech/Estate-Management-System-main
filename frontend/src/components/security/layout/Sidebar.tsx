@@ -43,7 +43,7 @@ export default function Sidebar() {
         </div>
         <div className="flex flex-col">
           <span className="font-extrabold text-base tracking-tight text-gray-900 leading-tight">
-            Lincoln<span className="text-[#B22222]">Estate</span>
+            Post Army House<span className="text-[#B22222]"> Estate</span>
           </span>
           <span className="text-[10px] font-semibold uppercase tracking-wider text-[#C9A227]">
             Security Command

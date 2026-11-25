@@ -205,7 +205,7 @@ export default function OutstandingPaymentsPage() {
         {/* Footer */}
         <footer className="text-center py-4">
           <p className="text-xs text-slate-400">
-            © 2024 LincolnEstate Finance Management. All rights reserved. System
+            © 2024 Post Army House Estate Finance Management. All rights reserved. System
             V2.4.1
           </p>
         </footer>

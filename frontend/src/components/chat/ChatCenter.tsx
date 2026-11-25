@@ -93,7 +93,7 @@ export function ChatCenter({ initialTab = "CHAT", onChanged }: { initialTab?: Ta
         <div>
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#C9A227]">
             <Bell className="w-3.5 h-3.5" />
-            <span>Lincoln Estate Unified Communications</span>
+            <span>Post Army House Estate Unified Communications</span>
           </div>
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-1">
             Messages, Official Notices &amp; Dispatches
@@ -414,7 +414,7 @@ function AlertCenter({ onChanged }: { onChanged?: () => void }) {
       await chatApi.createAlert({
         category: form.category,
         message: form.message.trim(),
-        location: form.location.trim() || "Lincoln Estate",
+        location: form.location.trim() || "Post Army House Estate",
       });
       setForm({ category: "intelligence", message: "", location: "" });
       setReporting(false);
@@ -696,7 +696,7 @@ function SplitChatWorkspace({ onChanged }: { onChanged?: () => void }) {
           <ConversationThread
             roomId={selectedRoomId}
             roomName={activeRoom?.name || "Conversation"}
-            roomSubtitle={activeRoom?.subtitle || "Lincoln Estate Official Channel"}
+            roomSubtitle={activeRoom?.subtitle || "Post Army House Estate Official Channel"}
             onBack={() => setMobileShowThread(false)}
             onSent={() => {
               void reload();

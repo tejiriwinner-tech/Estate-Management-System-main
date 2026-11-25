@@ -45,7 +45,7 @@ export async function GET(req: Request) {
         { id: 2, name: "Chinedu Resident", email: "resident@lincolnestate.ng", phone: "+234 801 234 5678", role: "resident", status: "active", unit_number: "Villa A-402", moved_in_at: "2024-03-15", created_at: "2024-03-15" },
         { id: 3, name: "Mike Security Warden", email: "security@lincolnestate.ng", phone: "+234 803 456 7890", role: "security", status: "active", unit_number: "Gate 1", moved_in_at: "2024-02-01", created_at: "2024-02-01" },
         { id: 4, name: "Marcus Real Estate Agent", email: "agent@lincolnestate.ng", phone: "+234 804 567 8901", role: "agent", status: "active", unit_number: "Commercial Hub", moved_in_at: "2024-04-10", created_at: "2024-04-10" },
-        { id: 5, name: "Lincoln Mart Store Manager", email: "store@lincolnestate.ng", phone: "+234 805 678 9012", role: "store_owner", status: "active", unit_number: "Store A", moved_in_at: "2024-05-01", created_at: "2024-05-01" },
+        { id: 5, name: "Post Army House Mart Store Manager", email: "store@lincolnestate.ng", phone: "+234 805 678 9012", role: "store_owner", status: "active", unit_number: "Store A", moved_in_at: "2024-05-01", created_at: "2024-05-01" },
       ];
       total = users.length;
     }
@@ -73,7 +73,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Name and email are required." }, { status: 422 });
     }
 
-    const defaultPassHash = await bcrypt.hash("LincolnEstate2024!", 10);
+    const defaultPassHash = await bcrypt.hash("Post Army House Estate2024!", 10);
 
     try {
       const inserted = await sql`

@@ -50,8 +50,8 @@ export async function GET(req: NextRequest) {
         await sql`
           INSERT INTO service_charges (user_id, resident_name, unit_number, service_type, amount, billing_cycle, due_date, status, invoice_no, notes)
           VALUES
-            (null, 'Lincoln Central Mart', 'Commercial Plaza Shop A-01', 'Commercial Plaza Security, Waste & Power Levy', 45000, 'Monthly', CURRENT_DATE + INTERVAL '7 days', 'Pending', 'SC-SHOP-2041', 'Covers 24/7 commercial grid backup, loading bay security & sanitation'),
-            (null, 'Lincoln Central Mart', 'Commercial Plaza Shop A-01', 'Commercial Plaza Security, Waste & Power Levy', 45000, 'Monthly', CURRENT_DATE - INTERVAL '23 days', 'Paid', 'SC-SHOP-1988', 'Cleared via merchant settlement')
+            (null, 'Post Army House Mart', 'Commercial Plaza Shop A-01', 'Commercial Plaza Security, Waste & Power Levy', 45000, 'Monthly', CURRENT_DATE + INTERVAL '7 days', 'Pending', 'SC-SHOP-2041', 'Covers 24/7 commercial grid backup, loading bay security & sanitation'),
+            (null, 'Post Army House Mart', 'Commercial Plaza Shop A-01', 'Commercial Plaza Security, Waste & Power Levy', 45000, 'Monthly', CURRENT_DATE - INTERVAL '23 days', 'Paid', 'SC-SHOP-1988', 'Cleared via merchant settlement')
         `;
         rows = await sql`
           SELECT * FROM service_charges

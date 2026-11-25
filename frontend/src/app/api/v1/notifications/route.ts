@@ -19,7 +19,7 @@ export async function GET() {
           id: 1000 + Number(a.id),
           type: "alert",
           title: `${a.category === "life_threat" ? "Priority Alert" : "Security Notice"}: ${a.message}`,
-          body: a.location || "Lincoln Estate",
+          body: a.location || "Post Army House Estate",
           data: { category: a.category, status: a.status },
           read: a.status === "resolved",
           created_at: a.created_at ? new Date(a.created_at).toISOString() : new Date().toISOString(),

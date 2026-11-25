@@ -106,7 +106,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       User: "Chinedu Resident",
       Security: "Security Command",
       Agent: "Estate Letting Agent",
-      "Store Owner": "Lincoln Central Mart",
+      "Store Owner": "Post Army House Mart",
     };
     const callerName = req.headers.get("x-user-name") || defaultNameByRole[callerRoleHeader] || "Estate Member";
 

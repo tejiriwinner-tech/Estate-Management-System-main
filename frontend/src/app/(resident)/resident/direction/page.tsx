@@ -187,7 +187,7 @@ export default function DirectionPage() {
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-extrabold text-gray-900 flex items-center gap-2">
               <Navigation className="w-4 h-4 text-[#B22222]" />
-              <span>Interactive Lincoln Estate Layout (Click to Drop Pin)</span>
+              <span>Interactive Post Army House Estate Layout (Click to Drop Pin)</span>
             </h2>
             <span className="font-mono text-[11px] font-bold text-slate-500">
               Pin: ({pinX}%, {pinY}%)

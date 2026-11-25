@@ -3,13 +3,14 @@
 import React, { useEffect, useState } from "react";
 import { Home, X, Image as ImageIcon, Upload } from "lucide-react";
 import { AGENT_ZONES } from "@/types/agent";
-import { ListingKind, NewListingInput, PROPERTY_TYPES } from "@/types/agentPortal";
+import { Listing, ListingKind, NewListingInput, PROPERTY_TYPES } from "@/types/agentPortal";
 import { useOverlay } from "@/components/agents/useOverlay";
 
 interface AddListingModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCreate: (input: NewListingInput) => void;
+  editingListing?: Listing | null;
 }
 
 interface FormState {
@@ -53,7 +54,7 @@ function validate(f: FormState): Errors {
   return e;
 }
 
-export function AddListingModal({ isOpen, onClose, onCreate }: AddListingModalProps) {
+export function AddListingModal({ isOpen, onClose, onCreate, editingListing }: AddListingModalProps) {
   const [form, setForm] = useState<FormState>(EMPTY);
   const [errors, setErrors] = useState<Errors>({});
   const [submitted, setSubmitted] = useState(false);
@@ -62,11 +63,26 @@ export function AddListingModal({ isOpen, onClose, onCreate }: AddListingModalPr
 
   useEffect(() => {
     if (isOpen) {
-      setForm(EMPTY);
+      if (editingListing) {
+        setForm({
+          title: editingListing.title,
+          type: editingListing.type,
+          zone: editingListing.zone || AGENT_ZONES[0],
+          address: editingListing.address,
+          beds: String(editingListing.beds),
+          baths: String(editingListing.baths),
+          rent: String(editingListing.rentPerYear),
+          serviceCharge: String(editingListing.serviceCharge ?? 420000),
+          listingType: editingListing.listingType ?? "rent",
+          image: editingListing.image || "",
+        });
+      } else {
+        setForm(EMPTY);
+      }
       setErrors({});
       setSubmitted(false);
     }
-  }, [isOpen]);
+  }, [isOpen, editingListing]);
 
   if (!isOpen) return null;
 
@@ -229,7 +245,7 @@ export function AddListingModal({ isOpen, onClose, onCreate }: AddListingModalPr
               Cancel
             </button>
             <button type="submit" className="rounded-xl bg-primary px-5 py-2.5 text-xs font-bold text-white shadow-sm shadow-primary/25 hover:bg-primary-hover">
-              Submit for approval
+              {editingListing ? "Save Changes" : "Submit for approval"}
             </button>
           </div>
         </form>

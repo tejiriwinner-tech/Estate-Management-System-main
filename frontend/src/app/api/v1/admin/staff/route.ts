@@ -10,7 +10,8 @@ export async function GET() {
       staff = await sql`
         SELECT id, name, email, phone, role, job_title, department, staff_id, status, avatar_url, created_at
         FROM users
-        WHERE role IN ('staff', 'manager', 'security', 'maintenance')
+        WHERE role IN ('store_owner', 'agent', 'chairman')
+           OR LOWER(COALESCE(job_title, '')) LIKE '%chairman%'
         ORDER BY id DESC
       `;
     } catch (e: any) {
@@ -21,55 +22,42 @@ export async function GET() {
       staff = [
         {
           id: 101,
-          name: "Bessie Cooper",
-          email: "bessie.cooper@lincolnestate.ng",
-          phone: "+234 802 555 0148",
-          role: "staff",
-          job_title: "Senior Property Manager",
-          department: "Operations",
-          staff_id: "LE-2024-001",
+          name: "Gen. Ibrahim Danjuma (Rtd.)",
+          email: "chairman@postarmyhouse.ng",
+          phone: "+234 802 555 0100",
+          role: "chairman",
+          job_title: "Estate Chairman",
+          department: "Executive Council",
+          staff_id: "PA-CHR-001",
           status: "active",
           avatar_url: null,
           created_at: "2024-01-10",
         },
         {
           id: 102,
-          name: "Darlene Robertson",
-          email: "darlene.r@lincolnestate.ng",
+          name: "Marcus Real Estate Agent",
+          email: "agent@lincolnestate.ng",
           phone: "+234 803 555 0149",
-          role: "manager",
-          job_title: "Chief Financial Officer",
-          department: "Finance & Accounts",
-          staff_id: "LE-2024-002",
+          role: "agent",
+          job_title: "Estate Letting Agent",
+          department: "Property & Leasing",
+          staff_id: "PA-AGT-002",
           status: "active",
           avatar_url: null,
           created_at: "2024-01-15",
         },
         {
           id: 103,
-          name: "Floyd Miles",
-          email: "floyd.m@lincolnestate.ng",
+          name: "Post Army House Mart Admin",
+          email: "store@lincolnestate.ng",
           phone: "+234 804 555 0150",
-          role: "maintenance",
-          job_title: "Facility Maintenance Lead",
-          department: "Maintenance",
-          staff_id: "LE-2024-003",
-          status: "on_leave",
-          avatar_url: null,
-          created_at: "2024-02-01",
-        },
-        {
-          id: 104,
-          name: "Eleanor Pena",
-          email: "eleanor.p@lincolnestate.ng",
-          phone: "+234 805 555 0151",
-          role: "staff",
-          job_title: "Billing & Collections Officer",
-          department: "Finance & Accounts",
-          staff_id: "LE-2024-004",
+          role: "store_owner",
+          job_title: "Store Admin",
+          department: "Estate Commerce",
+          staff_id: "PA-STR-003",
           status: "active",
           avatar_url: null,
-          created_at: "2024-02-15",
+          created_at: "2024-02-01",
         },
       ];
     }
@@ -85,14 +73,24 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { name, email, phone, role, job_title, department, staff_id, status } = body;
 
+    const allowedRole =
+      role === "store_owner" || role === "agent" || role === "chairman"
+        ? role
+        : (job_title || "").toLowerCase().includes("chairman")
+        ? "chairman"
+        : (job_title || "").toLowerCase().includes("store")
+        ? "store_owner"
+        : "agent";
+
     const res = await sql`
       INSERT INTO users (
         name, email, password, phone, role, job_title, department, staff_id, status, created_at, updated_at
       )
       VALUES (
-        ${name}, ${email}, 'LincolnEstate2024!', ${phone || null}, ${role || "staff"},
-        ${job_title || "Estate Officer"}, ${department || "Operations"},
-        ${staff_id || `LE-${Date.now().toString().slice(-4)}`}, ${status || "active"}, NOW(), NOW()
+        ${name}, ${email}, 'PostArmy2024!', ${phone || null}, ${allowedRole},
+        ${job_title || (allowedRole === "chairman" ? "Estate Chairman" : allowedRole === "store_owner" ? "Store Admin" : "Estate Agent")},
+        ${department || "Estate Operations"},
+        ${staff_id || `PA-${Date.now().toString().slice(-4)}`}, ${status || "active"}, NOW(), NOW()
       )
       RETURNING id, name, email, phone, role, job_title, department, staff_id, status, created_at
     `;

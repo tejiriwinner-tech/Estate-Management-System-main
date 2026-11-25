@@ -62,7 +62,7 @@ export function AdminReportDropdownView({
             </h2>
             <p className="text-xs sm:text-sm text-muted mt-1 font-medium">
               Here&apos;s an overview of everything happening across
-              LincolnEstate today.
+              Post Army House Estate today.
             </p>
           </div>
 

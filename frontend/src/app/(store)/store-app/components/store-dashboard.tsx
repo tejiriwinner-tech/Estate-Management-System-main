@@ -226,31 +226,55 @@ export default function StoreDashboard() {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [printingTransaction, setPrintingTransaction] = useState<Transaction | null>(null);
   const [isInvoicePrintReady, setIsInvoicePrintReady] = useState(false);
-  const [recentOrders, setRecentOrders] = useState([
-    { id: "ORD-4821", customer: "Chinedu Resident", unit: "Villa A-402", items: "2x Basmati Rice (5kg), 1x Eggs Crate", total: 28800, status: "Pending", time: "8 mins ago" },
-    { id: "ORD-4820", customer: "Amina Bello", unit: "Phase 2, Plot 14", items: "3x Surface Cleaner, 1x Olive Oil", total: 19400, status: "Preparing", time: "25 mins ago" },
-    { id: "ORD-4819", customer: "Tunde Bakare", unit: "Phase 1, Block C4", items: "1x Inverter Battery Distilled Water (10L)", total: 7500, status: "Out for Delivery", time: "1 hr ago" },
-  ]);
+  const [recentOrders, setRecentOrders] = useState<
+    { id: number | string; order_no: string; customer: string; unit: string; items: string; comment: string; total: number; status: string }[]
+  >([]);
   const [catalogPreview, setCatalogPreview] = useState<{ id: number; name: string; category: string; price: number; stock: number; image?: string }[]>([]);
 
   useEffect(() => {
-    fetch("/api/v1/store/products")
+    fetch("/api/v1/store/products", { cache: "no-store" })
       .then((r) => r.json())
       .then((j) => {
         if (Array.isArray(j?.data)) setCatalogPreview(j.data.slice(0, 4));
       })
       .catch(() => {});
+
+    fetch("/api/v1/store/orders", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((j) => {
+        if (Array.isArray(j?.data)) {
+          setRecentOrders(
+            j.data.slice(0, 5).map((o: any) => ({
+              id: o.id,
+              order_no: o.order_no,
+              customer: o.resident_name,
+              unit: o.unit_number,
+              items: `${o.quantity}x ${o.product_name}`,
+              comment: o.delivery_comment || "",
+              total: Number(o.total_naira || 0),
+              status: o.status || "Pending",
+            }))
+          );
+        }
+      })
+      .catch(() => {});
   }, []);
 
-  const advanceOrderStatus = (orderId: string) => {
+  const advanceOrderStatus = async (orderId: number | string) => {
     const flow = ["Pending", "Preparing", "Out for Delivery", "Delivered"];
+    const target = recentOrders.find((o) => o.id === orderId);
+    if (!target) return;
+    const idx = flow.indexOf(target.status);
+    const nextStatus = flow[Math.min(flow.length - 1, idx + 1)];
+
     setRecentOrders((prev) =>
-      prev.map((o) => {
-        if (o.id !== orderId) return o;
-        const idx = flow.indexOf(o.status);
-        return { ...o, status: flow[Math.min(flow.length - 1, idx + 1)] };
-      })
+      prev.map((o) => (o.id === orderId ? { ...o, status: nextStatus } : o))
     );
+    await fetch("/api/v1/store/orders", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: orderId, status: nextStatus }),
+    }).catch(() => {});
   };
 
   useEffect(() => {
@@ -388,13 +412,13 @@ export default function StoreDashboard() {
       )}
       <aside className={`sidebar${isMobileNavOpen ? " sidebar--mobile-open" : ""}`} id="primary-sidebar" style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", background: "#ffffff", borderRight: "1px solid #e2e8f0" }}>
         <div>
-          <Link className="brand" href="/store-app" aria-label="LincolnEstate Store Portal" onClick={() => setIsMobileNavOpen(false)} style={{ padding: "18px 20px", borderBottom: "1px solid #f1f5f9", marginBottom: "8px" }}>
+          <Link className="brand" href="/store-app" aria-label="Post Army House Estate Store Portal" onClick={() => setIsMobileNavOpen(false)} style={{ padding: "18px 20px", borderBottom: "1px solid #f1f5f9", marginBottom: "8px" }}>
             <span className="brand-mark">
               <span className="brand-initial">LE</span>
               <span className="brand-badge-dot" />
             </span>
             <span className="brand-copy">
-              <strong>Lincoln<span style={{ color: "var(--primary)" }}>Estate</span></strong>
+              <strong>Post Army House<span style={{ color: "var(--primary)" }}> Estate</span></strong>
               <small style={{ color: "#C9A227", fontWeight: "700", letterSpacing: "0.05em" }}>STORE OWNER HUB</small>
             </span>
           </Link>
@@ -511,7 +535,7 @@ export default function StoreDashboard() {
             <span className="topbar-divider" />
             <div className="admin-profile">
               <div style={{ textAlign: "right" }}>
-                <strong style={{ display: "block", fontSize: "13px", color: "#1a1a1a" }}>{dashboard?.merchant.name || "Lincoln Central Mart"}</strong>
+                <strong style={{ display: "block", fontSize: "13px", color: "#1a1a1a" }}>{dashboard?.merchant.name || "Post Army House Mart"}</strong>
                 <small style={{ color: "#6b7280", fontSize: "11px" }}>Verified Store Merchant</small>
               </div>
               <div style={{ width: "38px", height: "38px", borderRadius: "10px", background: "#FEF2F2", border: "1px solid rgba(178,34,34,0.2)", display: "flex", alignItems: "center", justifyContent: "center", color: "#B22222", fontWeight: "bold", fontSize: "13px" }}>
@@ -548,7 +572,7 @@ export default function StoreDashboard() {
                 <span>Estate Marketplace</span>
                 <Icon name="chevron" size={7} />
                 <strong>
-                  {dashboard?.merchant.name || settings.siteName || "Lincoln Central Mart"}
+                  {dashboard?.merchant.name || settings.siteName || "Post Army House Mart"}
                 </strong>
               </div>
               <h1>Store Dashboard</h1>
@@ -693,13 +717,17 @@ export default function StoreDashboard() {
                       >
                         <div style={{ minWidth: 0 }}>
                           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                            <strong style={{ fontSize: "12px", fontFamily: "monospace", color: "#0f172a" }}>{order.id}</strong>
+                            <strong style={{ fontSize: "12px", fontFamily: "monospace", color: "#0f172a" }}>{order.order_no}</strong>
                             <span style={{ fontSize: "11px", fontWeight: 700, color: "#B22222" }}>{order.unit}</span>
-                            <span style={{ fontSize: "11px", color: "#94a3b8" }}>{order.time}</span>
                           </div>
                           <p style={{ margin: "3px 0 0", fontSize: "12px", fontWeight: 600, color: "#1e293b" }}>
                             {order.customer} — {order.items}
                           </p>
+                          {order.comment && (
+                            <p style={{ margin: "3px 0 0", fontSize: "11px", color: "#64748b", fontStyle: "italic" }}>
+                              Delivery note: &ldquo;{order.comment}&rdquo;
+                            </p>
+                          )}
                         </div>
                         <div style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
                           <strong style={{ fontSize: "13px", color: "#0f172a" }}>₦{order.total.toLocaleString()}</strong>
@@ -757,6 +785,13 @@ export default function StoreDashboard() {
                           gap: "6px",
                         }}
                       >
+                        {item.image && (
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            style={{ width: "100%", height: "76px", objectFit: "cover", borderRadius: "8px" }}
+                          />
+                        )}
                         <span style={{ fontSize: "10px", fontWeight: 700, textTransform: "uppercase", color: "#C9A227" }}>
                           {item.category}
                         </span>

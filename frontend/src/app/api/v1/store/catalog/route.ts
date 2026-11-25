@@ -25,7 +25,7 @@ export async function GET() {
             category: p.category || "Electronics",
             price: Math.round(Number(p.price_kobo || 0) / 100) || 4500,
             stock: Number(p.stock ?? 20),
-            description: p.description || "Verified Lincoln Estate Central Mart inventory item.",
+            description: p.description || "Verified Post Army House Estate Central Mart inventory item.",
             image: p.image || "/assets/products/catalog-3.jpeg",
             featured: Boolean(p.featured),
           }))
@@ -37,7 +37,7 @@ export async function GET() {
               category: "Homeware",
               price: 3800,
               stock: 45,
-              description: "Farm-fresh organic crate delivered daily to Lincoln Estate.",
+              description: "Farm-fresh organic crate delivered daily to Post Army House Estate.",
               image: "/assets/products/catalog-3.jpeg",
               featured: true,
             },

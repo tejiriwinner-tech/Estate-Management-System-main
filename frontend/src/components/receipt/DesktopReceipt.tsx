@@ -189,7 +189,7 @@ export function DesktopReceipt({ receipt }: DesktopReceiptProps) {
             <div>
               <p className="text-xs font-bold text-dark">Digital Verification</p>
               <p className="text-[10px] text-slate-400 leading-relaxed mt-1 max-w-[220px]">
-                Scan this code to verify the authenticity of this receipt on the LincolnEstate Secure Portal.
+                Scan this code to verify the authenticity of this receipt on the Post Army House Estate Secure Portal.
               </p>
             </div>
           </div>

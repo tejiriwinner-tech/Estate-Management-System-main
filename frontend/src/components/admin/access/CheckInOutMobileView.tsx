@@ -144,7 +144,7 @@ export function CheckInOutMobileView({
     link.setAttribute("href", encodeURI(csv));
     link.setAttribute(
       "download",
-      `LincolnEstate_Mobile_Access_Logs_${new Date().toISOString().slice(0, 10)}.csv`
+      `Post Army House Estate_Mobile_Access_Logs_${new Date().toISOString().slice(0, 10)}.csv`
     );
     document.body.appendChild(link);
     link.click();
@@ -423,7 +423,7 @@ export function CheckInOutMobileView({
 
       {/* ================= CORPORATE FOOTER ================= */}
       <footer className="pt-5 border-t border-border/60 text-center text-[11px] text-muted space-y-0.5">
-        <p>© 2024 LincolnEstate Corporate. All rights reserved.</p>
+        <p>© 2024 Post Army House Estate Corporate. All rights reserved.</p>
         <p>Built for secure property management.</p>
       </footer>
     </div>

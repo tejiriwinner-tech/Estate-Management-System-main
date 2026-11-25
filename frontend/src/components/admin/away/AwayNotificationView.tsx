@@ -169,7 +169,7 @@ export function AwayNotificationView() {
 
         {/* ================= CORPORATE FOOTER ================= */}
         <footer className="pt-6 border-t border-border/70 text-center text-xs text-muted font-medium">
-          © 2024 LincolnEstate Corporate. All rights reserved. Built for secure
+          © 2024 Post Army House Estate Corporate. All rights reserved. Built for secure
           property management.
         </footer>
       </div>

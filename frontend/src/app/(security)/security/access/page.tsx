@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { securityFetch } from "@/lib/security/api";
-import { Plus, X, QrCode } from "lucide-react";
+import { Plus, X, QrCode, Download } from "lucide-react";
 import LiveVerificationCard from "@/components/security/access/LiveVerificationCard";
 import AccessAlertPanel from "@/components/security/access/AccessAlertPanel";
 import GuestPassesPanel, { type GuestPass } from "@/components/security/access/GuestPassesPanel";
@@ -29,6 +29,34 @@ export default function AccessControlPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [gateFilter, setGateFilter] = useState("ALL");
+  const [exportPeriod, setExportPeriod] = useState<"daily" | "weekly" | "monthly">("daily");
+
+  function downloadAccessLogs(period: "daily" | "weekly" | "monthly") {
+    const rows = (data?.logs ?? []).filter((l) => {
+      const matchesStatus = statusFilter === "ALL" || l.status === statusFilter;
+      const matchesGate = gateFilter === "ALL" || (l.gateNo && l.gateNo.includes(gateFilter));
+      return matchesStatus && matchesGate;
+    });
+    const headers = ["Name", "Type", "Unit / Destination", "Gate", "Time", "Status"];
+    const csvRows = rows.map((r: any) => [
+      r.name || r.personName || "Guest",
+      r.personType || r.type || "Visitor",
+      r.unit || r.houseNo || "—",
+      r.gateNo || r.gate || "Gate 1",
+      r.time || r.timestamp || "Today",
+      r.status || "Granted",
+    ]);
+    const csv = [headers, ...csvRows]
+      .map((line) => line.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `post-army-house-access-logs-${period}-${new Date().toISOString().split("T")[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   const load = useCallback(async () => {
     try { setData(await securityFetch<AccessData>("/security/access")); setError(null); }
@@ -89,6 +117,25 @@ export default function AccessControlPage() {
           >
             Filters
           </button>
+          <div className="flex items-center gap-1 rounded-lg border border-[--color-border] bg-white px-2 py-1">
+            <select
+              value={exportPeriod}
+              onChange={(e) => setExportPeriod(e.target.value as "daily" | "weekly" | "monthly")}
+              aria-label="Export period"
+              className="text-xs font-bold text-slate-700 bg-transparent outline-none cursor-pointer"
+            >
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+            </select>
+            <button
+              type="button"
+              onClick={() => downloadAccessLogs(exportPeriod)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition-colors"
+            >
+              <Download className="w-3.5 h-3.5" /> Download Logs
+            </button>
+          </div>
           <button
             onClick={() => setDrawerOpen(true)}
             className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-colors"

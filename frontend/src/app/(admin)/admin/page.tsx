@@ -175,7 +175,7 @@ export default function DashboardPage() {
               </h1>
               <p className="text-sm sm:text-base text-muted mt-1 font-medium">
                 Here&apos;s an overview of everything happening across
-                LincolnEstate today.
+                Post Army House Estate today.
               </p>
             </div>
           </div>

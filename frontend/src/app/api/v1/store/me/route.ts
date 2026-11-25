@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 let inMemoryStoreState = {
   isOpen: true,
-  name: "Lincoln Central Mart",
+  name: "Post Army House Mart",
 };
 
 export async function GET() {
@@ -16,7 +16,7 @@ export async function GET() {
         return NextResponse.json({
           data: {
             id: stores[0].id,
-            name: stores[0].name || "Lincoln Central Mart",
+            name: stores[0].name || "Post Army House Mart",
             isOpen: Boolean(stores[0].is_open ?? inMemoryStoreState.isOpen),
             is_open: Boolean(stores[0].is_open ?? inMemoryStoreState.isOpen),
           },

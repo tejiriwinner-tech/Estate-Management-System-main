@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { BedDouble, Bath, MapPin, Eye, MessageCircle, Plus, Search, Home } from "lucide-react";
+import { BedDouble, Bath, MapPin, Eye, MessageCircle, Plus, Search, Home, Pencil } from "lucide-react";
 import { LISTING_STATUSES, Listing, ListingStatus } from "@/types/agentPortal";
 import { formatDate, formatNaira } from "./portalUtils";
 
@@ -9,6 +9,7 @@ interface ListingsSectionProps {
   listings: Listing[];
   onStatusChange: (listingId: string, status: ListingStatus) => void;
   onAdd: () => void;
+  onEdit?: (listing: Listing) => void;
 }
 
 const statusPill: Record<ListingStatus, string> = {
@@ -28,7 +29,7 @@ const TONES = [
 
 const FILTERS: Array<ListingStatus | "All"> = ["All", ...LISTING_STATUSES];
 
-export function ListingsSection({ listings, onStatusChange, onAdd }: ListingsSectionProps) {
+export function ListingsSection({ listings, onStatusChange, onAdd, onEdit }: ListingsSectionProps) {
   const [filter, setFilter] = useState<ListingStatus | "All">("All");
   const [query, setQuery] = useState("");
 
@@ -169,20 +170,32 @@ export function ListingsSection({ listings, onStatusChange, onAdd }: ListingsSec
                   <span className="flex items-center gap-1 text-slate-400"><MessageCircle className="h-3.5 w-3.5" />{l.inquiries}</span>
                 </div>
 
-                <div className="mt-4 flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
+                <div className="mt-4 flex items-center justify-between gap-2 border-t border-slate-100 pt-3">
                   <span className="text-[11px] font-medium text-slate-400">
                     {l.id} · listed {formatDate(l.listedOn, { day: "numeric", month: "short" })}
                   </span>
-                  <select
-                    value={l.status}
-                    onChange={(e) => onStatusChange(l.id, e.target.value as ListingStatus)}
-                    aria-label={`Status of ${l.title}`}
-                    className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-[11px] font-bold text-slate-700 focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/10"
-                  >
-                    {LISTING_STATUSES.map((s) => (
-                      <option key={s}>{s}</option>
-                    ))}
-                  </select>
+                  <div className="flex items-center gap-1.5">
+                    {onEdit && (
+                      <button
+                        type="button"
+                        onClick={() => onEdit(l)}
+                        className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-bold text-slate-700 hover:bg-slate-50"
+                      >
+                        <Pencil className="h-3 w-3 text-primary" />
+                        <span>Edit</span>
+                      </button>
+                    )}
+                    <select
+                      value={l.status}
+                      onChange={(e) => onStatusChange(l.id, e.target.value as ListingStatus)}
+                      aria-label={`Status of ${l.title}`}
+                      className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-[11px] font-bold text-slate-700 focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/10"
+                    >
+                      {LISTING_STATUSES.map((s) => (
+                        <option key={s}>{s}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
             </li>

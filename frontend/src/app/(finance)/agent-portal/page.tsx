@@ -56,6 +56,7 @@ export default function AgentPortalPage() {
   const { listings, requests, viewings, earnings } = data;
 
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [editingListing, setEditingListing] = useState<Listing | null>(null);
   const [matchRequestId, setMatchRequestId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
@@ -66,7 +67,10 @@ export default function AgentPortalPage() {
     setGreeting(h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening");
   }, []);
 
-  const closeAdd = useCallback(() => setIsAddOpen(false), []);
+  const closeAdd = useCallback(() => {
+    setIsAddOpen(false);
+    setEditingListing(null);
+  }, []);
   const closeMatches = useCallback(() => setMatchRequestId(null), []);
   const dismissToast = useCallback(() => setToast(null), []);
 
@@ -89,15 +93,28 @@ export default function AgentPortalPage() {
   const handleCreateListing = async (input: NewListingInput) => {
     const kind = input.listingType ?? "rent";
     try {
-      await agentsFetch("/agent/listings", {
-        method: "POST",
-        body: JSON.stringify({
-          title: input.title, listing_type: kind, property_type: input.type, zone: input.zone, address: input.address,
-          beds: input.beds, baths: input.baths, price: input.rentPerYear, price_period: kind === "rent" ? "per_year" : null,
-        }),
-      });
+      if (editingListing) {
+        await agentsFetch(`/agent/listings/${editingListing.id}`, {
+          method: "PATCH",
+          body: JSON.stringify({
+            title: input.title, listing_type: kind, property_type: input.type, zone: input.zone, address: input.address,
+            beds: input.beds, baths: input.baths, price: input.rentPerYear, image: input.image || undefined,
+          }),
+        });
+        setToast(`“${input.title}” updated successfully.`);
+      } else {
+        await agentsFetch("/agent/listings", {
+          method: "POST",
+          body: JSON.stringify({
+            title: input.title, listing_type: kind, property_type: input.type, zone: input.zone, address: input.address,
+            beds: input.beds, baths: input.baths, price: input.rentPerYear, price_period: kind === "rent" ? "per_year" : null,
+            image: input.image || undefined,
+          }),
+        });
+        setToast(`“${input.title}” was sent to the admin for approval. It goes public once approved.`);
+      }
       setIsAddOpen(false);
-      setToast(`“${input.title}” was sent to the admin for approval. It goes public once approved.`);
+      setEditingListing(null);
       await load();
     } catch (e) {
       fail(e, "Could not save the listing.");
@@ -188,7 +205,12 @@ export default function AgentPortalPage() {
 
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
           <div className="space-y-6 xl:col-span-8">
-            <ListingsSection listings={listings} onStatusChange={handleListingStatus} onAdd={() => setIsAddOpen(true)} />
+            <ListingsSection
+        listings={listings}
+        onStatusChange={handleListingStatus}
+        onAdd={() => { setEditingListing(null); setIsAddOpen(true); }}
+        onEdit={(l) => { setEditingListing(l); setIsAddOpen(true); }}
+      />
             <ClientRequestsSection
               requests={requests}
               listings={listings}
@@ -210,7 +232,12 @@ export default function AgentPortalPage() {
       </div>
 
       {/* Overlays sit outside the space-y container so they get no stray top margin */}
-      <AddListingModal isOpen={isAddOpen} onClose={closeAdd} onCreate={handleCreateListing} />
+      <AddListingModal
+        isOpen={isAddOpen}
+        onClose={closeAdd}
+        onCreate={handleCreateListing}
+        editingListing={editingListing}
+      />
       <MatchesModal request={matchRequest} listings={listings} onClose={closeMatches} onBook={handleBook} />
       <AgentToast message={toast} onDismiss={dismissToast} />
     </>

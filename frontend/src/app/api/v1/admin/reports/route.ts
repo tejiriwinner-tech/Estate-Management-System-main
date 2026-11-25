@@ -11,7 +11,7 @@ export async function GET() {
     ];
 
     const lifeThreatAlerts = [
-      { id: 1, title: "Medical Emergency - Villa A-402", severity: "CRITICAL", location: "Palm Crescent", reported_at: "Today, 02:15 PM", status: "Responding", responder: "Lincoln Paramedics" },
+      { id: 1, title: "Medical Emergency - Villa A-402", severity: "CRITICAL", location: "Palm Crescent", reported_at: "Today, 02:15 PM", status: "Responding", responder: "Estate Paramedics" },
       { id: 2, title: "Power Surge & Smoke Smell - Block B", severity: "HIGH", location: "Royal Avenue", reported_at: "Yesterday, 08:30 PM", status: "Resolved", responder: "Estate Fire Marshall" },
     ];
 

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { AgentPortalShell } from "@/components/agent-portal/AgentPortalShell";
 
 export const metadata: Metadata = {
-  title: "LincolnEstate - Agent Portal",
+  title: "Post Army House Estate - Agent Portal",
   description: "Manage your rental listings, client requests, viewings and commission.",
 };
 

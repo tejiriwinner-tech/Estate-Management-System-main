@@ -68,10 +68,10 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     totalAmount: amount,
     paymentMethod: "Paystack Verified Settlement",
     transactionDate: txDate,
-    generatedBy: "Lincoln Estate Treasury System v2.4",
+    generatedBy: "Post Army House Estate Treasury System v2.4",
     qrVerificationUrl: `https://lincolnestatemanagement.vercel.app/payments/receipt/${encodeURIComponent(cleanRef)}`,
     authorizationStampText: "LINCOLN ESTATE APPROVED",
-    disclaimer: "This electronic receipt is digitally signed by Lincoln Estate Management and serves as official proof of levy clearance.",
+    disclaimer: "This electronic receipt is digitally signed by Post Army House Estate Management and serves as official proof of levy clearance.",
   };
 
   return NextResponse.json({ data });

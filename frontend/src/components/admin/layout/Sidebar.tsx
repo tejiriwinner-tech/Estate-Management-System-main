@@ -28,7 +28,7 @@ interface SidebarProps {
 const navItems = [
   { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
   { name: "Finance", href: "/admin/finance", icon: CreditCard },
-  { name: "Store", href: "/admin/store", icon: Store },
+  { name: "Store Management", href: "/admin/store", icon: Store },
   { name: "Messages", href: "/admin/messages", icon: MessageSquare },
   { name: "Reports", href: "/admin/reports", icon: BarChart3 },
   { name: "Staffs", href: "/admin/staffs", icon: Users },
@@ -96,7 +96,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             </div>
             <div className="flex flex-col">
               <span className="font-extrabold text-base tracking-tight text-dark">
-                Lincoln<span className="text-primary">Estate</span>
+                Post Army House<span className="text-primary"> Estate</span>
               </span>
               <span className="text-[10px] font-semibold tracking-wider text-muted uppercase">
                 Admin Dashboard
@@ -119,7 +119,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           {navItems.map((item) => {
             const Icon = item.icon;
             const isFinanceItem = item.name === "Finance";
-            const isStoreItem = item.name === "Store";
 
             if (isFinanceItem) {
               return (
@@ -166,74 +165,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                   >
                     <div className="pl-4 pr-1 py-1 space-y-1 border-l-2 border-primary/20 ml-5 my-1">
                       {financeSubLinks.map((sub) => {
-                        const isSubActive = pathname === sub.href;
-                        return (
-                          <Link
-                            key={sub.name}
-                            href={sub.href}
-                            onClick={onClose}
-                            className={cn(
-                              "block px-3 py-2 rounded-lg text-xs font-medium transition-colors",
-                              isSubActive
-                                ? "bg-primary-light text-primary font-bold shadow-xs"
-                                : "text-muted hover:text-dark hover:bg-surface-subtle"
-                            )}
-                          >
-                            {sub.name}
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              );
-            }
-
-            if (isStoreItem) {
-              return (
-                <div key={item.name} className="space-y-1">
-                  <button
-                    type="button"
-                    aria-expanded={storeOpen}
-                    aria-controls="admin-store-submenu"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setStoreOpen((prev) => !prev);
-                    }}
-                    className={cn(
-                      "flex items-center justify-between w-full px-4 py-3 rounded-xl text-sm font-medium transition-all text-left group select-none",
-                      isStoreActive
-                        ? "bg-primary text-white shadow-sm font-semibold"
-                        : "text-muted hover:text-dark hover:bg-surface-subtle"
-                    )}
-                  >
-                    <div className="flex items-center gap-3.5">
-                      <Icon
-                        className={cn(
-                          "w-5 h-5 transition-colors",
-                          isStoreActive ? "text-white" : "text-muted group-hover:text-primary"
-                        )}
-                      />
-                      <span>Store</span>
-                    </div>
-                    <ChevronDown
-                      className={cn(
-                        "w-4 h-4 transition-transform duration-200",
-                        storeOpen ? "rotate-180" : "rotate-0",
-                        isStoreActive ? "text-white/80" : "text-muted"
-                      )}
-                    />
-                  </button>
-
-                  <div
-                    id="admin-store-submenu"
-                    className={cn(
-                      "transition-all duration-200 overflow-hidden",
-                      storeOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0 pointer-events-none"
-                    )}
-                  >
-                    <div className="pl-4 pr-1 py-1 space-y-1 border-l-2 border-primary/20 ml-5 my-1">
-                      {storeSubLinks.map((sub) => {
                         const isSubActive = pathname === sub.href;
                         return (
                           <Link
