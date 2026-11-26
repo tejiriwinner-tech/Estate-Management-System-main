@@ -44,8 +44,16 @@ async function ensureTable() {
   await sql`ALTER TABLE service_charges ADD COLUMN IF NOT EXISTS paid_at TIMESTAMP`;
   await sql`ALTER TABLE service_charges ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW()`;
   await sql`ALTER TABLE service_charges ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT NOW()`;
-  await sql`ALTER TABLE service_charges ADD COLUMN IF NOT EXISTS name VARCHAR(255)`;
-  await sql`ALTER TABLE service_charges ALTER COLUMN name DROP NOT NULL`;
+  const reqCols = await sql`
+    SELECT column_name FROM information_schema.columns
+    WHERE table_name = 'service_charges'
+      AND is_nullable = 'NO'
+      AND column_default IS NULL
+      AND column_name <> 'id'
+  `;
+  for (const c of reqCols) {
+    await sql.unsafe(`ALTER TABLE service_charges ALTER COLUMN "${c.column_name}" DROP NOT NULL`).catch(() => {});
+  }
   const idCol = await sql`
     SELECT data_type FROM information_schema.columns
     WHERE table_name = 'service_charges' AND column_name = 'id'
