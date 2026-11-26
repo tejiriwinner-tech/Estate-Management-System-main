@@ -15,6 +15,8 @@ interface UserFilterBarProps {
 const roleOptions = [
   { value: "all", label: "All Roles" },
   { value: "all_staff", label: "All Staff" },
+  { value: "store_owner", label: "Shop Owners" },
+  { value: "chairman", label: "Estate Chairman" },
   { value: "managers", label: "Managers" },
   { value: "agents", label: "Agents" },
   { value: "maintenance", label: "Maintenance" },
@@ -24,6 +26,7 @@ const roleOptions = [
 
 const mobilePills = [
   { value: "all_staff", label: "All Staff" },
+  { value: "store_owner", label: "Shop Owners" },
   { value: "managers", label: "Managers" },
   { value: "agents", label: "Agents" },
   { value: "maintenance", label: "Maintenance" },

@@ -6,6 +6,8 @@ export type UserRole =
   | 'maintenance'
   | 'security'
   | 'resident'
+  | 'store_owner'
+  | 'chairman'
   | 'staff';
 
 export type UserStatus = 'active' | 'inactive' | 'suspended' | 'pending';

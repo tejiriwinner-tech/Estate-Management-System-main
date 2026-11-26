@@ -37,7 +37,7 @@ export default function UsersPage() {
     try {
       setLoading(true);
       const [usersRes, statsRes] = await Promise.all([
-        adminUsers.list({ per_page: 50, page: currentPage }),
+        adminUsers.list({ per_page: 200, page: 1 }),
         adminUsers.stats().catch(() => null),
       ]);
 
@@ -92,9 +92,15 @@ export default function UsersPage() {
 
       if (selectedRole === "all" || selectedRole === "all roles") return true;
       if (selectedRole === "all_staff" || selectedRole === "all staff") {
-        return ["manager", "agent", "maintenance", "security", "admin", "super_admin", "staff"].includes(
+        return ["manager", "agent", "maintenance", "security", "admin", "super_admin", "staff", "store_owner", "chairman"].includes(
           user.role
         );
+      }
+      if (selectedRole === "store_owner") {
+        return user.role === "store_owner" || (user.job_title || "").toLowerCase().includes("store");
+      }
+      if (selectedRole === "chairman") {
+        return user.role === "chairman" || (user.job_title || "").toLowerCase().includes("chairman");
       }
       if (selectedRole === "managers") return user.role === "manager";
       if (selectedRole === "agents") return user.role === "agent";
@@ -105,6 +111,18 @@ export default function UsersPage() {
       return user.role === selectedRole;
     });
   }, [users, searchTerm, selectedRole]);
+
+  const PAGE_SIZE = 10;
+  const computedTotalPages = Math.max(1, Math.ceil(filteredUsers.length / PAGE_SIZE));
+  const safeCurrentPage = Math.min(currentPage, computedTotalPages);
+  const paginatedUsers = useMemo(() => {
+    const start = (safeCurrentPage - 1) * PAGE_SIZE;
+    return filteredUsers.slice(start, start + PAGE_SIZE);
+  }, [filteredUsers, safeCurrentPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedRole]);
 
   const handleAddUser = () => {
     setActiveUser(null);
@@ -318,10 +336,10 @@ export default function UsersPage() {
           <div className="hidden lg:grid lg:grid-cols-12 gap-6 items-start">
             <div className="lg:col-span-9">
               <UserTableDesktop
-                users={filteredUsers}
-                totalCount={stats.total_users}
-                currentPage={currentPage}
-                totalPages={totalPages}
+                users={paginatedUsers}
+                totalCount={filteredUsers.length}
+                currentPage={safeCurrentPage}
+                totalPages={computedTotalPages}
                 onPageChange={setCurrentPage}
                 onEdit={handleEditUser}
                 onDelete={handleDeleteUser}

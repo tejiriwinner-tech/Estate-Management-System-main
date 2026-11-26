@@ -31,6 +31,10 @@ export function UserTableDesktop({
 }: UserTableDesktopProps) {
   const getRoleBadge = (role: string) => {
     switch (role) {
+      case "store_owner":
+        return "Shop Owner";
+      case "chairman":
+        return "Chairman";
       case "manager":
         return "Manager";
       case "agent":
@@ -203,8 +207,11 @@ export function UserTableDesktop({
       {/* Pagination Footer */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 border-t border-border bg-white text-xs">
         <div className="text-muted font-medium">
-          Showing <span className="font-bold text-dark">1–{users.length}</span> of{" "}
-          <span className="font-bold text-dark">{totalCount.toLocaleString()}</span> entries
+          Showing{" "}
+          <span className="font-bold text-dark">
+            {totalCount === 0 ? 0 : `${(currentPage - 1) * 10 + 1}–${(currentPage - 1) * 10 + users.length}`}
+          </span>{" "}
+          of <span className="font-bold text-dark">{totalCount.toLocaleString()}</span> entries
         </div>
 
         <div className="flex items-center gap-1.5">
@@ -216,7 +223,7 @@ export function UserTableDesktop({
             Previous
           </button>
 
-          {[1, 2, 3].map((page) => (
+          {Array.from({ length: Math.max(1, totalPages) }, (_, i) => i + 1).map((page) => (
             <button
               key={page}
               onClick={() => onPageChange(page)}
