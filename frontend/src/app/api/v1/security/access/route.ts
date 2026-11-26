@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
+import { ensureAccessLogsTable } from "@/lib/security/accessLogsDb";
 
 export const dynamic = "force-dynamic";
 
@@ -9,65 +10,73 @@ export async function GET() {
     let passes: any[] = [];
 
     try {
+      await ensureAccessLogsTable();
       logs = await sql`
-        SELECT a.id, a.name, a.gate, a.direction, a.status, a.verification_type, a.created_at,
-               u.name as resident_name, u.unit_number
-        FROM access_logs a
-        LEFT JOIN users u ON u.id = a.user_id
-        ORDER BY a.id DESC
+        SELECT * FROM access_logs
+        ORDER BY id DESC
         LIMIT 30
       `;
 
       passes = await sql`
-        SELECT p.id, p.name, p.invited_by, p.kind, p.expires_at, p.status, p.created_at
-        FROM guest_passes p
-        ORDER BY p.id DESC
+        SELECT * FROM guest_passes
+        ORDER BY id DESC
         LIMIT 20
       `;
     } catch (e: any) {
       console.error("Error fetching security access:", e.message);
     }
 
-    const trafficBars = [
-      { height: 35 }, { height: 60 }, { height: 45 }, { height: 80, active: true },
-      { height: 50 }, { height: 65 }, { height: 40 }, { height: 70 },
-      { height: 55 }, { height: 90 }, { height: 65 }, { height: 75 },
-    ];
+    const mappedLogs = logs.map((l) => {
+      const st = String(l.status || "").toLowerCase();
+      return {
+        id: String(l.id),
+        date: new Date(l.created_at || Date.now()).toLocaleDateString(),
+        time: new Date(l.created_at || Date.now()).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        name: l.visitor_name || l.person_name || l.name || "Visitor",
+        role: l.role || "Visitor",
+        verificationType: l.verification_type || "QR Code",
+        gateNo: l.gate_number || l.gate || "Gate 1",
+        gate: l.gate_number || l.gate || "Gate 1",
+        status: st === "denied" ? "Denied" : "Success",
+        timestamp: new Date(l.created_at || Date.now()).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      };
+    });
+
+    const latestGranted = mappedLogs.find((l) => l.status === "Success") || null;
+    const latestDeniedRow = logs.find((l) => String(l.status || "").toLowerCase() === "denied") || null;
 
     return NextResponse.json({
       data: {
-        logs: logs.map((l) => ({
-          id: String(l.id),
-          date: new Date(l.created_at || Date.now()).toLocaleDateString(),
-          time: new Date(l.created_at || Date.now()).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-          name: l.name || "Visitor",
-          role: l.resident_name ? "Resident Guest" : "Visitor",
-          verificationType: l.verification_type || "RFID Card",
-          gate: l.gate || "Gate 1",
-          status: l.status === "granted" ? "Granted" : "Denied",
-        })),
-        total: logs.length,
-        trafficBars: logs.length > 0 ? trafficBars : [],
-        entriesLast12h: logs.filter((l) => l.status === "granted" || l.status === "Success").length,
-        latestVerified: logs[0]
+        logs: mappedLogs,
+        total: mappedLogs.length,
+        trafficBars: mappedLogs.length > 0 ? [{ height: 65, active: true }] : [],
+        entriesLast12h: mappedLogs.filter((l) => l.status === "Success").length,
+        latestVerified: latestGranted
           ? {
-              name: logs[0].name || "Visitor",
-              role: logs[0].resident_name ? "Resident Guest" : "Verified Entry",
-              verificationType: logs[0].verification_type || "QR / Gate Check",
-              gate: logs[0].gate || "Gate 1",
-              time: new Date(logs[0].created_at || Date.now()).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+              name: latestGranted.name,
+              role: latestGranted.role,
+              verificationType: latestGranted.verificationType,
+              gate: latestGranted.gate,
+              time: latestGranted.time,
             }
           : null,
-        latestDenied: null,
+        latestDenied: latestDeniedRow
+          ? {
+              name: latestDeniedRow.visitor_name || latestDeniedRow.person_name || latestDeniedRow.name || "Unknown",
+              time: new Date(latestDeniedRow.created_at || Date.now()).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+              reason: latestDeniedRow.reason || latestDeniedRow.notes || "Access Denied",
+              gate: latestDeniedRow.gate_number || latestDeniedRow.gate || "Gate 1",
+            }
+          : null,
         passes: passes.map((p) => ({
           id: `GP-${p.id}`,
-          code: `PASS-${p.id}`,
-          guestName: p.name,
+          code: p.code || `PASS-${p.id}`,
+          guestName: p.guest_name || p.name || "Visitor",
           hostName: p.invited_by || "Resident",
           unit: "Post Army Housing Estate",
           status: p.status || "active",
           validFrom: p.created_at ? new Date(p.created_at).toISOString().split("T")[0] : "Today",
-          validUntil: p.expires_at ? new Date(p.expires_at).toISOString().split("T")[0] : "Tomorrow",
+          validUntil: p.valid_until || p.expires_at ? new Date(p.valid_until || p.expires_at).toISOString().split("T")[0] : "Today",
         })),
       },
     });

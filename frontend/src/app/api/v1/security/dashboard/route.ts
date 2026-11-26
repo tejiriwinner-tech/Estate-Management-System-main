@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/db";
+import { ensureAccessLogsTable } from "@/lib/security/accessLogsDb";
 
 export const dynamic = "force-dynamic";
 
@@ -69,43 +70,47 @@ export async function GET() {
     }
 
     try {
+      await ensureAccessLogsTable();
       const actRes = await sql`SELECT COUNT(*)::int as count FROM access_logs`;
       activitiesCount = Number(actRes[0]?.count || 0);
 
       const logRows = await sql`
-        SELECT id, visitor_name, gate_number, direction, status, reason, created_at
-        FROM access_logs
+        SELECT * FROM access_logs
         ORDER BY id DESC
         LIMIT 15
       `;
-      recentAccessLogs = logRows.map((l: any) => ({
-        id: Number(l.id),
-        person: l.visitor_name || "Visitor",
-        gate: l.gate_number || "Gate 1",
-        direction: l.direction || "in",
-        status: l.status === "denied" ? "Access Denied" : l.direction === "out" ? "Exit Recorded" : "Entry Cleared",
-        reason: l.reason || "Gate Check",
-        time: l.created_at ? new Date(l.created_at).toLocaleTimeString("en-NG", { hour: "2-digit", minute: "2-digit" }) : "Recent",
-      }));
+      recentAccessLogs = logRows.map((l: any) => {
+        const st = String(l.status || "").toLowerCase();
+        const dir = String(l.direction || "in").toLowerCase();
+        return {
+          id: Number(l.id),
+          person: l.visitor_name || l.person_name || l.name || "Visitor",
+          gate: l.gate_number || l.gate || "Gate 1",
+          direction: dir,
+          status: st === "denied" ? "Access Denied" : dir === "out" ? "Exit Recorded" : "Entry Cleared",
+          reason: l.reason || l.notes || "Gate Check",
+          time: l.created_at ? new Date(l.created_at).toLocaleTimeString("en-NG", { hour: "2-digit", minute: "2-digit" }) : "Recent",
+        };
+      });
     } catch {
       // ignore
     }
 
     try {
       const passRows = await sql`
-        SELECT id, guest_name, invited_by, purpose, code, valid_until, status, created_at
-        FROM guest_passes
-        WHERE status = 'active'
+        SELECT * FROM guest_passes
+        WHERE status IN ('active', 'used')
         ORDER BY id DESC
         LIMIT 20
       `;
       activePasses = passRows.map((p: any) => ({
         id: Number(p.id),
-        guest_name: p.guest_name,
+        guest_name: p.guest_name || p.name || "Visitor",
         invited_by: p.invited_by || "Resident",
         purpose: p.purpose || "Visit",
-        code: p.code,
-        valid_until: p.valid_until,
+        code: p.code || `PASS-${p.id}`,
+        status: p.status || "active",
+        valid_until: p.valid_until || p.expires_at,
       }));
     } catch {
       // ignore

@@ -1,16 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/db";
+import { insertAccessLog } from "@/lib/security/accessLogsDb";
 
 export const dynamic = "force-dynamic";
 
 async function logGateClearance(visitorName: string, unitOrReason: string, direction: "in" | "out", status: "granted" | "denied") {
   try {
-    await sql`
-      INSERT INTO access_logs (visitor_name, gate_number, direction, status, reason, created_at, updated_at)
-      VALUES (${visitorName}, 'Gate 1', ${direction}, ${status}, ${unitOrReason}, NOW(), NOW())
-    `;
-  } catch {
-    // Non-blocking
+    await insertAccessLog({
+      name: visitorName,
+      role: unitOrReason.startsWith("Resident") ? "Resident" : "Visitor",
+      gate: "Gate 1",
+      direction,
+      status,
+      verificationType: "QR Code",
+      reason: unitOrReason,
+    });
+  } catch (e: any) {
+    console.error("Access log insert error:", e?.message);
   }
 }
 

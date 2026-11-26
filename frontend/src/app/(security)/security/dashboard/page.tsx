@@ -44,6 +44,7 @@ interface ActivePassItem {
   invited_by: string;
   purpose: string;
   code: string;
+  status?: string;
   valid_until?: string;
 }
 
@@ -353,29 +354,49 @@ export default function DashboardPage() {
             </div>
           ) : (
             <div className="space-y-2.5">
-              {passes.map((p) => (
-                <div
-                  key={p.id}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3"
-                >
-                  <div className="min-w-0">
-                    <p className="text-xs font-extrabold text-slate-900 truncate">{p.guest_name}</p>
-                    <p className="text-[11px] text-slate-500 truncate">
-                      Host: {p.invited_by} • {p.purpose}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      setSearchQuery(p.code);
-                      void handleVerify(e, p.code);
-                    }}
-                    className="shrink-0 rounded-lg bg-[#1A1A1A] hover:bg-[#B22222] px-3 py-1.5 font-mono text-[11px] font-bold text-white transition-colors cursor-pointer"
+              {passes.map((p) => {
+                const isCheckedIn = p.status === "used";
+                return (
+                  <div
+                    key={p.id}
+                    className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3"
                   >
-                    Verify {p.code}
-                  </button>
-                </div>
-              ))}
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs font-extrabold text-slate-900 truncate">{p.guest_name}</p>
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold border ${
+                            isCheckedIn
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                              : "bg-amber-50 text-amber-800 border-amber-200"
+                          }`}
+                        >
+                          {isCheckedIn ? "Checked In" : "Awaiting"}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 truncate mt-0.5">
+                        Host: {p.invited_by} • {p.purpose}
+                      </p>
+                    </div>
+                    {isCheckedIn ? (
+                      <span className="shrink-0 rounded-lg bg-emerald-600 px-3 py-1.5 font-mono text-[11px] font-bold text-white">
+                        Cleared ({p.code})
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          setSearchQuery(p.code);
+                          void handleVerify(e, p.code);
+                        }}
+                        className="shrink-0 rounded-lg bg-[#1A1A1A] hover:bg-[#B22222] px-3 py-1.5 font-mono text-[11px] font-bold text-white transition-colors cursor-pointer"
+                      >
+                        Verify {p.code}
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
