@@ -19,6 +19,7 @@ export interface UnifiedNavItem {
 interface UnifiedPortalShellProps {
   portalLabel: string;
   roleSubtitle: string;
+  displayNameOverride?: string;
   homeHref: string;
   messagesHref: string;
   searchPlaceholder?: string;
@@ -30,6 +31,7 @@ interface UnifiedPortalShellProps {
 export function UnifiedPortalShell({
   portalLabel,
   roleSubtitle,
+  displayNameOverride,
   homeHref,
   messagesHref,
   searchPlaceholder = "Search Post Army House Estate...",
@@ -42,7 +44,7 @@ export function UnifiedPortalShell({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { summary, refresh } = useChatSummary();
   const session = readSession();
-  const displayName = session?.name || portalLabel;
+  const displayName = displayNameOverride || session?.name || portalLabel;
   const initials = displayName
     .split(" ")
     .map((p) => p[0])

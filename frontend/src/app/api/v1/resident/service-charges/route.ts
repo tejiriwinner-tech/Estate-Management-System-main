@@ -87,26 +87,7 @@ export async function GET(req: NextRequest) {
     });
   } catch (err: any) {
     console.warn("Resident service charges fallback:", err.message);
-    return NextResponse.json({
-      data: [
-        {
-          id: 1,
-          resident_name: "Chinedu Resident",
-          unit_number: "Villa A-402",
-          service_type: "Monthly Estate Security & Maintenance Levy",
-          amount: 35000,
-          billing_cycle: "Monthly",
-          due_date: "2026-11-30",
-          status: "Pending",
-          invoice_no: "SC-2026-1041",
-          notes: "24/7 perimeter patrol, ANPR gate maintenance & street illumination",
-          receipt_url: null,
-          receipt_name: null,
-          payment_reference: null,
-          paid_at: null,
-        },
-      ],
-    });
+    return NextResponse.json({ data: [] });
   }
 }
 

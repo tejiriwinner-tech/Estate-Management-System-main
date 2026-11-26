@@ -1,39 +1,53 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-let inMemoryStoreState = {
-  isOpen: true,
-  name: "Post Army House Mart",
-};
-
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const { searchParams } = new URL(req.url);
+    const email = (searchParams.get("email") || "").trim().toLowerCase();
+
     try {
-      const stores = await sql`SELECT id, name, is_open FROM stores LIMIT 1`;
-      if (stores.length > 0) {
+      let rows: any[] = [];
+      if (email) {
+        rows = await sql`
+          SELECT id, name, category, shop_unit, owner_name, owner_email, status
+          FROM estate_stores
+          WHERE LOWER(owner_email) = ${email}
+          LIMIT 1
+        `;
+      }
+      if (rows.length === 0) {
+        rows = await sql`
+          SELECT id, name, category, shop_unit, owner_name, owner_email, status
+          FROM estate_stores
+          ORDER BY id DESC
+          LIMIT 1
+        `;
+      }
+      if (rows.length > 0) {
+        const s = rows[0];
+        const isOpen = (s.status || "active") === "active";
         return NextResponse.json({
           data: {
-            id: stores[0].id,
-            name: stores[0].name || "Post Army House Mart",
-            isOpen: Boolean(stores[0].is_open ?? inMemoryStoreState.isOpen),
-            is_open: Boolean(stores[0].is_open ?? inMemoryStoreState.isOpen),
+            id: Number(s.id),
+            name: s.name,
+            category: s.category || "General & Groceries",
+            shop_unit: s.shop_unit || "Commercial Plaza",
+            owner_name: s.owner_name,
+            owner_email: s.owner_email,
+            status: s.status || "active",
+            isOpen,
+            is_open: isOpen,
           },
         });
       }
-    } catch {
-      // fallback
+    } catch (e: any) {
+      console.warn("Store /me DB lookup:", e.message);
     }
 
-    return NextResponse.json({
-      data: {
-        id: 1,
-        name: inMemoryStoreState.name,
-        isOpen: inMemoryStoreState.isOpen,
-        is_open: inMemoryStoreState.isOpen,
-      },
-    });
+    return NextResponse.json({ data: null });
   } catch (err: any) {
     return NextResponse.json(
       { message: "Could not fetch store status", error: err.message },
@@ -42,25 +56,41 @@ export async function GET() {
   }
 }
 
-export async function PATCH(req: Request) {
+export async function PATCH(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}));
     const newStatus = Boolean(body.is_open ?? body.isOpen);
-    inMemoryStoreState.isOpen = newStatus;
+    const statusText = newStatus ? "active" : "archived";
+    const storeId = body.id ? Number(body.id) : null;
 
+    let updated: any = null;
     try {
-      await sql`UPDATE stores SET is_open = ${newStatus} WHERE id = (SELECT id FROM stores LIMIT 1)`;
-    } catch {
-      // in memory state preserved
+      const rows = storeId
+        ? await sql`
+            UPDATE estate_stores
+            SET status = ${statusText}, updated_at = NOW()
+            WHERE id = ${storeId}
+            RETURNING id, name, category, shop_unit, owner_name, owner_email, status
+          `
+        : await sql`
+            UPDATE estate_stores
+            SET status = ${statusText}, updated_at = NOW()
+            WHERE id = (SELECT id FROM estate_stores ORDER BY id DESC LIMIT 1)
+            RETURNING id, name, category, shop_unit, owner_name, owner_email, status
+          `;
+      if (rows.length > 0) updated = rows[0];
+    } catch (e: any) {
+      console.warn("Store /me PATCH error:", e.message);
     }
 
     return NextResponse.json({
-      data: {
-        id: 1,
-        name: inMemoryStoreState.name,
-        isOpen: newStatus,
-        is_open: newStatus,
-      },
+      data: updated
+        ? {
+            ...updated,
+            isOpen: updated.status === "active",
+            is_open: updated.status === "active",
+          }
+        : { isOpen: newStatus, is_open: newStatus },
     });
   } catch (err: any) {
     return NextResponse.json(
