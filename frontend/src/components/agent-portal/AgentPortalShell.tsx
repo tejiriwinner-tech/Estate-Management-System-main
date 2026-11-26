@@ -17,6 +17,7 @@ import { initialsFor } from "@/components/agents/initials";
 import { NotificationPopover } from "@/components/chat/NotificationPopover";
 import { useChatSummary } from "@/lib/chat/useChatSummary";
 import { CodedEmergencyTrigger } from "@/components/emergency/CodedEmergencyTrigger";
+import { LiveGpsTracker } from "@/components/location/LiveGpsTracker";
 
 export interface PortalAgent {
   id: string;
@@ -208,6 +209,12 @@ export function AgentPortalShell({ children }: { children: React.ReactNode }) {
             </nav>
 
             <div className="border-t border-slate-100 pt-4 space-y-2">
+              <LiveGpsTracker
+                userEmail={agent?.email}
+                userName={agent?.name || "Estate Agent"}
+                userRole="Agent"
+                label={agent?.zone || "Agent Field"}
+              />
               <CodedEmergencyTrigger
                 senderName={agent?.name || "Estate Agent"}
                 senderRole="Agent"

@@ -20,6 +20,7 @@ import { cn } from "@/lib/admin/utils";
 import { clearSession, readSession } from "@/components/auth/session";
 import { useChatSummary } from "@/lib/chat/useChatSummary";
 import { CodedEmergencyTrigger } from "@/components/emergency/CodedEmergencyTrigger";
+import { LiveGpsTracker } from "@/components/location/LiveGpsTracker";
 
 interface SidebarProps {
   isOpen?: boolean;
@@ -239,6 +240,12 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
         {/* Security / System Footer */}
         <div className="p-4 border-t border-border/60 space-y-2">
+          <LiveGpsTracker
+            userEmail={readSession()?.email}
+            userName={readSession()?.name || "Estate Administrator"}
+            userRole="Admin"
+            label="Estate Admin HQ"
+          />
           <CodedEmergencyTrigger
             senderName={readSession()?.name || "Estate Administrator"}
             senderRole="Admin"

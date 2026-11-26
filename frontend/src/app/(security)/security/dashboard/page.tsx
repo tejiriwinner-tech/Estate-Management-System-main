@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import StatCard from "@/components/security/dashboard/StatCard";
 import { SecurityError, useSecurityData } from "@/lib/security/useSecurity";
+import { SecurityDispatchMap } from "@/components/security/SecurityDispatchMap";
 
 interface EmergencyItem {
   id: number;
@@ -183,6 +184,14 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Live Google Maps GPS Tracker across all active dashboards & emergencies */}
+      <SecurityDispatchMap
+        alerts={emergencies.map((e) => ({
+          ...e,
+          created_at: e.created_at || new Date().toISOString(),
+        }))}
+      />
 
       {/* Live Emergency SOS Alerts Panel (Instant Notification across Resident / Store / Agent / Admin) */}
       {emergencies.length > 0 && (

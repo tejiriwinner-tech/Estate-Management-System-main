@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { AlertTriangle, Crosshair, MapPin, Radio, ShieldAlert, ShieldCheck, X } from "lucide-react";
 import { EMERGENCY_CODE_LIST, type EmergencyCodeKey } from "@/lib/emergencyCodes";
+import { readStoredGps } from "@/components/location/LiveGpsTracker";
 
 interface CodedEmergencyTriggerProps {
   senderName: string;
@@ -28,8 +29,13 @@ export function CodedEmergencyTrigger({
   const [note, setNote] = useState("");
   const [phase, setPhase] = useState<"form" | "sending" | "sent" | "error">("form");
   const [errorMsg, setErrorMsg] = useState("");
-  const [gpsStatus, setGpsStatus] = useState<"idle" | "locating" | "locked" | "denied">("idle");
-  const [gpsCoords, setGpsCoords] = useState<{ lat: number; lng: number; accuracy: number } | null>(null);
+  const [gpsStatus, setGpsStatus] = useState<"idle" | "locating" | "locked" | "denied">(() =>
+    readStoredGps() ? "locked" : "idle"
+  );
+  const [gpsCoords, setGpsCoords] = useState<{ lat: number; lng: number; accuracy: number } | null>(() => {
+    const s = readStoredGps();
+    return s ? { lat: s.lat, lng: s.lng, accuracy: s.accuracy } : null;
+  });
 
   useEffect(() => {
     setLocation(defaultLocation);

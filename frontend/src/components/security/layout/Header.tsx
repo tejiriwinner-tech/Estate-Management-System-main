@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { Search, Menu, Shield } from "lucide-react";
 import { NotificationPopover } from "@/components/chat/NotificationPopover";
 import { useChatSummary } from "@/lib/chat/useChatSummary";
+import { LiveGpsTracker } from "@/components/location/LiveGpsTracker";
+import { readSession } from "@/components/auth/session";
 
 interface HeaderProps {
   title: string;
@@ -41,8 +43,17 @@ export default function Header({ title, onMenuClick }: HeaderProps) {
         />
       </div>
 
-      {/* Right: Alert Bell, and Officer Profile */}
-      <div className="flex items-center gap-4">
+      {/* Right: Live Patrol GPS, Alert Bell, and Officer Profile */}
+      <div className="flex items-center gap-3">
+        <div className="hidden sm:block">
+          <LiveGpsTracker
+            userEmail={readSession()?.email}
+            userName={readSession()?.name || "Security Officer"}
+            userRole="Security"
+            label="Security Patrol"
+            compact
+          />
+        </div>
         <NotificationPopover
           unread={summary.unread_total}
           onSeeAll={() => router.push("/security/messages?tab=alerts")}

@@ -25,6 +25,7 @@ import { send } from "@/lib/resident/api";
 import { useChatSummary } from "@/lib/chat/useChatSummary";
 import { NotificationPopover } from "@/components/chat/NotificationPopover";
 import { CodedEmergencyTrigger } from "@/components/emergency/CodedEmergencyTrigger";
+import { LiveGpsTracker } from "@/components/location/LiveGpsTracker";
 
 const NAV = [
   { href: "/resident", label: "Dashboard", icon: LayoutDashboard, exact: true },
@@ -199,6 +200,12 @@ export function ResidentShell({ children }: { children: React.ReactNode }) {
 
         {/* Footer Emergency & Logout */}
         <div className="mt-auto pt-4 space-y-2 border-t border-gray-100">
+          <LiveGpsTracker
+            userEmail={email}
+            userName={name}
+            userRole="Resident"
+            label={displayUnit}
+          />
           <CodedEmergencyTrigger
             senderName={name}
             senderRole="Resident"
