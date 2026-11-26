@@ -11,17 +11,8 @@ export async function GET() {
       rows = await sql`
         SELECT * FROM fin_service_charges ORDER BY id ASC
       `;
-    } catch (e) {
-      // Fallback
-    }
-
-    if (!rows || rows.length === 0) {
-      rows = [
-        { id: 1, name: "Estate Security Levy", category: "Security", fee_kobo: 3500000, frequency: "Monthly", is_active: true, created_at: new Date().toISOString() },
-        { id: 2, name: "General Maintenance & Gardening", category: "Maintenance", fee_kobo: 2000000, frequency: "Monthly", is_active: true, created_at: new Date().toISOString() },
-        { id: 3, name: "Waste Disposal & Sanitation", category: "Sanitation", fee_kobo: 1000000, frequency: "Monthly", is_active: true, created_at: new Date().toISOString() },
-        { id: 4, name: "Street Lighting & Generator", category: "Utilities", fee_kobo: 2500000, frequency: "Monthly", is_active: true, created_at: new Date().toISOString() },
-      ];
+    } catch {
+      rows = [];
     }
 
     const services = rows.map((r) => ({
@@ -31,7 +22,7 @@ export async function GET() {
       fee: Number(r.fee_kobo || 0) / 100,
       frequency: r.frequency || "Monthly",
       status: r.is_active ? ("Active" as const) : ("Inactive" as const),
-      dateCreated: r.created_at ? new Date(r.created_at).toISOString().split("T")[0] : "2026-01-01",
+      dateCreated: r.created_at ? new Date(r.created_at).toISOString().split("T")[0] : "",
     }));
 
     const active = services.filter((s) => s.status === "Active").length;
@@ -45,7 +36,10 @@ export async function GET() {
         expectedRevenue: `₦${totalExpected.toLocaleString()}/mo`,
       },
       services,
-      forecastText: "Projected monthly service revenue based on 100% active billing across all registered units.",
+      forecastText:
+        services.length > 0
+          ? "Projected monthly service revenue based on active billing across registered units."
+          : "No estate services configured yet. Add a service to begin billing.",
       quickTipText: "Service levy adjustments automatically reflect on subsequent invoice cycles.",
     };
 

@@ -100,7 +100,7 @@ export function PaymentRecordsTable({
 
                   {/* Amount */}
                   <td className="py-4 px-6 font-bold text-slate-900">
-                    ₦{record.amount.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                    ₦{(Number(record.amount) || 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}
                   </td>
 
                   {/* Date */}
@@ -110,7 +110,7 @@ export function PaymentRecordsTable({
 
                   {/* Method */}
                   <td className="py-4 px-6 text-slate-600 font-medium">
-                    {record.method}
+                    {record.method || (record as any).paymentMethod || "—"}
                   </td>
 
                   {/* Status */}

@@ -28,7 +28,7 @@ export default function PaymentRecordsPage() {
 
   const [filters, setFilters] = useState<PaymentFilterState>({
     month: "All Months",
-    year: "2024",
+    year: "All Years",
     service: "All Services",
     status: "All Status",
     search: "",
@@ -36,7 +36,22 @@ export default function PaymentRecordsPage() {
 
   // Dynamic filter logic
   const filteredRecords = useMemo(() => {
+    const monthIndexMap: Record<string, string> = {
+      Jan: "01", Feb: "02", Mar: "03", Apr: "04", May: "05", Jun: "06",
+      Jul: "07", Aug: "08", Sep: "09", Oct: "10", Nov: "11", Dec: "12",
+    };
     return records.filter((r) => {
+      // Year filter
+      if (filters.year !== "All Years" && r.date && !r.date.startsWith(filters.year)) {
+        return false;
+      }
+      // Month filter
+      if (filters.month !== "All Months") {
+        const mm = monthIndexMap[filters.month];
+        if (mm && r.date && r.date.slice(5, 7) !== mm) {
+          return false;
+        }
+      }
       // Status filter
       if (filters.status !== "All Status" && r.status !== filters.status) {
         return false;
@@ -65,11 +80,35 @@ export default function PaymentRecordsPage() {
   const handleClearFilters = () => {
     setFilters({
       month: "All Months",
-      year: "2024",
+      year: "All Years",
       service: "All Services",
       status: "All Status",
       search: "",
     });
+  };
+
+  const handleExportCsv = () => {
+    const headers = ["Receipt #", "Resident Name", "Property", "Service Paid", "Amount (NGN)", "Date", "Method", "Status"];
+    const rows = filteredRecords.map((r) => [
+      r.receiptNumber,
+      r.residentName,
+      r.property,
+      r.servicePaid,
+      String(Number(r.amount) || 0),
+      r.date,
+      r.method || (r as any).paymentMethod || "",
+      r.status,
+    ]);
+    const csv = [headers, ...rows]
+      .map((row) => row.map((cell) => `"${String(cell ?? "").replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `post-army-house-payments-${new Date().toISOString().split("T")[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -106,7 +145,8 @@ export default function PaymentRecordsPage() {
             {/* Export CSV button */}
             <button
               type="button"
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-dark shadow-sm hover:bg-slate-50 transition-colors"
+              onClick={handleExportCsv}
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-dark shadow-sm hover:bg-slate-50 transition-colors cursor-pointer"
             >
               <Download className="h-4 w-4 text-accent" />
               <span>Export CSV</span>

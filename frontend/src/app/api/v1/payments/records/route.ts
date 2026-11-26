@@ -3,19 +3,48 @@ import { sql } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
-    let rows: any[] = [];
-    let totalRevenue = 24800000;
-    let paidItems = 0;
-    let pendingItems = 0;
-    let overdueItems = 0;
+    const records: any[] = [];
+    let totalRevenue = 0;
 
     try {
-      rows = await sql`
+      const scRows = await sql`
+        SELECT id, resident_name, unit_number, service_type, amount, status, invoice_no,
+               payment_reference, receipt_url, due_date, paid_at, created_at
+        FROM service_charges
+        ORDER BY id DESC
+        LIMIT 100
+      `;
+
+      for (const r of scRows) {
+        const amt = Number(r.amount || 0);
+        const isPaid = r.status === "Paid";
+        const isOverdue = !isPaid && r.due_date && new Date(r.due_date) < new Date();
+        if (isPaid) totalRevenue += amt;
+
+        records.push({
+          id: `sc-${r.id}`,
+          receiptNumber: r.payment_reference || r.invoice_no || `SC-${r.id}`,
+          residentName: r.resident_name || "Estate Resident",
+          property: r.unit_number || "—",
+          servicePaid: r.service_type || "Service Charge",
+          amountPaid: amt,
+          amount: amt,
+          date: (r.paid_at || r.created_at)
+            ? new Date(r.paid_at || r.created_at).toISOString().split("T")[0]
+            : new Date().toISOString().split("T")[0],
+          channel: r.receipt_url ? "Receipt Upload" : "Direct",
+          method: r.receipt_url ? "Receipt Uploaded" : isPaid ? "Bank Transfer" : "Pending",
+          paymentMethod: r.receipt_url ? "Receipt Uploaded" : isPaid ? "Bank Transfer" : "Pending",
+          status: isPaid ? "Paid" : isOverdue ? "Overdue" : "Pending",
+        });
+      }
+
+      const payRows = await sql`
         SELECT p.id, p.amount_kobo, p.method, p.reference, p.status, p.paid_at, p.created_at,
-               u.name as resident_name, u.email as resident_email, u.unit_number,
-               i.service_name, i.reference as invoice_reference
+               u.name as resident_name, u.unit_number,
+               i.service_name
         FROM fin_payments p
         LEFT JOIN users u ON u.id = p.user_id
         LEFT JOIN fin_invoices i ON i.id = p.invoice_id
@@ -23,76 +52,34 @@ export async function GET(req: NextRequest) {
         LIMIT 100
       `;
 
-      const sumRes = await sql`SELECT SUM(amount_kobo) as sum FROM fin_payments WHERE status = 'success'`;
-      if (sumRes[0]?.sum) totalRevenue = Math.round(Number(sumRes[0].sum) / 100);
-
-      paidItems = rows.filter((r) => r.status === "success" || r.status === "paid").length;
-      pendingItems = rows.filter((r) => r.status === "pending" || r.status === "processing").length;
+      for (const p of payRows) {
+        const amt = Math.round(Number(p.amount_kobo || 0) / 100);
+        const isPaid = p.status === "success" || p.status === "paid";
+        if (isPaid) totalRevenue += amt;
+        records.push({
+          id: `fp-${p.id}`,
+          receiptNumber: p.reference || `REC-${p.id}`,
+          residentName: p.resident_name || "Estate Resident",
+          property: p.unit_number || "—",
+          servicePaid: p.service_name || "Estate Levy",
+          amountPaid: amt,
+          amount: amt,
+          date: (p.paid_at || p.created_at)
+            ? new Date(p.paid_at || p.created_at).toISOString().split("T")[0]
+            : new Date().toISOString().split("T")[0],
+          channel: p.method || "Paystack",
+          method: p.method || "Paystack",
+          paymentMethod: p.method || "Paystack",
+          status: isPaid ? "Paid" : p.status === "pending" ? "Pending" : "Overdue",
+        });
+      }
     } catch (e: any) {
       console.error("Payments records DB error:", e.message);
     }
 
-    const defaultRecords = [
-      {
-        id: "1",
-        receiptNumber: "REC-2026-001",
-        residentName: "Chief Adebayo Adeleke",
-        property: "Villa A-402",
-        servicePaid: "Security Levy (Q4)",
-        amountPaid: 150000,
-        amount: "₦150,000",
-        date: "2026-11-20",
-        channel: "Card",
-        paymentMethod: "Paystack",
-        status: "Paid",
-      },
-      {
-        id: "2",
-        receiptNumber: "REC-2026-002",
-        residentName: "Mrs. Ngozi Eze",
-        property: "Flat B-102",
-        servicePaid: "Facility Maintenance",
-        amountPaid: 75000,
-        amount: "₦75,000",
-        date: "2026-11-21",
-        channel: "Bank Transfer",
-        paymentMethod: "Transfer",
-        status: "Paid",
-      },
-      {
-        id: "3",
-        receiptNumber: "REC-2026-003",
-        residentName: "Marcus Reed",
-        property: "Commercial Hub 4",
-        servicePaid: "Waste Disposal",
-        amountPaid: 35000,
-        amount: "₦35,000",
-        date: "2026-11-22",
-        channel: "Card",
-        paymentMethod: "Paystack",
-        status: "Paid",
-      },
-    ];
-
-    const records = rows.length > 0
-      ? rows.map((r: any) => ({
-          id: String(r.id),
-          receiptNumber: r.reference || `REC-2026-00${r.id}`,
-          residentName: r.resident_name || "Estate Resident",
-          property: r.unit_number || "Villa A-402",
-          servicePaid: r.service_name || "General Estate Levy",
-          amountPaid: Math.round(Number(r.amount_kobo || 0) / 100),
-          amount: `₦${(Math.round(Number(r.amount_kobo || 0) / 100)).toLocaleString()}`,
-          date: r.paid_at ? new Date(r.paid_at).toISOString().split("T")[0] : "2026-11-22",
-          channel: r.method || "Card",
-          paymentMethod: r.method || "Paystack",
-          status: (r.status === "success" ? "Paid" : r.status === "pending" ? "Pending" : "Overdue") as any,
-        }))
-      : defaultRecords;
-
     return NextResponse.json({
       summary: {
-        totalRevenue: totalRevenue || 24800000,
+        totalRevenue,
         paidItems: records.filter((r) => r.status === "Paid").length,
         pendingItems: records.filter((r) => r.status === "Pending").length,
         overdueItems: records.filter((r) => r.status === "Overdue").length,

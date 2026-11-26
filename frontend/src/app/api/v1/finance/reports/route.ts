@@ -9,7 +9,7 @@ export async function GET() {
       {
         id: "tpl-monthly-rev",
         title: "Monthly Service Charge & Revenue Statement",
-        description: "Consolidated inflow of security levies, utility fees, and Paystack settlements across Army Estate Phases 1–5.",
+        description: "Consolidated inflow of security levies, utility fees, and Paystack settlements across Post Army House Estate.",
         badgeLabel: "Most Used",
         badgeTone: "primary",
         iconType: "monthly",
@@ -50,35 +50,10 @@ export async function GET() {
     usageMetrics: {
       title: "Report Generation Activity",
       subtitle: "Executive & audit exports over the past 5 billing cycles",
-      totalDownloads: 48,
-      barHeights: [55, 72, 64, 88, 95],
+      totalDownloads: 0,
+      barHeights: [0, 0, 0, 0, 0],
     },
-    recentExports: [
-      {
-        id: "exp-101",
-        fileName: "Lincoln_Estate_Nov2026_Revenue_Statement.pdf",
-        generatedBy: "Estate Administrator",
-        dateTime: "Today, 09:30 AM",
-        format: "PDF",
-        downloadUrl: "#",
-      },
-      {
-        id: "exp-102",
-        fileName: "Phase1_to_5_Service_Charge_Compliance.xlsx",
-        generatedBy: "Finance Officer",
-        dateTime: "Yesterday, 04:15 PM",
-        format: "XLSX",
-        downloadUrl: "#",
-      },
-      {
-        id: "exp-103",
-        fileName: "Outstanding_Unit_Levies_Register.csv",
-        generatedBy: "Estate Administrator",
-        dateTime: "Nov 20, 2026 | 11:10 AM",
-        format: "CSV",
-        downloadUrl: "#",
-      },
-    ],
+    recentExports: [],
   };
 
   return NextResponse.json({ data });

@@ -21,36 +21,7 @@ export async function GET(req: NextRequest) {
       // Graceful fallback
     }
 
-    if (!payments || payments.length === 0) {
-      payments = [
-        {
-          id: 1,
-          reference: "REC-2026-001",
-          invoice_reference: "INV-2026-042",
-          resident_name: "Chief Adebayo Adeleke",
-          resident_email: "adebayo@lincoln.ng",
-          service_name: "Security Levy (Q4)",
-          amount_kobo: 15000000,
-          method: "Paystack",
-          status: "success",
-          paid_at: new Date().toISOString(),
-        },
-        {
-          id: 2,
-          reference: "REC-2026-002",
-          invoice_reference: "INV-2026-043",
-          resident_name: "Mrs. Ngozi Eze",
-          resident_email: "ngozi@lincoln.ng",
-          service_name: "Facility Maintenance",
-          amount_kobo: 7500000,
-          method: "Bank Transfer",
-          status: "success",
-          paid_at: new Date(Date.now() - 86400000).toISOString(),
-        },
-      ];
-    }
-
-    const formatted = payments.map((p) => ({
+    const formatted = (payments || []).map((p) => ({
       id: String(p.id),
       receiptNumber: p.reference || `REC-${p.id}`,
       residentName: p.resident_name || "Estate Resident",
