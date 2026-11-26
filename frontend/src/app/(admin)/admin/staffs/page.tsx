@@ -33,6 +33,7 @@ import { DepartmentOverviewCard } from "@/components/admin/staff/DepartmentOverv
 import { StaffHorizontalListView } from "@/components/admin/staff/StaffHorizontalListView";
 import { StaffsZebraListView } from "@/components/admin/staff/StaffsZebraListView";
 import { CreatingStaffOverlayModal } from "@/components/admin/staff/CreatingStaffOverlayModal";
+import { DispatchContactsCard } from "@/components/security/DispatchContactsCard";
 import { cn } from "@/lib/admin/utils";
 
 const PAGE_SIZE = 6;
@@ -401,6 +402,10 @@ export default function StaffPage() {
           )}
         </>
       )}
+
+      <div className="pt-2">
+        <DispatchContactsCard editable />
+      </div>
 
       {/* ================= FIGMA "creating staff ol" OVERLAY MODAL (TASK 10) ================= */}
       <CreatingStaffOverlayModal
