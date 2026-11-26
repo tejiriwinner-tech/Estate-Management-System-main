@@ -31,7 +31,7 @@ export function ServiceInsightsRow({
 
         <div className="relative z-10 pt-6">
           <Link
-            href="/analytics"
+            href="/admin/finance/analytics"
             className="inline-flex items-center gap-2 text-xs font-extrabold text-accent hover:text-white transition-colors"
           >
             <span>View detailed analytics</span>

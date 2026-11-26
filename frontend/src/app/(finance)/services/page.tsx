@@ -147,7 +147,7 @@ export default function ServiceManagementPage() {
           </button>
 
           <Link
-            href="/analytics"
+            href="/admin/finance/analytics"
             className="inline-flex items-center gap-2 rounded-xl bg-dark hover:bg-dark-soft px-4 py-2.5 text-xs font-bold text-white shadow-sm transition-colors"
           >
             <span>Payment Analysis</span>

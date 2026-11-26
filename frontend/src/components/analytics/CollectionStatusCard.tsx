@@ -105,7 +105,7 @@ export function CollectionStatusCard({ status }: CollectionStatusCardProps) {
           {/* 3. View Defaulters List Button */}
           <div className="pt-2">
             <Link
-              href="/outstanding"
+              href="/admin/finance/outstanding"
               className="flex w-full items-center justify-center rounded-xl border border-primary/40 bg-white hover:bg-primary hover:text-white px-4 py-2.5 text-xs font-extrabold text-primary transition-all shadow-xs"
             >
               View Defaulters List

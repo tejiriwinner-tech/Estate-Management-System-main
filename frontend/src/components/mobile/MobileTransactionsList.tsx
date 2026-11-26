@@ -54,7 +54,7 @@ export function MobileTransactionsList({ transactions }: MobileTransactionsListP
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-bold text-slate-900">Recent Transactions</h3>
         <Link
-          href="/payments"
+          href="/admin/finance/payments"
           className="text-xs font-bold text-emerald-600 hover:text-emerald-700"
         >
           See All

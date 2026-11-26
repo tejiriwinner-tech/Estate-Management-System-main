@@ -59,14 +59,14 @@ export function ResidentFinanceSummaryView({
             className="flex flex-wrap items-center gap-1.5 text-xs font-medium text-slate-400 mb-1.5"
           >
             <Link
-              href="/finance"
+              href="/admin/finance"
               className="hover:text-primary transition-colors"
             >
               Finance
             </Link>
             <ChevronRight className="h-3.5 w-3.5 text-slate-300" />
             <Link
-              href="/outstanding"
+              href="/admin/finance/outstanding"
               className="hover:text-primary transition-colors"
             >
               Residents

@@ -22,7 +22,7 @@ export function MobileRevenueTrends({ months }: MobileRevenueTrendsProps) {
         </div>
 
         <Link
-          href="/reports"
+          href="/admin/reports"
           className="inline-flex items-center gap-0.5 text-xs font-bold text-emerald-600 hover:text-emerald-700"
         >
           <span>Details</span>

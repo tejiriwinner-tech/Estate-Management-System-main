@@ -22,7 +22,7 @@ export function PaymentMobileBottomNav({ onAddClick }: PaymentMobileBottomNavPro
 
       {/* 2. Finance (Active) */}
       <Link
-        href="/payments"
+        href="/admin/finance/payments"
         className="flex flex-col items-center justify-center gap-1 px-3 py-1 text-[10px] font-bold text-primary transition-colors"
       >
         <Wallet className="h-5 w-5 text-primary fill-primary/15" />

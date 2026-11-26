@@ -154,7 +154,7 @@ export default function PaymentRecordsPage() {
 
             {/* Service Manager button (Task 18 link) */}
             <Link
-              href="/services"
+              href="/admin/finance/services"
               className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-xs font-bold text-white shadow-sm shadow-primary/25 hover:bg-primary-hover transition-colors"
             >
               <Briefcase className="h-4 w-4" />

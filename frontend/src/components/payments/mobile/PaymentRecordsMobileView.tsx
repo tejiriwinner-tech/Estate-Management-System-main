@@ -143,7 +143,7 @@ export function PaymentRecordsMobileView() {
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-bold text-slate-900">Recent Payments</h2>
           <Link
-            href="/payments"
+            href="/admin/finance/payments"
             className="text-xs font-bold text-emerald-600 hover:text-emerald-700"
           >
             View All

@@ -39,7 +39,7 @@ export function PaymentTimelineCard({ items }: PaymentTimelineCardProps) {
           Payment Timeline
         </h3>
         <Link
-          href="/payments"
+          href="/admin/finance/payments"
           className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:text-primary-hover transition-colors"
         >
           <span>View All</span>

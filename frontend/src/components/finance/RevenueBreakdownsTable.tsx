@@ -43,11 +43,11 @@ export function RevenueBreakdownsTable({ breakdowns }: RevenueBreakdownsTablePro
         <h2 className="text-base font-bold text-slate-800">Revenue Breakdowns</h2>
 
         <div className="flex items-center gap-4 text-xs font-semibold text-primary">
-          <Link href="/payments" className="hover:underline">
+          <Link href="/admin/finance/payments" className="hover:underline">
             View All
           </Link>
           <span className="text-slate-300">|</span>
-          <Link href="/finance/reports" className="hover:underline">
+          <Link href="/admin/reports" className="hover:underline">
             Finance Report
           </Link>
         </div>

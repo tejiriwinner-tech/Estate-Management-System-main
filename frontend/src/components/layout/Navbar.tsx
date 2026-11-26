@@ -31,19 +31,19 @@ export function Navbar({ onOpenMobileDrawer }: NavbarProps) {
 
         <Link href="/admin" className="flex items-center gap-2.5 group">
           <div className="flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-primary text-white font-bold text-lg sm:text-2xl shadow-sm shadow-primary/20 transition-transform group-hover:scale-105">
-            <span className="italic font-serif">LE</span>
+            <span className="italic font-serif">PH</span>
           </div>
           <div>
             <div className="flex items-center leading-tight">
               <span className="text-base sm:text-xl font-bold tracking-tight text-primary">
-                Lincoln
+                Post Army House
               </span>
-              <span className="text-base sm:text-xl font-bold tracking-tight text-dark">
+              <span className="ml-1 text-base sm:text-xl font-bold tracking-tight text-dark">
                 Estate
               </span>
             </div>
             <p className="text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-              FINANCE SUBSYSTEM
+              ADMIN DASHBOARD
             </p>
           </div>
         </Link>
