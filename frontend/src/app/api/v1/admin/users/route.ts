@@ -85,19 +85,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ data: inserted[0] }, { status: 201 });
     } catch (dbErr: any) {
       console.error("User insert error:", dbErr);
-      return NextResponse.json({
-        data: {
-          id: Date.now(),
-          name,
-          email,
-          role: role || "resident",
-          unit_number: unit_number || null,
-          phone: phone || null,
-          status: "active",
-          moved_in_at: moved_in_at || new Date().toISOString().split("T")[0],
-          created_at: new Date().toISOString(),
-        },
-      }, { status: 201 });
+      const msg = dbErr?.message?.includes("duplicate key")
+        ? "A user with this email address already exists."
+        : dbErr?.message || "Could not save user to database.";
+      return NextResponse.json({ message: msg }, { status: 422 });
     }
   } catch (error) {
     return NextResponse.json({ message: "Failed to create user." }, { status: 500 });
