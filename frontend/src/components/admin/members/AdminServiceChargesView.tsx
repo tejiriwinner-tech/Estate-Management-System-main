@@ -28,7 +28,7 @@ export function AdminServiceChargesView() {
     void load();
   }, [load]);
 
-  const handleMarkPaid = async (id: number) => {
+  const handleMarkPaid = async (id: number | string) => {
     await fetch("/api/v1/admin/service-charges", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -37,7 +37,7 @@ export function AdminServiceChargesView() {
     await load();
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: number | string) => {
     if (!window.confirm("Remove this service charge invoice?")) return;
     await fetch(`/api/v1/admin/service-charges?id=${id}`, { method: "DELETE" }).catch(() => {});
     await load();

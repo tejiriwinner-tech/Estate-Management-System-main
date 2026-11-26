@@ -89,7 +89,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       data: rows.map((r) => ({
-        id: Number(r.id),
+        id: r.id,
         resident_name: r.resident_name,
         unit_number: r.unit_number,
         service_type: r.service_type,

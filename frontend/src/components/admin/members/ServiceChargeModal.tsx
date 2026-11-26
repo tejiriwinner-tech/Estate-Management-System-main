@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { X, Plus, CheckCircle2, Clock, Trash2, Receipt, CreditCard, Building2 } from "lucide-react";
 
 export interface ServiceChargeRecord {
-  id: number;
+  id: number | string;
   user_id: number | null;
   resident_name: string;
   unit_number: string;
@@ -132,7 +132,7 @@ export function ServiceChargeModal({
     }
   };
 
-  const handleMarkStatus = async (id: number, status: string) => {
+  const handleMarkStatus = async (id: number | string, status: string) => {
     try {
       await fetch("/api/v1/admin/service-charges", {
         method: "PATCH",
@@ -146,7 +146,7 @@ export function ServiceChargeModal({
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: number | string) => {
     try {
       await fetch(`/api/v1/admin/service-charges?id=${id}`, { method: "DELETE" });
       await loadMemberCharges();

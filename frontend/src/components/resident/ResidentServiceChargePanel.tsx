@@ -17,7 +17,7 @@ import {
 import { readSession } from "@/components/auth/session";
 
 export interface UnitServiceCharge {
-  id: number;
+  id: number | string;
   resident_name: string;
   unit_number: string;
   service_type: string;
