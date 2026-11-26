@@ -49,17 +49,23 @@ export function CodedEmergencyTrigger({
     setGpsStatus("locating");
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        setGpsCoords({
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude,
-          accuracy: Math.round(pos.coords.accuracy || 0),
+        const newAcc = Math.round(pos.coords.accuracy || 0);
+        setGpsCoords((prev) => {
+          if (prev && prev.accuracy > 0 && prev.accuracy < 2000 && newAcc > 5000) {
+            return prev;
+          }
+          return {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+            accuracy: newAcc,
+          };
         });
         setGpsStatus("locked");
       },
       () => {
-        setGpsStatus("denied");
+        setGpsStatus((prev) => (prev === "locked" ? "locked" : "denied"));
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 15000 }
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
   }, []);
 

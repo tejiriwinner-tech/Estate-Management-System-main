@@ -47,9 +47,9 @@ export function LiveGpsTracker({
   const lastPushRef = useRef<number>(0);
 
   const pushToServer = useCallback(
-    async (lat: number, lng: number, accuracy: number) => {
+    async (lat: number, lng: number, accuracy: number, force = false) => {
       const now = Date.now();
-      if (now - lastPushRef.current < 15000) return;
+      if (!force && now - lastPushRef.current < 15000) return;
       lastPushRef.current = now;
       const email = userEmail || `${userRole.toLowerCase().replace(/\s+/g, ".")}@pahe.local`;
       try {
@@ -75,12 +75,25 @@ export function LiveGpsTracker({
 
   const handlePosition = useCallback(
     (pos: GeolocationPosition) => {
+      const newAcc = Math.round(pos.coords.accuracy || 0);
+      const prev = readStoredGps();
+      // Keep a recent (<2 min) higher-accuracy reading over a coarse IP fallback (>5km)
+      if (
+        prev &&
+        Date.now() - prev.updatedAt < 120000 &&
+        prev.accuracy > 0 &&
+        prev.accuracy < 2000 &&
+        newAcc > 5000
+      ) {
+        return;
+      }
       const next: StoredGps = {
         lat: pos.coords.latitude,
         lng: pos.coords.longitude,
-        accuracy: Math.round(pos.coords.accuracy || 0),
+        accuracy: newAcc,
         updatedAt: Date.now(),
       };
+      const improvedSignificantly = Boolean(prev && newAcc < prev.accuracy * 0.5);
       setCoords(next);
       setStatus("locked");
       try {
@@ -88,7 +101,7 @@ export function LiveGpsTracker({
       } catch {
         // ignore
       }
-      void pushToServer(next.lat, next.lng, next.accuracy);
+      void pushToServer(next.lat, next.lng, next.accuracy, improvedSignificantly);
     },
     [pushToServer]
   );
