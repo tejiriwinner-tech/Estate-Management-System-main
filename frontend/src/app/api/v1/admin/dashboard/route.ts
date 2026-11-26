@@ -1,24 +1,25 @@
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
-    let residentsCount = 142;
-    let vehiclesCount = 86;
-    let openAlerts = 2;
-    let awayCount = 4;
+    let residentsCount = 0;
+    let vehiclesCount = 0;
+    let awayCount = 0;
 
     try {
       const u = await sql`SELECT count(*)::int as c FROM users WHERE role = 'resident'`;
-      if (u[0]?.c) residentsCount = u[0].c;
+      residentsCount = Number(u[0]?.c || 0);
 
       const v = await sql`SELECT count(*)::int as c FROM vehicles`;
-      if (v[0]?.c) vehiclesCount = v[0].c;
+      vehiclesCount = Number(v[0]?.c || 0);
 
       const a = await sql`SELECT count(*)::int as c FROM away_notices WHERE status = 'active'`;
-      if (a[0]?.c) awayCount = a[0].c;
+      awayCount = Number(a[0]?.c || 0);
     } catch {
-      // Fallback
+      // Keep zeroed counts if tables are not populated yet
     }
 
     const liveMetrics = [
@@ -26,7 +27,7 @@ export async function GET() {
         id: "residents",
         label: "TOTAL RESIDENTS",
         value: String(residentsCount),
-        trend: "+12 this month",
+        trend: residentsCount > 0 ? "Registered units" : "No residents yet",
         trendType: "positive" as const,
         iconType: "residents" as const,
       },
@@ -34,7 +35,7 @@ export async function GET() {
         id: "houses",
         label: "REGISTERED VEHICLES",
         value: String(vehiclesCount),
-        badge: "Active RFID",
+        badge: "RFID Registry",
         iconType: "houses" as const,
       },
       {
@@ -47,8 +48,8 @@ export async function GET() {
       },
       {
         id: "requests",
-        label: "SECURITY CLEARANCE",
-        value: "Operational",
+        label: "ESTATE STATUS",
+        value: "Active",
         iconType: "requests" as const,
       },
     ];

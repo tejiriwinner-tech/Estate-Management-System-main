@@ -5,49 +5,44 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    let totalStaff = 28;
-    let activeStaff = 26;
-    let suspended = 1;
-    let onLeave = 1;
+    let totalStaff = 0;
+    let activeStaff = 0;
+    let suspended = 0;
+    let newJoining = 0;
 
     try {
       const rows = await sql`
         SELECT status, COUNT(*)::int as count
         FROM users
-        WHERE role IN ('staff', 'manager', 'security', 'maintenance')
+        WHERE role IN ('store_owner', 'agent', 'chairman')
+           OR LOWER(COALESCE(job_title, '')) LIKE '%chairman%'
         GROUP BY status
       `;
-      let total = 0;
       rows.forEach((r: any) => {
-        total += Number(r.count);
-        if (r.status === "active") activeStaff = Number(r.count);
-        if (r.status === "suspended") suspended = Number(r.count);
-        if (r.status === "on_leave") onLeave = Number(r.count);
+        const c = Number(r.count || 0);
+        totalStaff += c;
+        if (r.status === "active" || !r.status) activeStaff += c;
+        else if (r.status === "suspended") suspended += c;
       });
-      if (total > 0) totalStaff = total;
+      newJoining = totalStaff;
     } catch (e: any) {
       console.error("Staff metrics error:", e.message);
     }
 
-    const pct = totalStaff > 0 ? Math.round((activeStaff / totalStaff) * 100) : 95;
+    const pct = totalStaff > 0 ? Math.round((activeStaff / totalStaff) * 100) : 0;
 
     return NextResponse.json({
       data: {
         total_staff: totalStaff,
-        total_trend: "+3 this month",
+        total_trend: totalStaff > 0 ? `${totalStaff} registered` : "No staff yet",
         active: activeStaff,
         active_pct: `${pct}%`,
         suspended,
         suspended_diff: "0%",
-        new_joining: 2,
-        new_joining_badge: "2 onboarding",
+        new_joining: newJoining,
+        new_joining_badge: `${newJoining} active`,
         department_overview: {
-          departments: [
-            { name: "Operations", count: 8, lead: "Bessie Cooper" },
-            { name: "Finance & Accounts", count: 6, lead: "Darlene Robertson" },
-            { name: "Security Command", count: 10, lead: "Mike Warden" },
-            { name: "Maintenance", count: 4, lead: "Floyd Miles" },
-          ],
+          departments: [],
         },
       },
     });

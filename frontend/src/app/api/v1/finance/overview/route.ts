@@ -6,17 +6,24 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    let totalCollected = 24800000;
-    let pendingInvoices = 3700000;
+    let totalCollected = 0;
+    let pendingInvoices = 0;
+    let residentCount = 0;
 
     try {
-      const p = await sql`SELECT SUM(amount_kobo) as total FROM fin_payments WHERE status = 'success'`;
-      if (p[0]?.total) totalCollected = Number(p[0].total) / 100;
-      const inv = await sql`SELECT SUM(amount_kobo - paid_kobo) as bal FROM fin_invoices WHERE paid_kobo < amount_kobo`;
-      if (inv[0]?.bal) pendingInvoices = Number(inv[0].bal) / 100;
-    } catch (e) {
-      // Use defaults
+      const scPaid = await sql`SELECT COALESCE(SUM(amount), 0)::numeric as total FROM service_charges WHERE status = 'Paid'`;
+      const scPending = await sql`SELECT COALESCE(SUM(amount), 0)::numeric as total FROM service_charges WHERE status != 'Paid'`;
+      totalCollected = Number(scPaid[0]?.total || 0);
+      pendingInvoices = Number(scPending[0]?.total || 0);
+
+      const resCnt = await sql`SELECT COUNT(*)::int as c FROM users WHERE role = 'resident'`;
+      residentCount = Number(resCnt[0]?.c || 0);
+    } catch {
+      // Zeroed defaults
     }
+
+    const totalBilled = totalCollected + pendingInvoices;
+    const rate = totalBilled > 0 ? Math.round((totalCollected / totalBilled) * 100) : 0;
 
     const data: FinanceOverviewData = {
       metrics: [
@@ -24,7 +31,7 @@ export async function GET() {
           id: "total-collected",
           title: "Total Collected",
           value: `₦${totalCollected.toLocaleString()}`,
-          subtitle: "+8.4% from last month",
+          subtitle: "Verified service charges",
           subtitleType: "trend-up",
           icon: "wallet",
           badgeBg: "bg-emerald-50",
@@ -34,7 +41,7 @@ export async function GET() {
           id: "pending-invoices",
           title: "Pending Invoices",
           value: `₦${pendingInvoices.toLocaleString()}`,
-          subtitle: "Due within 14 days",
+          subtitle: "Outstanding dues",
           subtitleType: "warning",
           icon: "hourglass",
           badgeBg: "bg-amber-50",
@@ -43,8 +50,8 @@ export async function GET() {
         {
           id: "collection-efficiency",
           title: "Collection Rate",
-          value: "87.0%",
-          subtitle: "Target: 85%",
+          value: `${rate}%`,
+          subtitle: "Live compliance",
           subtitleType: "trend-up",
           icon: "chart",
           badgeBg: "bg-blue-50",
@@ -52,80 +59,18 @@ export async function GET() {
         },
         {
           id: "active-subscribers",
-          title: "Active Properties",
-          value: "142",
-          subtitle: "98% compliance",
+          title: "Registered Residents",
+          value: String(residentCount),
+          subtitle: "Billed units",
           subtitleType: "neutral",
           icon: "calendar",
           badgeBg: "bg-slate-50",
           iconColor: "text-slate-600",
         },
       ],
-      revenueHistory: [
-        { month: "Jan", amount: 2100000 },
-        { month: "Feb", amount: 2400000 },
-        { month: "Mar", amount: 3100000 },
-        { month: "Apr", amount: 2800000 },
-        { month: "May", amount: 3500000 },
-        { month: "Jun", amount: 3200000 },
-        { month: "Jul", amount: 3900000 },
-        { month: "Aug", amount: 4100000 },
-        { month: "Sep", amount: 3800000 },
-        { month: "Oct", amount: 4500000 },
-        { month: "Nov", amount: totalCollected > 5000000 ? 4200000 : totalCollected },
-      ],
-      revenueByService: [
-        { name: "Security Levy", value: 45, color: "#10b981" },
-        { name: "Facility Maintenance", value: 25, color: "#3b82f6" },
-        { name: "Power / Generator", value: 18, color: "#f59e0b" },
-        { name: "Waste Management", value: 12, color: "#ef4444" },
-      ],
-      breakdowns: [
-        {
-          id: "srv-1",
-          serviceName: "Estate Security Levy",
-          icon: "security",
-          iconBg: "bg-emerald-50",
-          iconColor: "text-emerald-600",
-          totalAmount: 12000000,
-          totalPayments: 11400000,
-          balanceDue: 600000,
-          collectionRate: 95,
-        },
-        {
-          id: "srv-2",
-          serviceName: "Facility Maintenance",
-          icon: "maintenance",
-          iconBg: "bg-blue-50",
-          iconColor: "text-blue-600",
-          totalAmount: 8500000,
-          totalPayments: 7225000,
-          balanceDue: 1275000,
-          collectionRate: 85,
-        },
-        {
-          id: "srv-3",
-          serviceName: "Power Infrastructure",
-          icon: "electricity",
-          iconBg: "bg-amber-50",
-          iconColor: "text-amber-600",
-          totalAmount: 6000000,
-          totalPayments: 4800000,
-          balanceDue: 1200000,
-          collectionRate: 80,
-        },
-        {
-          id: "srv-4",
-          serviceName: "Waste & Sanitation",
-          icon: "waste",
-          iconBg: "bg-rose-50",
-          iconColor: "text-rose-600",
-          totalAmount: 2000000,
-          totalPayments: 1375000,
-          balanceDue: 625000,
-          collectionRate: 68,
-        },
-      ],
+      revenueHistory: [],
+      revenueByService: [],
+      breakdowns: [],
     };
 
     return NextResponse.json({ data });
