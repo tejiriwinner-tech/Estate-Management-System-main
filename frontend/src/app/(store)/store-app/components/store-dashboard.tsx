@@ -1,1058 +1,434 @@
 "use client";
 
-import { storeFetch } from "../lib/api";
-
-import Image from "next/image";
+import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
-import { getOriginalSiteUrl, useSiteSettings } from "./site-settings";
-import { StoreAvailabilityControl } from "./store-screens";
+import {
+  Package,
+  ShoppingBag,
+  Plus,
+  CheckCircle2,
+  Truck,
+  Clock,
+  Store,
+  Upload,
+  X,
+  CreditCard,
+} from "lucide-react";
+import { StorePortalShell } from "@/components/store/StorePortalShell";
 import { ResidentServiceChargePanel } from "@/components/resident/ResidentServiceChargePanel";
 
-const iconFiles = {
-  chevron: "d5eaf6f4-5173-4beb-846a-6b5eb8fa18a8",
-  reminder: "f7a08f1a-ce3b-428b-8faa-980967fe2019",
-  add: "3e51fe84-39c6-4b2b-8711-4c17461879e8",
-  badge: "fc6e6b87-2f0c-402a-a118-2a0711195064",
-  trend: "baaa9297-bb31-4b1a-99fe-f9893487d782",
-  revenue: "1c6d3b50-898f-40a8-80c3-f8f1876b6fa8",
-  overdueClock: "c60c9911-a26c-49fe-afdb-b49a3d7d3f29",
-  settlement: "77cb8d01-61c2-4fb8-99f8-9b70a2a11b7e",
-  stock: "47cafb9f-68c1-431b-a0ae-ba47e6061d48",
-  products: "6ae7b1d1-ab9a-4710-94af-ab29cc5c65f6",
-  newOrders: "a2fc345c-56ee-41c3-bcd7-65bff4e3c3a1",
-  orders: "5a120a91-c671-43e9-bad6-632539312148",
-  external: "115f13d1-f544-4060-bedb-b9f5dccbe0ad",
-  insurance: "9b1e9bb0-1110-406e-9e4b-c6329c673d11",
-  warehouse: "9822bfd1-20f8-46d0-ba95-d855a4b6b5e7",
-  warehouseAlt: "7b9294a5-62ec-4b34-ae62-65c8a597b30f",
-  logistics: "ce64f450-270e-4760-bb0d-45bdf11b9058",
-  overdue: "51a7f051-bb5b-4127-8c7a-928f114668a0",
-  checklist: "8c3638fe-2bc8-449c-956d-a8fca359c9f7",
-  warning: "7d4520f0-5299-419b-ba1c-5ffed59190d5",
-  bank: "43df0210-f111-47e2-a282-a6b7f1c63504",
-  frequency: "5797e0e5-71b9-4c7c-baa0-a2407a6bd3ee",
-  autopay: "902911f1-b326-4fc9-9f4b-4f83ab1f9aec",
-  document: "44ffe635-e242-425e-9ede-b88681f78f2a",
-  download: "e0adc314-840a-40cf-9ec9-47153dab5429",
-  info: "a4958412-022b-4a78-8c78-28784239c618",
-  notification: "c8cbcd18-6c71-4c0b-8b1f-4d3bac565b58",
-  dashboard: "eb13e4a3-4c6f-430e-acb1-74b1df2ffa56",
-  finance: "2476d259-c7bb-4edc-a055-334fcb969f46",
-  store: "811ce434-bca3-4492-9bc3-96627eb1a217",
-  messages: "28599a1e-65f4-4c6b-ba22-d78c03f2ac3b",
-  reports: "61622eaa-c4dc-42d6-b574-151410afba28",
-  staff: "147931a8-b4ff-4c56-9880-aae56b0c7218",
-  logout: "2572e3c9-ca9f-4fcb-9a55-962fb709256f",
-} as const;
-
-type IconName = keyof typeof iconFiles;
-
-const iconDimensions: Record<IconName, [number, number]> = {
-  chevron: [4.31667, 7],
-  reminder: [15.8333, 13.3333],
-  add: [16.6667, 16.6667],
-  badge: [14.6667, 14],
-  trend: [11.6667, 7],
-  revenue: [22, 16],
-  overdueClock: [11.6667, 11.6667],
-  settlement: [19, 18],
-  stock: [11.6667, 11.6667],
-  products: [18, 18],
-  newOrders: [10.5, 10.5],
-  orders: [16, 20],
-  external: [12, 12],
-  insurance: [16, 20],
-  warehouse: [20, 18],
-  warehouseAlt: [20, 20],
-  logistics: [22, 16],
-  overdue: [12.8333, 11.0833],
-  checklist: [26.6667, 20.1],
-  warning: [16.6667, 16.6667],
-  bank: [20, 20],
-  frequency: [18, 20],
-  autopay: [22, 12],
-  document: [16, 20],
-  download: [12, 12],
-  info: [18, 18],
-  notification: [16, 20],
-  dashboard: [18, 18],
-  finance: [22, 16],
-  store: [20.0939, 18],
-  messages: [20, 20],
-  reports: [16, 16],
-  staff: [22, 16],
-  logout: [18, 18],
-};
-
-type Transaction = {
+interface StoreProduct {
   id: number;
-  service: string;
-  invoice: string;
-  amount: string;
-  date: string;
+  sku: string;
+  name: string;
+  category: string;
+  price: number;
+  stock: number;
+  description?: string;
+  image?: string;
+}
+
+interface StoreOrder {
+  id: number;
+  order_no: string;
+  product_name: string;
+  quantity: number;
+  total_naira: number;
+  resident_name: string;
+  unit_number: string;
+  delivery_comment: string;
   status: string;
-};
-
-type DashboardData = {
-  merchant: {
-    name: string;
-    merchantId: string;
-    joinedAt: string;
-    tier: string;
-    totalRevenue: string;
-    pendingSettlements: string;
-    activeProducts: number;
-    orderVolume: number;
-    settlementMode: string;
-    settlementFrequency: string;
-    autoPayEnabled: boolean;
-    documentName: string;
-  };
-  transactions: Transaction[];
-  urgentAction: {
-    title: string;
-    amount: string;
-    dueDate: string;
-    overdueDays: number;
-  } | null;
-  nextBillingDate: string;
-};
-
-type DialogContent = {
-  title: string;
-  description: string;
-  action?: { href: string; label: string };
-};
-
-const storeMenuItems: { label: string; icon: IconName; href: string }[] = [
-  { label: "Store", icon: "store", href: "/store-app/store" },
-  { label: "Owner access", icon: "staff", href: "/store-app/owner" },
-  { label: "Dashboard", icon: "dashboard", href: "/" },
-  { label: "Finance", icon: "finance", href: "/store-app/subscription" },
-  { label: "Messages", icon: "messages", href: "/store-app/messages" },
-  { label: "Reports", icon: "reports", href: "/store-app/reports" },
-  { label: "Staff", icon: "staff", href: "/store-app/staff" },
-  { label: "Settings", icon: "dashboard", href: "/store-app/settings" },
-  { label: "Analytics", icon: "trend", href: "/store-app/dashboard" },
-  { label: "Products", icon: "products", href: "/store-app/products" },
-  { label: "Inventory", icon: "stock", href: "/store-app/products/manage" },
-  { label: "Register store", icon: "add", href: "/store-app/stores/new" },
-  { label: "Checkout", icon: "finance", href: "/store-app/checkout" },
-];
-
-function Icon({
-  name,
-  size = 18,
-}: {
-  name: IconName;
-  size?: number;
-}) {
-  const [nativeWidth, nativeHeight] = iconDimensions[name];
-  const scale = size / Math.max(nativeWidth, nativeHeight);
-
-  return (
-    <Image
-      src={`/figma/${iconFiles[name]}.svg`}
-      alt=""
-      aria-hidden="true"
-      width={nativeWidth * scale}
-      height={nativeHeight * scale}
-      unoptimized
-    />
-  );
-}
-
-function formatCurrency(value: string | number) {
-  return `₦${new Intl.NumberFormat("en-NG", {
-    maximumFractionDigits: 0,
-  }).format(Number(value))}`;
-}
-
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(value));
-}
-
-function MetricCard({
-  label,
-  value,
-  caption,
-  icon,
-  iconSize = 22,
-  variant = "green",
-  captionIcon,
-}: {
-  label: string;
-  value: string;
-  caption: string;
-  icon: IconName;
-  iconSize?: number;
-  variant?: "green" | "red" | "blue";
-  captionIcon: IconName;
-}) {
-  return (
-    <section className={`metric-card metric-card--${variant}`}>
-      <div>
-        <p className="eyebrow">{label}</p>
-        <p className="metric-value">{value}</p>
-        <p className="metric-caption">
-          <Icon name={captionIcon} size={12} />
-          <span>{caption}</span>
-        </p>
-      </div>
-      <span className="metric-icon">
-        <Icon name={icon} size={iconSize} />
-      </span>
-    </section>
-  );
 }
 
 export default function StoreDashboard() {
-  const { settings } = useSiteSettings();
-  const pathname = usePathname();
-  const [dashboard, setDashboard] = useState<DashboardData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
-  const [isPreview, setIsPreview] = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
-  const [search, setSearch] = useState("");
-  const [notice, setNotice] = useState("");
-  const [dialog, setDialog] = useState<DialogContent | null>(null);
-  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
-  const [printingTransaction, setPrintingTransaction] = useState<Transaction | null>(null);
-  const [isInvoicePrintReady, setIsInvoicePrintReady] = useState(false);
-  const [recentOrders, setRecentOrders] = useState<
-    { id: number | string; order_no: string; customer: string; unit: string; items: string; comment: string; total: number; status: string }[]
-  >([]);
-  const [catalogPreview, setCatalogPreview] = useState<{ id: number; name: string; category: string; price: number; stock: number; image?: string }[]>([]);
+  const [products, setProducts] = useState<StoreProduct[]>([]);
+  const [orders, setOrders] = useState<StoreOrder[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [addOpen, setAddOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetch("/api/v1/store/products", { cache: "no-store" })
-      .then((r) => r.json())
-      .then((j) => {
-        if (Array.isArray(j?.data)) setCatalogPreview(j.data.slice(0, 4));
-      })
-      .catch(() => {});
+  const [form, setForm] = useState({
+    name: "",
+    category: "Groceries",
+    price: "",
+    stock: "10",
+    description: "",
+    image: "",
+  });
 
-    fetch("/api/v1/store/orders", { cache: "no-store" })
-      .then((r) => r.json())
-      .then((j) => {
-        if (Array.isArray(j?.data)) {
-          setRecentOrders(
-            j.data.slice(0, 5).map((o: any) => ({
-              id: o.id,
-              order_no: o.order_no,
-              customer: o.resident_name,
-              unit: o.unit_number,
-              items: `${o.quantity}x ${o.product_name}`,
-              comment: o.delivery_comment || "",
-              total: Number(o.total_naira || 0),
-              status: o.status || "Pending",
-            }))
-          );
-        }
-      })
-      .catch(() => {});
+  const load = useCallback(async () => {
+    try {
+      const [pRes, oRes] = await Promise.all([
+        fetch("/api/v1/store/products", { cache: "no-store" }).then((r) => r.json()),
+        fetch("/api/v1/store/orders", { cache: "no-store" }).then((r) => r.json()),
+      ]);
+      setProducts(Array.isArray(pRes?.data) ? pRes.data : []);
+      setOrders(Array.isArray(oRes?.data) ? oRes.data : []);
+    } catch {
+      setProducts([]);
+      setOrders([]);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const advanceOrderStatus = async (orderId: number | string) => {
-    const flow = ["Pending", "Preparing", "Out for Delivery", "Delivered"];
-    const target = recentOrders.find((o) => o.id === orderId);
-    if (!target) return;
-    const idx = flow.indexOf(target.status);
-    const nextStatus = flow[Math.min(flow.length - 1, idx + 1)];
+  useEffect(() => {
+    void load();
+  }, [load]);
 
-    setRecentOrders((prev) =>
-      prev.map((o) => (o.id === orderId ? { ...o, status: nextStatus } : o))
-    );
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        setForm((prev) => ({ ...prev, image: reader.result as string }));
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleAddProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const res = await fetch("/api/v1/store/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name.trim(),
+          category: form.category,
+          price: Number(form.price),
+          stock: Number(form.stock),
+          description: form.description.trim(),
+          image: form.image || undefined,
+        }),
+      });
+      if (res.ok) {
+        setToast(`"${form.name}" added to your storefront catalog.`);
+        setTimeout(() => setToast(null), 4000);
+        setForm({ name: "", category: "Groceries", price: "", stock: "10", description: "", image: "" });
+        setAddOpen(false);
+        await load();
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const advanceOrder = async (order: StoreOrder) => {
+    const flow = ["Pending", "Preparing", "Out for Delivery", "Delivered"];
+    const next = flow[Math.min(flow.length - 1, flow.indexOf(order.status) + 1)];
+    setOrders((prev) => prev.map((o) => (o.id === order.id ? { ...o, status: next } : o)));
     await fetch("/api/v1/store/orders", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: orderId, status: nextStatus }),
+      body: JSON.stringify({ id: order.id, status: next }),
     }).catch(() => {});
   };
 
-  useEffect(() => {
-    document.title = `${settings.siteName || "Your business"} | Admin Dashboard`;
-  }, [settings.siteName]);
-
-  useEffect(() => {
-    if (!isMobileNavOpen) return;
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setIsMobileNavOpen(false);
-    };
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isMobileNavOpen]);
-
-  useEffect(() => {
-    if (!printingTransaction) return;
-    const handleAfterPrint = () => {
-      setIsInvoicePrintReady(false);
-      setPrintingTransaction(null);
-    };
-    window.addEventListener("afterprint", handleAfterPrint, { once: true });
-    const frame = window.requestAnimationFrame(() => setIsInvoicePrintReady(true));
-    return () => {
-      window.cancelAnimationFrame(frame);
-      window.removeEventListener("afterprint", handleAfterPrint);
-    };
-  }, [printingTransaction]);
-
-  useEffect(() => {
-    if (!isInvoicePrintReady) return;
-    window.print();
-  }, [isInvoicePrintReady]);
-
-  useEffect(() => {
-    if (!dialog) return;
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setDialog(null);
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [dialog]);
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    async function loadDashboard() {
-      setIsLoading(true);
-      setLoadError(null);
-
-      try {
-        const data = await storeFetch<DashboardData>("/store/owner-dashboard");
-        if (!data) {
-          throw new Error("The dashboard API returned no dashboard data.");
-        }
-        const result = { data, preview: false };
-        void controller;
-
-        setDashboard(result.data);
-        setIsPreview(result.preview === true);
-      } catch (error) {
-        if (controller.signal.aborted) {
-          return;
-        }
-
-        setLoadError(
-          error instanceof Error
-            ? error.message
-            : "An unexpected error prevented the dashboard from loading.",
-        );
-      } finally {
-        if (!controller.signal.aborted) {
-          setIsLoading(false);
-        }
-      }
-    }
-
-    void loadDashboard();
-
-    return () => controller.abort();
-  }, [retryCount]);
-
-  const filteredTransactions = useMemo(() => {
-    const query = search.trim().toLowerCase();
-
-    if (!dashboard || !query) {
-      return dashboard?.transactions ?? [];
-    }
-
-    return dashboard.transactions.filter((transaction) =>
-      `${transaction.service} ${transaction.invoice} ${transaction.status}`
-        .toLowerCase()
-        .includes(query),
-    );
-  }, [dashboard, search]);
-
-  function openDialog(
-    title: string,
-    description: string,
-    action?: DialogContent["action"],
-  ) {
-    setNotice("");
-    setDialog({ title, description, action });
-  }
-
-  const reminderMessage = dashboard?.urgentAction
-    ? `Hello, this is a reminder that ${dashboard.urgentAction.title} of ${formatCurrency(dashboard.urgentAction.amount)} was due on ${formatDate(dashboard.urgentAction.dueDate)}. Please complete payment at your earliest convenience.`
-    : "Please review your overdue store invoice and complete payment at your earliest convenience.";
-
-  async function copyReminder() {
-    try {
-      await navigator.clipboard.writeText(reminderMessage);
-      setDialog(null);
-      setNotice("Payment reminder copied. You can now paste it into your customer message.");
-    } catch (error) {
-      const details = error instanceof Error ? error.message : "Clipboard access was denied.";
-      setNotice(`Could not copy the reminder: ${details}`);
-    }
-  }
+  const totalRevenue = orders.reduce((s, o) => s + Number(o.total_naira || 0), 0);
+  const pendingOrders = orders.filter((o) => o.status !== "Delivered").length;
 
   return (
-    <div className="app-shell">
-      {isMobileNavOpen && (
-        <button
-          aria-label="Close navigation"
-          className="mobile-nav-backdrop"
-          onClick={() => setIsMobileNavOpen(false)}
-          type="button"
-        />
-      )}
-      <aside className={`sidebar${isMobileNavOpen ? " sidebar--mobile-open" : ""}`} id="primary-sidebar" style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", background: "#ffffff", borderRight: "1px solid #e2e8f0" }}>
-        <div>
-          <Link className="brand" href="/store-app" aria-label="Post Army House Estate Store Portal" onClick={() => setIsMobileNavOpen(false)} style={{ padding: "18px 20px", borderBottom: "1px solid #f1f5f9", marginBottom: "8px" }}>
-            <span className="brand-mark">
-              <span className="brand-initial">LE</span>
-              <span className="brand-badge-dot" />
-            </span>
-            <span className="brand-copy">
-              <strong>Post Army House<span style={{ color: "var(--primary)" }}> Estate</span></strong>
-              <small style={{ color: "#C9A227", fontWeight: "700", letterSpacing: "0.05em" }}>STORE OWNER HUB</small>
-            </span>
-          </Link>
+    <StorePortalShell>
+      <div className="space-y-6 max-w-7xl mx-auto">
+        {/* Header Banner */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl bg-white border border-slate-200/80 p-6 shadow-2xs">
+          <div>
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#B22222]">
+              <Store className="w-4 h-4" />
+              <span>Post Army House Estate Marketplace</span>
+            </div>
+            <h1 className="text-2xl font-extrabold text-slate-900 mt-1">Store Owner Dashboard</h1>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Upload products with pricing and stock, manage resident orders, and track shop service charges.
+            </p>
+          </div>
 
-          <nav aria-label="Main navigation" style={{ display: "flex", flexDirection: "column", gap: "4px", padding: "8px 12px" }}>
-            {[
-              { label: "Store Dashboard", href: "/store-app", icon: "dashboard" as const },
-              { label: "Orders & Fulfillment", href: "/store-app/orders", icon: "orders" as const },
-              { label: "Product Catalog", href: "/store-app/products", icon: "products" as const },
-              { label: "Inventory & Stock", href: "/store-app/products/manage", icon: "stock" as const },
-              { label: "Messages & Notices", href: "/store-app/messages", icon: "messages" as const },
-              { label: "Settlements & Payouts", href: "/store-app/subscription", icon: "settlement" as const },
-              { label: "Store Settings", href: "/store-app/settings", icon: "store" as const },
-            ].map((item) => {
-              const isActive = pathname === item.href;
-              return (
-                <Link
-                  aria-current={isActive ? "page" : undefined}
-                  href={item.href}
-                  key={item.href}
-                  onClick={() => setIsMobileNavOpen(false)}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "12px",
-                    padding: "10px 14px",
-                    borderRadius: "10px",
-                    fontSize: "13px",
-                    fontWeight: isActive ? 700 : 600,
-                    color: isActive ? "#ffffff" : "#475569",
-                    background: isActive ? "#B22222" : "transparent",
-                    textDecoration: "none",
-                    transition: "all 0.15s ease",
-                    boxShadow: isActive ? "0 2px 6px rgba(178, 34, 34, 0.22)" : "none",
-                  }}
-                >
-                  <Icon name={item.icon} size={16} />
-                  <span>{item.label}</span>
-                </Link>
-              );
-            })}
-          </nav>
-        </div>
-
-        <div style={{ padding: "14px 12px", borderTop: "1px solid #f1f5f9" }}>
-          <button
-            onClick={() => {
-              setIsMobileNavOpen(false);
-              window.location.assign("/login");
-            }}
-            type="button"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              width: "100%",
-              padding: "10px 14px",
-              borderRadius: "10px",
-              border: "none",
-              background: "transparent",
-              color: "#B22222",
-              fontSize: "13px",
-              fontWeight: 700,
-              cursor: "pointer",
-            }}
-          >
-            <Icon name="logout" size={16} />
-            <span>Sign Out</span>
-          </button>
-        </div>
-      </aside>
-
-      <div className="workspace">
-        <header className="topbar">
-          <button
-            aria-controls="primary-sidebar"
-            aria-expanded={isMobileNavOpen}
-            aria-label={isMobileNavOpen ? "Close navigation" : "Open navigation"}
-            className="mobile-nav-toggle"
-            onClick={() => setIsMobileNavOpen((open) => !open)}
-            type="button"
-          >
-            <span aria-hidden="true">{isMobileNavOpen ? "×" : "☰"}</span>
-          </button>
-          <label className="search-field">
-            <span className="search-icon" aria-hidden="true" />
-            <input
-              aria-label="Search orders and products"
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search orders, products, SKUs, or customers..."
-              value={search}
-            />
-            {search && (
-              <button
-                aria-label="Clear search"
-                className="clear-search"
-                onClick={() => setSearch("")}
-                type="button"
-              >
-                ×
-              </button>
-            )}
-          </label>
-
-          <div className="topbar-actions">
+          <div className="flex flex-wrap items-center gap-2.5">
             <Link
-              aria-label="Messages & Notifications"
-              className="notification-button"
-              href="/store-app/messages"
+              href="/store-app/orders"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-bold text-slate-800"
             >
-              <Icon name="notification" size={20} />
-              <span className="notification-dot" />
+              <ShoppingBag className="w-4 h-4 text-[#B22222]" />
+              <span>Manage Orders</span>
             </Link>
-            <span className="topbar-divider" />
-            <div className="admin-profile">
-              <div style={{ textAlign: "right" }}>
-                <strong style={{ display: "block", fontSize: "13px", color: "#1a1a1a" }}>{dashboard?.merchant.name || "Post Army House Mart"}</strong>
-                <small style={{ color: "#6b7280", fontSize: "11px" }}>Verified Store Merchant</small>
-              </div>
-              <div style={{ width: "38px", height: "38px", borderRadius: "10px", background: "#FEF2F2", border: "1px solid rgba(178,34,34,0.2)", display: "flex", alignItems: "center", justifyContent: "center", color: "#B22222", fontWeight: "bold", fontSize: "13px" }}>
-                LM
-              </div>
-            </div>
+            <button
+              type="button"
+              onClick={() => setAddOpen(true)}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#B22222] hover:bg-[#8F1A1A] text-white text-xs font-bold shadow-xs"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Upload Product</span>
+            </button>
           </div>
-        </header>
+        </div>
 
-        <main className="page-content">
-          {notice && (
-            <div className="notice" role="status">
-              <span>{notice}</span>
-              <button
-                aria-label="Dismiss notification"
-                onClick={() => setNotice("")}
-                type="button"
-              >
-                ×
-              </button>
-            </div>
-          )}
-
-          {isPreview && (
-            <div className="preview-notice" role="status">
-              Showing Figma preview data only. Connect the Laravel API and MySQL
-              database before using live store information.
-            </div>
-          )}
-
-          <div className="page-heading">
-            <div className="heading-copy">
-              <div className="breadcrumbs">
-                <span>Estate Marketplace</span>
-                <Icon name="chevron" size={7} />
-                <strong>
-                  {dashboard?.merchant.name || settings.siteName || "Post Army House Mart"}
-                </strong>
-              </div>
-              <h1>Store Dashboard</h1>
-            </div>
-            <div className="heading-actions">
-              <Link className="button button--outline" href="/store-app/orders">
-                <Icon name="orders" size={16} />
-                <span>Manage Orders</span>
-              </Link>
-              <Link className="button button--primary" href="/store-app/products">
-                <Icon name="add" size={17} />
-                <span>New Product</span>
-              </Link>
-            </div>
+        {toast && (
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-bold text-emerald-800 flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>{toast}</span>
           </div>
+        )}
 
-          <StoreAvailabilityControl />
+        {/* E-Commerce KPI Grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="rounded-2xl bg-white border border-slate-200/80 p-5 shadow-2xs">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Store Revenue</span>
+            <p className="text-2xl font-black text-slate-900 mt-1">₦{totalRevenue.toLocaleString()}</p>
+            <span className="text-[11px] text-emerald-700 font-semibold">From {orders.length} resident orders</span>
+          </div>
+          <div className="rounded-2xl bg-white border border-slate-200/80 p-5 shadow-2xs">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Pending Fulfillment</span>
+            <p className="text-2xl font-black text-[#B22222] mt-1">{pendingOrders}</p>
+            <span className="text-[11px] text-slate-500">Orders awaiting delivery</span>
+          </div>
+          <div className="rounded-2xl bg-white border border-slate-200/80 p-5 shadow-2xs">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Catalog Products</span>
+            <p className="text-2xl font-black text-slate-900 mt-1">{products.length}</p>
+            <span className="text-[11px] text-slate-500">Live in Resident Storefront</span>
+          </div>
+          <div className="rounded-2xl bg-white border border-slate-200/80 p-5 shadow-2xs">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Stock Units</span>
+            <p className="text-2xl font-black text-slate-900 mt-1">
+              {products.reduce((s, p) => s + Number(p.stock || 0), 0)}
+            </p>
+            <span className="text-[11px] text-slate-500">Available inventory</span>
+          </div>
+        </div>
 
-          {isLoading && (
-            <div className="state-card" role="status">
-              <span className="loading-spinner" />
-              <span>Loading your store dashboard…</span>
-            </div>
-          )}
-
-          {!isLoading && loadError && (
-            <div className="error-card" role="alert">
+        {/* Two-column E-Commerce Workspace: Orders + Product Catalog */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Customer Orders */}
+          <div className="lg:col-span-6 rounded-2xl bg-white border border-slate-200/80 p-5 shadow-2xs space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
-                <strong>We couldn&apos;t load your store data.</strong>
-                <p>{loadError}</p>
+                <h2 className="text-sm font-extrabold text-slate-900">Resident Customer Orders</h2>
+                <p className="text-[11px] text-slate-500">Includes resident delivery instructions</p>
               </div>
-              <button
-                className="button button--outline"
-                onClick={() => setRetryCount((count) => count + 1)}
-                type="button"
-              >
-                Try again
-              </button>
+              <Link href="/store-app/orders" className="text-xs font-bold text-[#B22222] hover:underline">
+                View All
+              </Link>
             </div>
-          )}
 
-          {dashboard && (
-            <>
-              <div className="metrics-grid">
-                <section className="merchant-card">
-                  <div className="merchant-picture">
-                    <Image
-                      alt=""
-                      className="merchant-image"
-                      height={96}
-                      src="/figma/4571e406-4219-493c-9a9e-11dbe4e458bd.png"
-                      width={96}
-                    />
-                  </div>
-                  <h2>{settings.siteName || "Your business"}</h2>
-                  <span className="tier-badge">
-                    <Icon name="badge" size={14} />
-                    {dashboard.merchant.tier}
-                  </span>
-                  <div className="merchant-details">
-                    <div>
-                      <span>Merchant ID</span>
-                      <strong>#{dashboard.merchant.merchantId}</strong>
+            {loading ? (
+              <p className="py-8 text-center text-xs text-slate-400">Loading orders…</p>
+            ) : orders.length === 0 ? (
+              <div className="py-10 text-center text-xs text-slate-400">
+                No resident orders placed yet. Once residents order from your catalog, they will appear here.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {orders.slice(0, 5).map((o) => (
+                  <div
+                    key={o.id}
+                    className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/60 flex items-center justify-between gap-3"
+                  >
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 text-xs">
+                        <span className="font-mono font-bold text-slate-700">{o.order_no}</span>
+                        <span className="font-bold text-[#B22222]">{o.unit_number}</span>
+                      </div>
+                      <p className="text-xs font-bold text-slate-900 mt-0.5">
+                        {o.resident_name} — {o.quantity}x {o.product_name}
+                      </p>
+                      {o.delivery_comment && (
+                        <p className="text-[11px] text-slate-500 italic mt-0.5">
+                          Note: &ldquo;{o.delivery_comment}&rdquo;
+                        </p>
+                      )}
                     </div>
-                    <div>
-                      <span>Joined</span>
-                      <strong>{formatDate(dashboard.merchant.joinedAt)}</strong>
+                    <div className="flex flex-col items-end gap-1.5 shrink-0">
+                      <strong className="text-xs font-black text-slate-900">
+                        ₦{Number(o.total_naira).toLocaleString()}
+                      </strong>
+                      {o.status === "Delivered" ? (
+                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold">
+                          Delivered
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => void advanceOrder(o)}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#B22222] hover:bg-[#8F1A1A] text-white text-[10px] font-bold"
+                        >
+                          {o.status === "Pending" ? (
+                            <>
+                              <Clock className="w-3 h-3" /> Accept &amp; Pack
+                            </>
+                          ) : o.status === "Preparing" ? (
+                            <>
+                              <Truck className="w-3 h-3" /> Dispatch
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle2 className="w-3 h-3" /> Mark Delivered
+                            </>
+                          )}
+                        </button>
+                      )}
                     </div>
                   </div>
-                </section>
+                ))}
+              </div>
+            )}
+          </div>
 
-                <div className="metric-cards-grid">
-                  <MetricCard
-                    caption="+12.5% from last month"
-                    captionIcon="trend"
-                    icon="revenue"
-                    label="Total Revenue"
-                    value={formatCurrency(dashboard.merchant.totalRevenue)}
-                  />
-                  <MetricCard
-                    caption="14 days overdue"
-                    captionIcon="overdueClock"
-                    icon="settlement"
-                    iconSize={19}
-                    label="Pending Settlements"
-                    value={formatCurrency(
-                      dashboard.merchant.pendingSettlements,
-                    )}
-                    variant="red"
-                  />
-                  <MetricCard
-                    caption="98% in stock"
-                    captionIcon="stock"
-                    icon="products"
-                    iconSize={18}
-                    label="Active Products"
-                    value={`${dashboard.merchant.activeProducts.toLocaleString("en-NG")} Items`}
-                    variant="blue"
-                  />
-                  <MetricCard
-                    caption="24 new today"
-                    captionIcon="newOrders"
-                    icon="orders"
-                    iconSize={20}
-                    label="Order Volume"
-                    value={dashboard.merchant.orderVolume.toLocaleString(
-                      "en-NG",
-                    )}
-                    variant="blue"
+          {/* E-Commerce Product Grid */}
+          <div className="lg:col-span-6 rounded-2xl bg-white border border-slate-200/80 p-5 shadow-2xs space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h2 className="text-sm font-extrabold text-slate-900">Storefront Product Catalog</h2>
+                <p className="text-[11px] text-slate-500">Displayed to residents in e-commerce format</p>
+              </div>
+              <Link href="/store-app/products" className="text-xs font-bold text-[#B22222] hover:underline">
+                Manage All
+              </Link>
+            </div>
+
+            {loading ? (
+              <p className="py-8 text-center text-xs text-slate-400">Loading catalog…</p>
+            ) : products.length === 0 ? (
+              <div className="py-10 text-center space-y-3">
+                <Package className="w-8 h-8 text-slate-300 mx-auto" />
+                <p className="text-xs text-slate-500">No products uploaded yet.</p>
+                <button
+                  type="button"
+                  onClick={() => setAddOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#B22222] text-white text-xs font-bold"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Add Your First Product
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {products.slice(0, 4).map((p) => (
+                  <div key={p.id} className="rounded-xl border border-slate-200 overflow-hidden bg-white flex flex-col">
+                    <div className="h-28 bg-slate-100 relative">
+                      {p.image ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-slate-300">
+                          <Package className="w-8 h-8" />
+                        </div>
+                      )}
+                      <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-white/90 text-[10px] font-bold text-slate-700">
+                        {p.category}
+                      </span>
+                    </div>
+                    <div className="p-3 flex-1 flex flex-col justify-between gap-2">
+                      <p className="text-xs font-bold text-slate-900 line-clamp-1">{p.name}</p>
+                      <div className="flex items-center justify-between">
+                        <strong className="text-sm font-black text-[#B22222]">₦{p.price.toLocaleString()}</strong>
+                        <span className="text-[11px] font-semibold text-emerald-700">{p.stock} in stock</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Commercial Shop Service Charges */}
+        <ResidentServiceChargePanel scope="store" compact />
+
+        {/* Upload Product Modal */}
+        {addOpen && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4"
+            onMouseDown={(e) => {
+              if (e.target === e.currentTarget) setAddOpen(false);
+            }}
+          >
+            <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl border border-slate-200 space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 className="text-base font-black text-slate-900">Upload Store Product</h3>
+                <button type="button" onClick={() => setAddOpen(false)} className="p-1 text-slate-400 hover:text-slate-900">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleAddProduct} className="space-y-3.5">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Product Name</label>
+                  <input
+                    required
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    placeholder="e.g. Fresh Farm Eggs (Crate)"
+                    className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold"
                   />
                 </div>
-              </div>
 
-              {/* E-Commerce Fulfillment & Top Catalog Strip */}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "20px", marginTop: "24px" }}>
-                <section className="panel" style={{ padding: "20px" }}>
-                  <div className="panel-heading" style={{ marginBottom: "14px" }}>
-                    <div>
-                      <h2 style={{ margin: 0 }}>Recent Customer Orders</h2>
-                      <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#64748b" }}>
-                        Fulfill resident marketplace orders across Phases 1–5
-                      </p>
-                    </div>
-                    <Link className="text-button" href="/store-app/orders">
-                      All Orders <Icon name="external" size={12} />
-                    </Link>
-                  </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                    {recentOrders.map((order) => (
-                      <div
-                        key={order.id}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          gap: "12px",
-                          padding: "12px",
-                          borderRadius: "12px",
-                          border: "1px solid #e2e8f0",
-                          background: "#f8fafc",
-                        }}
-                      >
-                        <div style={{ minWidth: 0 }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                            <strong style={{ fontSize: "12px", fontFamily: "monospace", color: "#0f172a" }}>{order.order_no}</strong>
-                            <span style={{ fontSize: "11px", fontWeight: 700, color: "#B22222" }}>{order.unit}</span>
-                          </div>
-                          <p style={{ margin: "3px 0 0", fontSize: "12px", fontWeight: 600, color: "#1e293b" }}>
-                            {order.customer} — {order.items}
-                          </p>
-                          {order.comment && (
-                            <p style={{ margin: "3px 0 0", fontSize: "11px", color: "#64748b", fontStyle: "italic" }}>
-                              Delivery note: &ldquo;{order.comment}&rdquo;
-                            </p>
-                          )}
-                        </div>
-                        <div style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
-                          <strong style={{ fontSize: "13px", color: "#0f172a" }}>₦{order.total.toLocaleString()}</strong>
-                          {order.status !== "Delivered" ? (
-                            <button
-                              type="button"
-                              onClick={() => advanceOrderStatus(order.id)}
-                              style={{
-                                padding: "6px 10px",
-                                borderRadius: "8px",
-                                border: "none",
-                                background: order.status === "Pending" ? "#B22222" : "#0f172a",
-                                color: "#fff",
-                                fontSize: "11px",
-                                fontWeight: 700,
-                                cursor: "pointer",
-                              }}
-                            >
-                              {order.status === "Pending" ? "Accept & Pack" : order.status === "Preparing" ? "Dispatch" : "Mark Delivered"}
-                            </button>
-                          ) : (
-                            <span style={{ padding: "5px 10px", borderRadius: "999px", background: "#dcfce7", color: "#166534", fontSize: "11px", fontWeight: 700 }}>
-                              Delivered
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-
-                <section className="panel" style={{ padding: "20px" }}>
-                  <div className="panel-heading" style={{ marginBottom: "14px" }}>
-                    <div>
-                      <h2 style={{ margin: 0 }}>Top Storefront Products</h2>
-                      <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#64748b" }}>
-                        Live inventory &amp; pricing from your store catalog
-                      </p>
-                    </div>
-                    <Link className="text-button" href="/store-app/products">
-                      Edit Catalog <Icon name="external" size={12} />
-                    </Link>
-                  </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "10px" }}>
-                    {catalogPreview.map((item) => (
-                      <div
-                        key={item.id}
-                        style={{
-                          padding: "12px",
-                          borderRadius: "12px",
-                          border: "1px solid #e2e8f0",
-                          background: "#fff",
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: "6px",
-                        }}
-                      >
-                        {item.image && (
-                          <img
-                            src={item.image}
-                            alt={item.name}
-                            style={{ width: "100%", height: "76px", objectFit: "cover", borderRadius: "8px" }}
-                          />
-                        )}
-                        <span style={{ fontSize: "10px", fontWeight: 700, textTransform: "uppercase", color: "#C9A227" }}>
-                          {item.category}
-                        </span>
-                        <strong style={{ fontSize: "12px", color: "#0f172a", lineHeight: 1.3 }}>{item.name}</strong>
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "auto", paddingTop: "4px" }}>
-                          <strong style={{ fontSize: "13px", color: "#B22222" }}>₦{Number(item.price).toLocaleString()}</strong>
-                          <span style={{ fontSize: "11px", fontWeight: 600, color: item.stock <= 10 ? "#b91c1c" : "#15803d" }}>
-                            {item.stock} in stock
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              </div>
-
-              {/* Commercial Shop Service Charge Panel */}
-              <div style={{ marginTop: "24px", marginBottom: "24px" }}>
-                <ResidentServiceChargePanel scope="store" compact />
-              </div>
-
-              <div className="details-grid">
-                <section className="panel timeline-panel">
-                  <div className="panel-heading">
-                    <h2>Sales Timeline</h2>
-                    <button
-                      className="text-button"
-                      onClick={() => {
-                        setSearch("");
-                        setNotice(`Showing all ${dashboard.transactions.length} available transactions.`);
-                      }}
-                      type="button"
+                <div className="grid grid-cols-3 gap-2.5">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Category</label>
+                    <select
+                      value={form.category}
+                      onChange={(e) => setForm({ ...form, category: e.target.value })}
+                      className="w-full rounded-xl border border-slate-200 px-2.5 py-2 text-xs font-semibold bg-white"
                     >
-                      View All <Icon name="external" size={12} />
-                    </button>
+                      <option>Groceries</option>
+                      <option>Pantry</option>
+                      <option>Household</option>
+                      <option>Pharmacy</option>
+                      <option>Electronics</option>
+                    </select>
                   </div>
-
-                  <div className="table-scroll">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>Service</th>
-                          <th>Amount</th>
-                          <th>Date</th>
-                          <th>Status</th>
-                          <th>Action</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredTransactions.map((transaction, index) => {
-                          const rowIcon: IconName =
-                            index === 0
-                              ? "insurance"
-                              : index === 1
-                                ? "warehouse"
-                                : "logistics";
-
-                          return (
-                            <tr key={transaction.id}>
-                              <td>
-                                <div className="service-cell">
-                                  <span
-                                    className={`service-icon service-icon--${index % 3}`}
-                                  >
-                                    <Icon name={rowIcon} size={20} />
-                                  </span>
-                                  <span>
-                                    <strong>{transaction.service}</strong>
-                                    <small>{transaction.invoice}</small>
-                                  </span>
-                                </div>
-                              </td>
-                              <td className="amount-cell">
-                                {formatCurrency(transaction.amount)}
-                              </td>
-                              <td className="date-cell">
-                                {formatDate(transaction.date)}
-                              </td>
-                              <td>
-                                <span className="paid-badge">
-                                  {transaction.status}
-                                </span>
-                              </td>
-                              <td className="action-cell">
-                                <button
-                                  aria-label={`Print ${transaction.service} invoice`}
-                                  className="icon-button print-button"
-                                  onClick={() => setPrintingTransaction(transaction)}
-                                  type="button"
-                                >
-                                  <Icon name="document" size={16} />
-                                </button>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                        {filteredTransactions.length === 0 && (
-                          <tr>
-                            <td className="empty-row" colSpan={5}>
-                              No transactions match &ldquo;{search}&rdquo;.
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Price (₦)</label>
+                    <input
+                      required
+                      type="number"
+                      min={50}
+                      value={form.price}
+                      onChange={(e) => setForm({ ...form, price: e.target.value })}
+                      className="w-full rounded-xl border border-slate-200 px-2.5 py-2 text-xs font-bold"
+                    />
                   </div>
-                </section>
-
-                {dashboard.urgentAction ? (
-                <section className="panel urgent-panel">
-                  <h2>Urgent Actions</h2>
-                  <div className="urgent-card">
-                    <div className="urgent-title-row">
-                      <strong>{dashboard.urgentAction!.title}</strong>
-                      <strong className="urgent-amount">
-                        {formatCurrency(dashboard.urgentAction!.amount)}
-                      </strong>
-                    </div>
-                    <p>Due: {formatDate(dashboard.urgentAction!.dueDate)}</p>
-                    <div className="urgent-footer">
-                      <span>
-                        <Icon name="warning" size={13} />
-                        {dashboard.urgentAction!.overdueDays} Days Overdue
-                      </span>
-                      <button
-                        className="button button--danger"
-                        onClick={() => openDialog(
-                          "Online payment unavailable",
-                          "A payment provider is not connected, so this invoice cannot be paid online here. No payment was started.",
-                          { href: `mailto:${settings.supportEmail}?subject=Payment%20assistance`, label: "Contact support" },
-                        )}
-                        type="button"
-                      >
-                        Pay Now
-                      </button>
-                    </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Quantity</label>
+                    <input
+                      required
+                      type="number"
+                      min={1}
+                      value={form.stock}
+                      onChange={(e) => setForm({ ...form, stock: e.target.value })}
+                      className="w-full rounded-xl border border-slate-200 px-2.5 py-2 text-xs font-bold"
+                    />
                   </div>
+                </div>
 
-                  <div className="no-payments">
-                    <span className="checklist-icon">
-                      <Icon name="checklist" size={25} />
-                    </span>
-                    <strong>No other pending payments found for this cycle.</strong>
-                  </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Product Picture</label>
+                  <label className="flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 hover:border-[#B22222] bg-slate-50 p-3.5 text-xs font-bold text-slate-700 cursor-pointer">
+                    <Upload className="w-4 h-4 text-[#B22222]" />
+                    <span>{form.image ? "Image Selected (Click to Change)" : "Upload Product Photo"}</span>
+                    <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                  </label>
+                </div>
 
-                  <div className="billing-note">
-                    <Icon name="info" size={14} />
-                    <span>
-                      Automated billing for the next cycle (Q1 2024) will be
-                      generated on{" "}
-                      <strong>{formatDate(dashboard.nextBillingDate)}.</strong>
-                    </span>
-                  </div>
-                </section>
-                ) : (
-                  <section className="panel urgent-panel"><h2>Urgent Actions</h2><p>No unpaid invoices.</p></section>
-                )}
-              </div>
-
-              <div className="summary-grid">
-                <SummaryCard
-                  icon="bank"
-                  label="Settlement Mode"
-                  value={dashboard.merchant.settlementMode}
-                />
-                <SummaryCard
-                  icon="frequency"
-                  label="Frequency"
-                  value={dashboard.merchant.settlementFrequency}
-                />
-                <SummaryCard
-                  icon="autopay"
-                  label="Auto-pay Status"
-                  value={dashboard.merchant.autoPayEnabled ? "Enabled" : "Disabled"}
-                />
-                <SummaryCard
-                  icon="document"
-                  label="Document record · no file attached"
-                  value={dashboard.merchant.documentName}
-                />
-              </div>
-            </>
-          )}
-        </main>
+                <div className="flex justify-end gap-2 pt-2">
+                  <button type="button" onClick={() => setAddOpen(false)} className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold">
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className="px-5 py-2 rounded-xl bg-[#B22222] text-white text-xs font-bold hover:bg-[#8F1A1A] disabled:opacity-50"
+                  >
+                    {saving ? "Uploading…" : "Publish Product"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
-
-      {printingTransaction && isInvoicePrintReady && (
-        <section className="print-invoice">
-          <p>{settings.siteName} · Sales invoice</p>
-          <h1>{printingTransaction.service}</h1>
-          <dl>
-            <div><dt>Invoice</dt><dd>{printingTransaction.invoice}</dd></div>
-            <div><dt>Date</dt><dd>{formatDate(printingTransaction.date)}</dd></div>
-            <div><dt>Status</dt><dd>{printingTransaction.status}</dd></div>
-            <div><dt>Amount</dt><dd>{formatCurrency(printingTransaction.amount)}</dd></div>
-          </dl>
-        </section>
-      )}
-
-      {dialog && (
-        <div
-          className="dialog-backdrop"
-          onClick={(event) => {
-            if (event.target === event.currentTarget) {
-              setDialog(null);
-            }
-          }}
-        >
-          <section aria-labelledby="dialog-title" aria-modal="true" className="dialog" role="dialog">
-            <button
-              aria-label="Close dialog"
-              className="dialog-close"
-              onClick={() => setDialog(null)}
-              type="button"
-            >
-              ×
-            </button>
-            <h2 id="dialog-title">{dialog.title}</h2>
-            {dialog.title === "Send payment reminder" ? (
-              <textarea aria-label="Payment reminder text" className="reminder-copy" readOnly value={reminderMessage} />
-            ) : (
-              <p>{dialog.description}</p>
-            )}
-            {dialog.title === "Send payment reminder" && (
-              <button className="button button--outline dialog-confirm" onClick={copyReminder} type="button">
-                Copy reminder
-              </button>
-            )}
-            {dialog.action && <Link className="button button--outline dialog-confirm" href={dialog.action.href}>{dialog.action.label}</Link>}
-            <button
-              className="button button--primary dialog-confirm"
-              onClick={() => setDialog(null)}
-              type="button"
-            >
-              Got it
-            </button>
-          </section>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function SummaryCard({
-  icon,
-  label,
-  value,
-}: {
-  icon: IconName;
-  label: string;
-  value: string;
-}) {
-  return (
-    <section className="summary-card">
-      <span className="summary-icon">
-        <Icon name={icon} size={19} />
-      </span>
-      <span>
-        <small>{label}</small>
-        <strong>{value}</strong>
-      </span>
-    </section>
+    </StorePortalShell>
   );
 }

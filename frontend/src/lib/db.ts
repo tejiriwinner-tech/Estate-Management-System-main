@@ -1,7 +1,7 @@
 import postgres from "postgres";
 
 const defaultUrl =
-  "postgresql://postgres.pcckpgzapymifibcdlaf:Post Army House Estate@123@aws-0-eu-west-1.pooler.supabase.com:5432/postgres";
+  "postgresql://postgres.pcckpgzapymifibcdlaf:LincolnEstate@123@aws-0-eu-west-1.pooler.supabase.com:5432/postgres";
 
 const connectionString = process.env.DATABASE_URL || defaultUrl;
 

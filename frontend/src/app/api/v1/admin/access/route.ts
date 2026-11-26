@@ -20,50 +20,23 @@ export async function GET() {
       console.error("Error fetching access logs:", e.message);
     }
 
-    const defaultLogs = [
-      {
-        id: 1,
-        name: "Tunde Bakare",
-        person_type: "Visitor",
-        house_no: "Villa A-402",
-        check_in: "10:14 AM",
-        check_out: "11:45 AM",
-        gate: "Main Gate",
-        status: "checked_out" as const,
-        avatar_url: null,
-      },
-      {
-        id: 2,
-        name: "Adewale Delivery (DHL)",
-        person_type: "Service Provider",
-        house_no: "Plot 14",
-        check_in: "11:20 AM",
-        check_out: "—",
-        gate: "Main Gate",
-        status: "in_estate" as const,
-        avatar_url: null,
-      },
-    ];
-
-    const logs = rawLogs.length > 0
-      ? rawLogs.map((l) => {
-          const isOut = l.direction === "out";
-          const timeStr = l.occurred_at || l.created_at
-            ? new Date(l.occurred_at || l.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-            : "10:00 AM";
-          return {
-            id: Number(l.id),
-            name: l.name || "Guest",
-            person_type: l.person_type || l.role_label || "Visitor",
-            house_no: l.house_no || l.host_unit || "Villa A-402",
-            check_in: isOut ? "08:30 AM" : timeStr,
-            check_out: isOut ? timeStr : "—",
-            gate: l.gate || "Main Gate",
-            status: isOut ? ("checked_out" as const) : ("in_estate" as const),
-            avatar_url: l.avatar_url || null,
-          };
-        })
-      : defaultLogs;
+    const logs = rawLogs.map((l) => {
+      const isOut = l.direction === "out";
+      const timeStr = l.occurred_at || l.created_at
+        ? new Date(l.occurred_at || l.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+        : "—";
+      return {
+        id: Number(l.id),
+        name: l.name || "Guest",
+        person_type: l.person_type || l.role_label || "Visitor",
+        house_no: l.house_no || l.host_unit || "—",
+        check_in: isOut ? "—" : timeStr,
+        check_out: isOut ? timeStr : "—",
+        gate: l.gate || "Main Gate",
+        status: isOut ? ("checked_out" as const) : ("in_estate" as const),
+        avatar_url: l.avatar_url || null,
+      };
+    });
 
     const metrics = [
       { id: "total-checkins", label: "TOTAL CHECK-INS", value: String(logs.length + 12), iconType: "checkin" as const },

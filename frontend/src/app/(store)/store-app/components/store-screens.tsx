@@ -198,32 +198,30 @@ function StatusBadge({ stock }: { stock: number }) {
   return <span className={`stock-badge stock-badge--${stock === 0 ? "out" : stock <= 10 ? "low" : "in"}`}>{label}</span>;
 }
 
+import { StorePortalShell } from "@/components/store/StorePortalShell";
+
 export function StoreShell({
   children,
-  activeNav = "Store",
 }: {
   children: ReactNode;
   activeNav?: string;
 }) {
-  const [shellNotice, setShellNotice] = useState("");
   const pathname = usePathname();
   const isAdminRoute = pathname.startsWith("/admin");
 
-  // If rendering inside /admin, render plain content without duplicate sidebar or topbar
   if (isAdminRoute) {
-    return (
-      <div className="w-full space-y-6">
-        {shellNotice && (
-          <div className="p-4 rounded-xl bg-amber-50 text-amber-900 border border-amber-200 text-sm flex items-center justify-between" role="status">
-            <span>{shellNotice}</span>
-            <button aria-label="Dismiss" onClick={() => setShellNotice("")} type="button" className="font-bold text-lg">×</button>
-          </div>
-        )}
-        <div className="w-full">{children}</div>
-      </div>
-    );
+    return <div className="w-full space-y-6">{children}</div>;
   }
 
+  return <StorePortalShell>{children}</StorePortalShell>;
+}
+
+function LegacyStoreShellUnused({ children }: { children: ReactNode }) {
+
+  const isAdminRoute = false;
+  const activeNav = "Store";
+  const [shellNotice, setShellNotice] = useState("");
+  const pathname = usePathname();
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const { settings } = useSiteSettings();
   useEffect(() => {

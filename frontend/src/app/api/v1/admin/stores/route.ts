@@ -4,18 +4,7 @@ import { sql } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-const memoryStores: any[] = [
-  {
-    id: 1,
-    name: "Post Army House Mart",
-    category: "Groceries & Essentials",
-    shop_unit: "Commercial Plaza Shop A-01",
-    owner_name: "Store Manager",
-    owner_email: "store@lincolnestate.ng",
-    status: "active",
-    created_at: new Date().toISOString(),
-  },
-];
+const memoryStores: any[] = [];
 
 async function ensureStoresTable() {
   await sql`
@@ -37,17 +26,7 @@ async function ensureStoresTable() {
 export async function GET() {
   try {
     await ensureStoresTable();
-    let rows = await sql`SELECT * FROM estate_stores ORDER BY id DESC`;
-
-    if (rows.length === 0) {
-      await sql`
-        INSERT INTO estate_stores (name, category, shop_unit, owner_name, owner_email, owner_user_id, status)
-        VALUES ('Post Army House Mart', 'Groceries & Essentials', 'Commercial Plaza Shop A-01', 'Store Manager', 'store@lincolnestate.ng', null, 'active')
-        ON CONFLICT (owner_email) DO NOTHING
-      `;
-      rows = await sql`SELECT * FROM estate_stores ORDER BY id DESC`;
-    }
-
+    const rows = await sql`SELECT * FROM estate_stores ORDER BY id DESC`;
     return NextResponse.json({ data: rows });
   } catch (err: any) {
     console.warn("Admin stores fallback:", err.message);

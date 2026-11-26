@@ -16,69 +16,22 @@ export async function GET() {
       console.error("Error fetching blacklist entries:", e.message);
     }
 
-    const defaultEntries = [
-      {
-        id: "BL-001",
-        name: "Marcus Sterling",
-        entityId: "LE-99101-X",
-        reason: "Unauthorized commercial activity & trespass",
-        reasonDetail: "Attempted unverified commercial delivery at Phase 2 gate",
-        riskLevel: "HIGH",
-        status: "RESTRICTED",
-        lastAttemptedDate: "2026-11-19",
-        lastAttemptedTime: "14:22",
-        lastAttemptedLocation: "Main Gate 1",
-        dateAdded: "2026-11-10",
-        securityLevel: "High",
-      },
-      {
-        id: "BL-002",
-        name: "Toyota Hilux (LND-442-AA)",
-        entityId: "VEH-442",
-        reason: "Reckless driving & barrier hit-and-run",
-        reasonDetail: "ANPR flagged for perimeter barrier damage",
-        riskLevel: "EXTREME",
-        status: "RESTRICTED",
-        lastAttemptedDate: "2026-11-21",
-        lastAttemptedTime: "21:05",
-        lastAttemptedLocation: "Phase 2 Gate",
-        dateAdded: "2026-11-14",
-        securityLevel: "High",
-      },
-    ];
+    const entries = rows.map((r) => ({
+      id: `BL-${r.id}`,
+      name: r.name,
+      entityId: r.entity_ref || `REF-${r.id}`,
+      reason: r.reason || "Security restriction",
+      reasonDetail: r.details || r.reason || "Flagged by Security Command",
+      riskLevel: (r.risk_level || "ELEVATED").toUpperCase(),
+      status: r.status === "cleared" ? "CLEARED" : r.list_type === "watchlist" ? "UNDER_OBSERVATION" : "RESTRICTED",
+      lastAttemptedDate: r.created_at ? new Date(r.created_at).toISOString().split("T")[0] : "—",
+      lastAttemptedTime: r.created_at ? new Date(r.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—",
+      lastAttemptedLocation: "Main Gate",
+      dateAdded: r.created_at ? new Date(r.created_at).toISOString().split("T")[0] : "—",
+      securityLevel: r.risk_level === "EXTREME" || r.risk_level === "HIGH" ? "High" : "Medium",
+    }));
 
-    const entries = rows.length > 0
-      ? rows.map((r) => ({
-          id: `BL-${r.id}`,
-          name: r.name,
-          entityId: r.entity_ref || `REF-${r.id}`,
-          reason: r.reason || "Security restriction",
-          reasonDetail: r.details || r.reason || "Flagged by Security Command",
-          riskLevel: (r.risk_level || "ELEVATED").toUpperCase(),
-          status: r.status === "cleared" ? "CLEARED" : r.list_type === "watchlist" ? "UNDER_OBSERVATION" : "RESTRICTED",
-          lastAttemptedDate: r.created_at ? new Date(r.created_at).toISOString().split("T")[0] : "2026-11-10",
-          lastAttemptedTime: r.created_at ? new Date(r.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "12:00",
-          lastAttemptedLocation: "Main Gate 1",
-          dateAdded: r.created_at ? new Date(r.created_at).toISOString().split("T")[0] : "2026-11-10",
-          securityLevel: r.risk_level === "EXTREME" || r.risk_level === "HIGH" ? "High" : "Medium",
-        }))
-      : defaultEntries;
-
-    const watchlist = [
-      {
-        id: "WL-001",
-        name: "Delivery Van (KJA-901-XZ)",
-        entityId: "VEH-901",
-        reason: "Excessive speed on Palm Avenue",
-        reasonDetail: "Monitored by ANPR speed telemetry",
-        entityType: "vehicle",
-        riskLevel: "ELEVATED",
-        status: "UNDER_OBSERVATION",
-        lastAttemptedDate: "2026-11-22",
-        lastAttemptedTime: "10:15",
-        lastAttemptedLocation: "Palm Avenue",
-      },
-    ];
+    const watchlist = entries.filter((e) => e.status === "UNDER_OBSERVATION");
 
     return NextResponse.json({
       data: {

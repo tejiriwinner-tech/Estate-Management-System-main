@@ -46,19 +46,6 @@ export async function GET(req: NextRequest) {
         WHERE LOWER(unit_number) LIKE '%shop%' OR LOWER(unit_number) LIKE '%plaza%' OR LOWER(resident_name) LIKE '%mart%'
         ORDER BY created_at DESC
       `;
-      if (rows.length === 0) {
-        await sql`
-          INSERT INTO service_charges (user_id, resident_name, unit_number, service_type, amount, billing_cycle, due_date, status, invoice_no, notes)
-          VALUES
-            (null, 'Post Army House Mart', 'Commercial Plaza Shop A-01', 'Commercial Plaza Security, Waste & Power Levy', 45000, 'Monthly', CURRENT_DATE + INTERVAL '7 days', 'Pending', 'SC-SHOP-2041', 'Covers 24/7 commercial grid backup, loading bay security & sanitation'),
-            (null, 'Post Army House Mart', 'Commercial Plaza Shop A-01', 'Commercial Plaza Security, Waste & Power Levy', 45000, 'Monthly', CURRENT_DATE - INTERVAL '23 days', 'Paid', 'SC-SHOP-1988', 'Cleared via merchant settlement')
-        `;
-        rows = await sql`
-          SELECT * FROM service_charges
-          WHERE LOWER(unit_number) LIKE '%shop%' OR LOWER(unit_number) LIKE '%plaza%' OR LOWER(resident_name) LIKE '%mart%'
-          ORDER BY created_at DESC
-        `;
-      }
     } else {
       let targetUserId: number | null = null;
       if (callerEmail) {
@@ -69,7 +56,7 @@ export async function GET(req: NextRequest) {
       rows = targetUserId
         ? await sql`
             SELECT * FROM service_charges
-            WHERE user_id = ${targetUserId} OR unit_number = 'Villa A-402'
+            WHERE user_id = ${targetUserId}
             ORDER BY created_at DESC
           `
         : await sql`
@@ -78,20 +65,6 @@ export async function GET(req: NextRequest) {
             ORDER BY created_at DESC
             LIMIT 15
           `;
-
-      if (rows.length === 0) {
-        await sql`
-          INSERT INTO service_charges (user_id, resident_name, unit_number, service_type, amount, billing_cycle, due_date, status, invoice_no, notes)
-          VALUES
-            (2, 'Chinedu Resident', 'Villa A-402', 'Monthly Estate Security & Maintenance Levy', 35000, 'Monthly', CURRENT_DATE + INTERVAL '7 days', 'Pending', 'SC-2026-1041', '24/7 perimeter patrol, ANPR gate maintenance & street illumination'),
-            (2, 'Chinedu Resident', 'Villa A-402', 'Waste & Environmental Sanitation', 15000, 'Monthly', CURRENT_DATE - INTERVAL '15 days', 'Paid', 'SC-2026-0988', 'Verified unit sanitation clearance')
-        `;
-        rows = await sql`
-          SELECT * FROM service_charges
-          WHERE LOWER(unit_number) NOT LIKE '%shop%' AND LOWER(unit_number) NOT LIKE '%plaza%'
-          ORDER BY created_at DESC
-        `;
-      }
     }
 
     return NextResponse.json({

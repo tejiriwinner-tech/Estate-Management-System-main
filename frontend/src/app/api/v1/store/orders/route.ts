@@ -3,36 +3,7 @@ import { sql } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-const memoryOrders: any[] = [
-  {
-    id: 1,
-    order_no: "ORD-4821",
-    product_id: 2,
-    product_name: "Premium Basmati Rice (5kg)",
-    quantity: 2,
-    total_naira: 25000,
-    resident_name: "Chinedu Resident",
-    resident_email: "resident@lincolnestate.ng",
-    unit_number: "Villa A-402",
-    delivery_comment: "Please call at the gate and drop with security if unavailable.",
-    status: "Pending",
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: 2,
-    order_no: "ORD-4820",
-    product_id: 3,
-    product_name: "Disinfectant Surface Cleaner (1L)",
-    quantity: 3,
-    total_naira: 7200,
-    resident_name: "Amina Bello",
-    resident_email: "amina@postarmyhouse.ng",
-    unit_number: "Phase 2, Plot 14",
-    delivery_comment: "Deliver before 5pm today.",
-    status: "Preparing",
-    created_at: new Date().toISOString(),
-  },
-];
+const memoryOrders: any[] = [];
 
 async function ensureOrdersTable() {
   await sql`
@@ -62,19 +33,9 @@ export async function GET(req: NextRequest) {
   try {
     await ensureOrdersTable();
 
-    let rows = email
+    const rows = email
       ? await sql`SELECT * FROM store_orders WHERE LOWER(resident_email) = ${email} ORDER BY id DESC LIMIT 30`
       : await sql`SELECT * FROM store_orders ORDER BY id DESC LIMIT 30`;
-
-    if (rows.length === 0 && !email) {
-      await sql`
-        INSERT INTO store_orders (order_no, store_id, product_id, product_name, quantity, total_naira, resident_name, resident_email, unit_number, delivery_comment, status)
-        VALUES
-          ('ORD-4821', 1, 2, 'Premium Basmati Rice (5kg)', 2, 25000, 'Chinedu Resident', 'resident@lincolnestate.ng', 'Villa A-402', 'Please call at the gate and drop with security if unavailable.', 'Pending'),
-          ('ORD-4820', 1, 3, 'Disinfectant Surface Cleaner (1L)', 3, 7200, 'Amina Bello', 'amina@postarmyhouse.ng', 'Phase 2, Plot 14', 'Deliver before 5pm today.', 'Preparing')
-      `;
-      rows = await sql`SELECT * FROM store_orders ORDER BY id DESC LIMIT 30`;
-    }
 
     return NextResponse.json({
       data: rows.map((r: any) => ({

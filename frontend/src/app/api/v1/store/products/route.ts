@@ -16,27 +16,19 @@ export async function GET() {
       console.error("Store products error:", e.message);
     }
 
-    if (products.length === 0) {
-      products = [
-        { id: 1, sku: "PRD-001", name: "Fresh Farm Organic Eggs (Crate)", category: "Groceries", price: 3800, stock: 45, image: "https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?auto=format&fit=crop&w=600&q=80" },
-        { id: 2, sku: "PRD-002", name: "Premium Basmati Rice (5kg)", category: "Pantry", price: 12500, stock: 30, image: "https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=600&q=80" },
-        { id: 3, sku: "PRD-003", name: "Disinfectant Surface Cleaner (1L)", category: "Household", price: 2400, stock: 60, image: "https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?auto=format&fit=crop&w=600&q=80" },
-      ];
-    } else {
-      products = products.map((p: any) => ({
-        id: p.id,
-        sku: p.sku || `PRD-00${p.id}`,
-        name: p.name,
-        category: p.category || "General",
-        price: Math.round(Number(p.price_kobo || 0) / 100),
-        stock: Number(p.stock || 10),
-        description: p.description,
-        image: p.image || "https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?auto=format&fit=crop&w=600&q=80",
-        featured: Boolean(p.featured),
-      }));
-    }
+    const formatted = products.map((p: any) => ({
+      id: p.id,
+      sku: p.sku || `PRD-00${p.id}`,
+      name: p.name,
+      category: p.category || "General",
+      price: Math.round(Number(p.price_kobo || 0) / 100),
+      stock: Number(p.stock || 0),
+      description: p.description,
+      image: p.image || null,
+      featured: Boolean(p.featured),
+    }));
 
-    return NextResponse.json({ data: products });
+    return NextResponse.json({ data: formatted });
   } catch (err: any) {
     return NextResponse.json({ message: "Could not fetch products.", error: err.message }, { status: 500 });
   }

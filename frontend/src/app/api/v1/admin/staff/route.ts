@@ -18,50 +18,6 @@ export async function GET() {
       console.error("Staff list error:", e.message);
     }
 
-    if (staff.length === 0) {
-      staff = [
-        {
-          id: 101,
-          name: "Gen. Ibrahim Danjuma (Rtd.)",
-          email: "chairman@postarmyhouse.ng",
-          phone: "+234 802 555 0100",
-          role: "chairman",
-          job_title: "Estate Chairman",
-          department: "Executive Council",
-          staff_id: "PA-CHR-001",
-          status: "active",
-          avatar_url: null,
-          created_at: "2024-01-10",
-        },
-        {
-          id: 102,
-          name: "Marcus Real Estate Agent",
-          email: "agent@lincolnestate.ng",
-          phone: "+234 803 555 0149",
-          role: "agent",
-          job_title: "Estate Letting Agent",
-          department: "Property & Leasing",
-          staff_id: "PA-AGT-002",
-          status: "active",
-          avatar_url: null,
-          created_at: "2024-01-15",
-        },
-        {
-          id: 103,
-          name: "Post Army House Mart Admin",
-          email: "store@lincolnestate.ng",
-          phone: "+234 804 555 0150",
-          role: "store_owner",
-          job_title: "Store Admin",
-          department: "Estate Commerce",
-          staff_id: "PA-STR-003",
-          status: "active",
-          avatar_url: null,
-          created_at: "2024-02-01",
-        },
-      ];
-    }
-
     return NextResponse.json({ data: staff });
   } catch (err: any) {
     return NextResponse.json({ message: "Could not fetch staff list.", error: err.message }, { status: 500 });

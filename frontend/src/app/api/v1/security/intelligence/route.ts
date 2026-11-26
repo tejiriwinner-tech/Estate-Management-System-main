@@ -19,44 +19,17 @@ export async function GET() {
       console.error("Error fetching intelligence alerts:", e.message);
     }
 
-    const defaultFeed = [
-      {
-        id: "INT-101",
-        title: "Perimeter Motion Detection - Zone C",
-        snippet: "Infrared beam breach triggered near Phase 2 fence line. Patrol unit dispatched.",
-        category: "PERIMETER_BREACH",
-        status: "URGENT",
-        timeAgo: "12 mins ago",
-        location: "Phase 2 Perimeter",
-        reportedBy: "Sensor Array #4",
-        resolved: false,
-      },
-      {
-        id: "INT-102",
-        title: "Unrecognized Visitor Loitering",
-        snippet: "Subject without visitor tag observed near Commercial Hub ATM pavilion.",
-        category: "SUSPICIOUS_ACTIVITY",
-        status: "INVESTIGATING",
-        timeAgo: "45 mins ago",
-        location: "Commercial Hub",
-        reportedBy: "Guard Alpha",
-        resolved: false,
-      },
-    ];
-
-    const items = alerts.length > 0
-      ? alerts.map((a) => ({
-          id: `INT-${a.id}`,
-          title: a.category === "life_threat" ? `Emergency: ${a.location || "Estate"}` : `Intel: ${a.location || "Post Army House Estate"}`,
-          snippet: a.message || "Field telemetry report logged.",
-          category: a.category === "life_threat" ? "PERIMETER_BREACH" : "SUSPICIOUS_ACTIVITY",
-          status: a.status === "resolved" ? "RESOLVED" : a.category === "life_threat" ? "URGENT" : "ACTION_REQUIRED",
-          timeAgo: a.created_at ? new Date(a.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Recently",
-          location: a.location || "Post Army House Estate",
-          reportedBy: a.sender_name || "Security Officer",
-          resolved: a.status === "resolved",
-        }))
-      : defaultFeed;
+    const items = alerts.map((a) => ({
+      id: `INT-${a.id}`,
+      title: a.category === "life_threat" ? `Emergency: ${a.location || "Estate"}` : `Intel: ${a.location || "Post Army House Estate"}`,
+      snippet: a.message || "Field telemetry report logged.",
+      category: a.category === "life_threat" ? "PERIMETER_BREACH" : "SUSPICIOUS_ACTIVITY",
+      status: a.status === "resolved" ? "RESOLVED" : a.category === "life_threat" ? "URGENT" : "ACTION_REQUIRED",
+      timeAgo: a.created_at ? new Date(a.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Recently",
+      location: a.location || "Post Army House Estate",
+      reportedBy: a.sender_name || "Security Officer",
+      resolved: a.status === "resolved",
+    }));
 
     const urgentReports = items.filter((i) => i.status === "URGENT").length;
     const resolvedToday = items.filter((i) => i.status === "RESOLVED").length;

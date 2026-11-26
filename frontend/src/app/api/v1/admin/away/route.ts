@@ -22,21 +22,7 @@ export async function GET() {
     const fmt = (d: any) =>
       d ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—";
 
-    const residents = (rows.length > 0
-      ? rows
-      : [
-          {
-            id: 1,
-            resident_name: "Chinedu Resident",
-            unit: "Villa A-402",
-            departure_date: new Date(Date.now() - 2 * 86400000),
-            expected_return_date: new Date(Date.now() + 5 * 86400000),
-            emergency_contact_phone: "+234 801 234 5678",
-            notes: "Hold courier deliveries at Gate 1",
-            status: "active",
-          },
-        ]
-    ).map((r: any) => {
+    const residents = rows.map((r: any) => {
       const statusNorm =
         r.status === "returned"
           ? "returned"

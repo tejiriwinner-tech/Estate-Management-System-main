@@ -67,35 +67,13 @@ export async function GET() {
       console.warn("Security HQ DB notice:", e.message);
     }
 
-    if (residents.length === 0) {
-      residents = [
-        {
-          id: "2",
-          name: "Chinedu Resident",
-          tag: "Villa A-402 • Service Charge: ₦35,000 Due",
-          status: "VERIFIED",
-          lastActivity: "Gate 1 QR Active",
-          serviceCharge: "₦35,000 Due",
-        },
-      ];
-    }
-
-    intel = [
-      {
-        id: "1",
-        title: "Main Gate Optical QR & ANPR Online",
-        snippet: "Visitor and Resident Exit QR verification operating at 100% uptime across Gate 1 & Gate 2.",
-        tags: [{ label: "Gate 1", variant: "default" }],
-        time: "Today",
-      },
-      {
-        id: "2",
-        title: "Phase 1–5 Perimeter Patrol Complete",
-        snippet: "Night and morning guard shift handoff verified with zero perimeter sensor faults.",
-        tags: [{ label: "Patrol", variant: "external" }],
-        time: "Today",
-      },
-    ];
+    intel = alerts.map((a) => ({
+      id: a.id,
+      title: a.location,
+      snippet: a.detail,
+      tags: [{ label: a.type, variant: "default" }],
+      time: a.time,
+    }));
 
     return NextResponse.json({
       alerts,

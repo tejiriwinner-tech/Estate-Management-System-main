@@ -38,17 +38,6 @@ export async function GET(req: NextRequest) {
 
     await ensureTable();
 
-    // Seed initial charge if table is completely empty
-    const countRes = await sql`SELECT COUNT(*)::int AS cnt FROM service_charges`;
-    if (countRes[0]?.cnt === 0) {
-      await sql`
-        INSERT INTO service_charges (user_id, resident_name, unit_number, service_type, amount, billing_cycle, due_date, status, invoice_no, notes)
-        VALUES
-          (2, 'Chinedu Resident', 'Villa A-402', 'Monthly Estate Security & Maintenance Levy', 35000, 'Monthly', CURRENT_DATE + INTERVAL '7 days', 'Pending', 'SC-2026-1041', 'Covers 24/7 perimeter patrol, ANPR maintenance & common lighting'),
-          (2, 'Chinedu Resident', 'Villa A-402', 'Waste & Environmental Sanitation', 15000, 'Monthly', CURRENT_DATE - INTERVAL '15 days', 'Paid', 'SC-2026-0988', 'Cleared via bank transfer')
-      `;
-    }
-
     const rows = userId
       ? await sql`
           SELECT * FROM service_charges
