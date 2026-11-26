@@ -44,9 +44,18 @@ async function ensureTable() {
   await sql`ALTER TABLE service_charges ADD COLUMN IF NOT EXISTS paid_at TIMESTAMP`;
   await sql`ALTER TABLE service_charges ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW()`;
   await sql`ALTER TABLE service_charges ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT NOW()`;
-  await sql`CREATE SEQUENCE IF NOT EXISTS service_charges_id_seq`;
-  await sql`ALTER TABLE service_charges ALTER COLUMN id SET DEFAULT nextval('service_charges_id_seq')`;
-  await sql`SELECT setval('service_charges_id_seq', COALESCE((SELECT MAX(id) FROM service_charges), 0) + 1, false)`;
+  const idCol = await sql`
+    SELECT data_type FROM information_schema.columns
+    WHERE table_name = 'service_charges' AND column_name = 'id'
+    LIMIT 1
+  `;
+  if (idCol[0]?.data_type === "uuid") {
+    await sql`ALTER TABLE service_charges ALTER COLUMN id SET DEFAULT gen_random_uuid()`;
+  } else {
+    await sql`CREATE SEQUENCE IF NOT EXISTS service_charges_id_seq`;
+    await sql`ALTER TABLE service_charges ALTER COLUMN id SET DEFAULT nextval('service_charges_id_seq')`;
+    await sql`SELECT setval('service_charges_id_seq', COALESCE((SELECT MAX(id::bigint) FROM service_charges), 0) + 1, false)`;
+  }
   tableEnsured = true;
 }
 
@@ -171,7 +180,7 @@ export async function PATCH(req: NextRequest) {
     const updated = await sql`
       UPDATE service_charges
       SET status = ${status}, updated_at = NOW()
-      WHERE id = ${Number(id)}
+      WHERE id::text = ${String(id)}
       RETURNING *
     `;
 
@@ -191,7 +200,7 @@ export async function DELETE(req: NextRequest) {
     await ensureTable();
 
     if (id) {
-      await sql`DELETE FROM service_charges WHERE id = ${Number(id)}`;
+      await sql`DELETE FROM service_charges WHERE id::text = ${String(id)}`;
     }
     return NextResponse.json({ ok: true, message: "Service charge removed." });
   } catch (err: any) {

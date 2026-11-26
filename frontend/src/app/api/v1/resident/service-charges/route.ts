@@ -133,12 +133,12 @@ export async function POST(req: NextRequest) {
         payment_reference = ${ref},
         paid_at = COALESCE(paid_at, NOW()),
         updated_at = NOW()
-      WHERE id = ${Number(id)}
+      WHERE id::text = ${String(id)}
     `;
 
     return NextResponse.json({
       data: {
-        id: Number(id),
+        id: String(id),
         status: "Paid",
         receipt_no: ref,
         receipt_url: receipt_url || null,
