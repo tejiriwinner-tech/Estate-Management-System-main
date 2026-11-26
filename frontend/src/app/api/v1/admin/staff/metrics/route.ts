@@ -14,7 +14,7 @@ export async function GET() {
       const rows = await sql`
         SELECT status, COUNT(*)::int as count
         FROM users
-        WHERE role IN ('store_owner', 'agent', 'chairman')
+        WHERE role IN ('store_owner', 'agent', 'chairman', 'security')
            OR LOWER(COALESCE(job_title, '')) LIKE '%chairman%'
         GROUP BY status
       `;

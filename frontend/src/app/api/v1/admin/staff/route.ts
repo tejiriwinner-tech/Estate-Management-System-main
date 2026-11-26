@@ -10,7 +10,7 @@ export async function GET() {
       staff = await sql`
         SELECT id, name, email, phone, role, job_title, department, staff_id, status, avatar_url, created_at
         FROM users
-        WHERE role IN ('store_owner', 'agent', 'chairman')
+        WHERE role IN ('store_owner', 'agent', 'chairman', 'security')
            OR LOWER(COALESCE(job_title, '')) LIKE '%chairman%'
         ORDER BY id DESC
       `;
@@ -27,28 +27,31 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { name, email, phone, role, job_title, department, staff_id, status } = body;
+    const { name, email, phone, role, job_title, department, staff_id, status, avatar_url } = body;
 
     const allowedRole =
-      role === "store_owner" || role === "agent" || role === "chairman"
+      role === "store_owner" || role === "agent" || role === "chairman" || role === "security"
         ? role
         : (job_title || "").toLowerCase().includes("chairman")
         ? "chairman"
         : (job_title || "").toLowerCase().includes("store")
         ? "store_owner"
+        : (job_title || "").toLowerCase().includes("security")
+        ? "security"
         : "agent";
 
     const res = await sql`
       INSERT INTO users (
-        name, email, password, phone, role, job_title, department, staff_id, status, created_at, updated_at
+        name, email, password, phone, role, job_title, department, staff_id, status, avatar_url, created_at, updated_at
       )
       VALUES (
-        ${name}, ${email}, 'PostArmy2024!', ${phone || null}, ${allowedRole},
-        ${job_title || (allowedRole === "chairman" ? "Estate Chairman" : allowedRole === "store_owner" ? "Store Admin" : "Estate Agent")},
+        ${name}, ${String(email).trim().toLowerCase()}, 'PostArmy2024!', ${phone || null}, ${allowedRole},
+        ${job_title || (allowedRole === "chairman" ? "Estate Chairman" : allowedRole === "store_owner" ? "Store Admin" : allowedRole === "security" ? "Chief Security Officer" : "Estate Agent")},
         ${department || "Estate Operations"},
-        ${staff_id || `PA-${Date.now().toString().slice(-4)}`}, ${status || "active"}, NOW(), NOW()
+        ${staff_id || `PA-${Date.now().toString().slice(-4)}`}, ${status || "active"},
+        ${avatar_url || null}, NOW(), NOW()
       )
-      RETURNING id, name, email, phone, role, job_title, department, staff_id, status, created_at
+      RETURNING id, name, email, phone, role, job_title, department, staff_id, status, avatar_url, created_at
     `;
 
     return NextResponse.json({ data: res[0], message: "Staff member created successfully." }, { status: 201 });

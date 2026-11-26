@@ -16,26 +16,28 @@ interface EditStaffProfileModalProps {
 }
 
 const roleOptions = [
-  "Property Manager",
-  "Senior Property Manager",
-  "Senior Property Consultant",
-  "Financial Operations",
-  "Legal Counsel",
-  "Marketing Lead",
-  "Maintenance Supervisor",
-  "Tenant Liaison",
-  "Security Operations",
+  "Estate Chairman",
+  "Estate Agent",
+  "Store Admin",
+  "Chief Security Officer",
 ];
 
 const departmentOptions = [
-  "Sales & Leasing",
+  "Executive Council",
+  "Property & Leasing",
+  "Estate Commerce",
+  "Security & Logistics",
   "Operations",
-  "Finance",
-  "Legal & Compliance",
-  "Marketing",
-  "Facility Management",
-  "Resident Relations",
+  "Finance & Accounts",
 ];
+
+function roleFromTitle(title: string): string {
+  const t = title.toLowerCase();
+  if (t.includes("chairman")) return "chairman";
+  if (t.includes("store")) return "store_owner";
+  if (t.includes("security")) return "security";
+  return "agent";
+}
 
 export function EditStaffProfileModal({
   member,
@@ -61,15 +63,13 @@ export function EditStaffProfileModal({
   useEffect(() => {
     if (member) {
       setFormData({
-        name: member.name || "Bessie Cooper",
-        email: member.email || "bessie.cooper@lincolnestate.com",
-        phone: member.phone || "+1 (555) 902-3412",
-        role: member.job_title || "Property Manager",
-        department: member.department || "Sales & Leasing",
-        status: member.status,
-        avatar_url:
-          member.avatar_url ||
-          "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80",
+        name: member.name || "",
+        email: member.email || "",
+        phone: member.phone || "",
+        role: member.job_title || "Estate Agent",
+        department: member.department || "Operations",
+        status: member.status || "active",
+        avatar_url: member.avatar_url || "",
       });
       setIsDeactivated(member.status === "suspended");
       setResetMessage(null);
@@ -77,6 +77,13 @@ export function EditStaffProfileModal({
   }, [member, isOpen]);
 
   if (!isOpen || !member) return null;
+
+  const allRoleOptions = roleOptions.includes(formData.role)
+    ? roleOptions
+    : [formData.role, ...roleOptions];
+  const allDeptOptions = departmentOptions.includes(formData.department)
+    ? departmentOptions
+    : [formData.department, ...departmentOptions];
 
   const handleToggleDeactivate = () => {
     const nextState = !isDeactivated;
@@ -87,22 +94,32 @@ export function EditStaffProfileModal({
     }));
   };
 
-  const handleTriggerResetPassword = () => {
-    const tempPass = `LE-${Math.floor(100000 + Math.random() * 900000)}`;
-    setResetMessage(`Temporary password generated: ${tempPass}`);
-    onResetPassword?.(member.id);
+  const handleTriggerResetPassword = async () => {
+    const tempPass = `PA-${Math.floor(100000 + Math.random() * 900000)}`;
+    try {
+      await fetch(`/api/v1/admin/staff/${member.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: tempPass }),
+      });
+      setResetMessage(`Temporary password saved: ${tempPass}`);
+      onResetPassword?.(member.id);
+    } catch {
+      setResetMessage("Could not reset password.");
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave({
-      name: formData.name,
-      email: formData.email,
-      phone: formData.phone,
+      name: formData.name.trim(),
+      email: formData.email.trim(),
+      phone: formData.phone.trim() || null,
+      role: roleFromTitle(formData.role),
       job_title: formData.role,
       department: formData.department,
       status: formData.status,
-      avatar_url: formData.avatar_url,
+      avatar_url: formData.avatar_url || null,
     });
     onClose();
   };
@@ -151,14 +168,20 @@ export function EditStaffProfileModal({
           <div className="flex items-center gap-4 pb-5 border-b border-border/70">
             {/* Avatar with Camera Overlay */}
             <div className="relative shrink-0">
-              <div className="relative w-16 h-16 sm:w-18 sm:h-18 rounded-full overflow-hidden border-2 border-border shadow-xs">
-                <Image
-                  src={formData.avatar_url}
-                  alt={formData.name}
-                  fill
-                  className="object-cover"
-                  sizes="72px"
-                />
+              <div className="relative w-16 h-16 sm:w-18 sm:h-18 rounded-full overflow-hidden border-2 border-border shadow-xs bg-[#FEF2F2] flex items-center justify-center">
+                {formData.avatar_url ? (
+                  <Image
+                    src={formData.avatar_url}
+                    alt={formData.name}
+                    fill
+                    className="object-cover"
+                    sizes="72px"
+                  />
+                ) : (
+                  <span className="text-lg font-extrabold text-[#B22222]">
+                    {(formData.name || "S").slice(0, 2).toUpperCase()}
+                  </span>
+                )}
               </div>
               <label
                 htmlFor="avatar-upload"
@@ -231,7 +254,7 @@ export function EditStaffProfileModal({
                     onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                     className="w-full appearance-none pl-4 pr-10 py-2.5 rounded-xl border border-border bg-surface text-sm text-dark font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer shadow-xs transition-all"
                   >
-                    {roleOptions.map((r) => (
+                    {allRoleOptions.map((r) => (
                       <option key={r} value={r}>
                         {r}
                       </option>
@@ -282,7 +305,7 @@ export function EditStaffProfileModal({
                     onChange={(e) => setFormData({ ...formData, department: e.target.value })}
                     className="w-full appearance-none pl-4 pr-10 py-2.5 rounded-xl border border-border bg-surface text-sm text-dark font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer shadow-xs transition-all"
                   >
-                    {departmentOptions.map((d) => (
+                    {allDeptOptions.map((d) => (
                       <option key={d} value={d}>
                         {d}
                       </option>
