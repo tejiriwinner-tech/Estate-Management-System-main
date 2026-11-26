@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Plus } from "lucide-react";
 import { usePortalAgent } from "@/components/agent-portal/AgentPortalShell";
 import { PortalKpiCards } from "@/components/agent-portal/PortalKpiCards";
@@ -38,8 +39,10 @@ const EMPTY_DATA: PortalData = { listings: [], requests: [], viewings: [], earni
 
 const AVAILABILITY: Record<ListingStatus, string> = { Available: "available", "Under Offer": "under_offer", Rented: "rented" };
 
-export default function AgentPortalPage() {
+function AgentPortalContent() {
   const agent = usePortalAgent();
+  const searchParams = useSearchParams();
+  const activeTab = searchParams.get("tab") || "overview";
 
   const [data, setData] = useState<PortalData>(EMPTY_DATA);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -201,33 +204,58 @@ export default function AgentPortalPage() {
           </button>
         </div>
 
-        <PortalKpiCards values={kpis} />
+        {activeTab === "overview" && <PortalKpiCards values={kpis} />}
 
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
-          <div className="space-y-6 xl:col-span-8">
-            <ListingsSection
-        listings={listings}
-        onStatusChange={handleListingStatus}
-        onAdd={() => { setEditingListing(null); setIsAddOpen(true); }}
-        onEdit={(l) => { setEditingListing(l); setIsAddOpen(true); }}
-      />
-            <ClientRequestsSection
-              requests={requests}
-              listings={listings}
-              onFindMatches={(r) => setMatchRequestId(r.id)}
-              onMarkContacted={handleMarkContacted}
-            />
+        {activeTab === "overview" ? (
+          <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
+            <div className="space-y-6 xl:col-span-8">
+              <ListingsSection
+                listings={listings}
+                onStatusChange={handleListingStatus}
+                onAdd={() => { setEditingListing(null); setIsAddOpen(true); }}
+                onEdit={(l) => { setEditingListing(l); setIsAddOpen(true); }}
+              />
+              <ClientRequestsSection
+                requests={requests}
+                listings={listings}
+                onFindMatches={(r) => setMatchRequestId(r.id)}
+                onMarkContacted={handleMarkContacted}
+              />
+            </div>
+            <div className="space-y-6 xl:col-span-4">
+              <ViewingsSection
+                viewings={viewings}
+                listings={listings}
+                onComplete={(id) => handleViewing(id, "Completed")}
+                onCancel={(id) => handleViewing(id, "Cancelled")}
+              />
+              <EarningsSection earnings={earnings} listings={listings} />
+            </div>
           </div>
-          <div className="space-y-6 xl:col-span-4">
-            <ViewingsSection
-              viewings={viewings}
-              listings={listings}
-              onComplete={(id) => handleViewing(id, "Completed")}
-              onCancel={(id) => handleViewing(id, "Cancelled")}
-            />
-            <EarningsSection earnings={earnings} listings={listings} />
-          </div>
-        </div>
+        ) : activeTab === "listings" ? (
+          <ListingsSection
+            listings={listings}
+            onStatusChange={handleListingStatus}
+            onAdd={() => { setEditingListing(null); setIsAddOpen(true); }}
+            onEdit={(l) => { setEditingListing(l); setIsAddOpen(true); }}
+          />
+        ) : activeTab === "requests" ? (
+          <ClientRequestsSection
+            requests={requests}
+            listings={listings}
+            onFindMatches={(r) => setMatchRequestId(r.id)}
+            onMarkContacted={handleMarkContacted}
+          />
+        ) : activeTab === "viewings" ? (
+          <ViewingsSection
+            viewings={viewings}
+            listings={listings}
+            onComplete={(id) => handleViewing(id, "Completed")}
+            onCancel={(id) => handleViewing(id, "Cancelled")}
+          />
+        ) : (
+          <EarningsSection earnings={earnings} listings={listings} />
+        )}
 
       </div>
 
@@ -241,5 +269,13 @@ export default function AgentPortalPage() {
       <MatchesModal request={matchRequest} listings={listings} onClose={closeMatches} onBook={handleBook} />
       <AgentToast message={toast} onDismiss={dismissToast} />
     </>
+  );
+}
+
+export default function AgentPortalPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-xs text-slate-400">Loading Agent Portal...</div>}>
+      <AgentPortalContent />
+    </Suspense>
   );
 }

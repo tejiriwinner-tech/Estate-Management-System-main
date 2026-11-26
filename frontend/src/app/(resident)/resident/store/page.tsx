@@ -300,7 +300,7 @@ export default function ResidentMarketplacePage() {
       <div className="rounded-2xl bg-white border border-slate-200/80 p-6 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <p className="text-[11px] font-extrabold uppercase tracking-wider text-[#B22222]">
-            Post Army House Estate Marketplace
+            Post Army Housing Estate Marketplace
           </p>
           <h1 className="text-2xl font-extrabold text-gray-900 mt-0.5">
             Estate Stores &amp; Delivery

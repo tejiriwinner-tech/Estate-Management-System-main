@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Post Army House Estate - Admin Dashboard",
+  title: "Post Army Housing Estate - Admin Dashboard",
   description: "Real Estate & Estate Community Management System",
   icons: {
     icon: "/icon.svg?v=lincoln",

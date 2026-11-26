@@ -13,7 +13,7 @@ export async function POST(req: Request) {
         owner_id, name, category, phone, address, description, plan, is_open, open_weekends, created_at, updated_at
       )
       VALUES (
-        5, ${name || "Post Army House Mart Express"}, ${category || "Retail & Grocery"}, ${phone || "+234 805 678 9012"},
+        5, ${name || "Post Army Housing Mart Express"}, ${category || "Retail & Grocery"}, ${phone || "+234 805 678 9012"},
         ${address || "Lincoln Commercial Hub"}, ${description || "Estate retail and household store"},
         'Premium', true, true, NOW(), NOW()
       )

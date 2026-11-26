@@ -96,7 +96,7 @@ export default function ManagementDashboardPage() {
         <header className="flex items-center justify-between bg-white px-5 py-4 border-b border-slate-100">
           <div className="flex items-center gap-2.5">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white font-bold text-xl shadow-sm shadow-primary/20">
-              <span className="italic font-serif">LE</span>
+              <span className="italic font-serif">PAHE</span>
             </div>
             <div>
               <div className="flex items-center leading-none">

@@ -18,7 +18,7 @@ export function MobileReceipt({ receipt }: MobileReceiptProps) {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `Post Army House Estate Receipt ${receipt.receiptNumber}`,
+          title: `Post Army Housing Estate Receipt ${receipt.receiptNumber}`,
           text: `Payment Receipt for ${receipt.residentName} - ₦${receipt.totalAmount.toLocaleString()}`,
           url: window.location.href,
         });
@@ -58,9 +58,9 @@ export function MobileReceipt({ receipt }: MobileReceiptProps) {
         {/* Top Estate Identity */}
         <div className="flex flex-col items-center text-center pb-4">
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white font-bold text-2xl shadow-md shadow-primary/20 mb-2">
-            <span className="italic font-serif">LE</span>
+            <span className="italic font-serif">PAHE</span>
           </div>
-          <h2 className="text-base font-extrabold text-primary">Post Army House Estate</h2>
+          <h2 className="text-base font-extrabold text-primary">Post Army Housing Estate</h2>
           <p className="text-[11px] font-semibold text-slate-400">
             Finance Module • Receipt {receipt.receiptNumber}
           </p>

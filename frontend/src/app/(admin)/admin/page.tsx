@@ -24,22 +24,22 @@ const defaultMetrics: MetricCardData[] = [
   {
     id: "residents",
     label: "TOTAL RESIDENTS",
-    value: "142",
-    trend: "+12 this month",
+    value: "0",
+    trend: "Live directory",
     trendType: "positive",
     iconType: "residents",
   },
   {
     id: "houses",
     label: "REGISTERED VEHICLES",
-    value: "86",
+    value: "0",
     badge: "Active RFID",
     iconType: "houses",
   },
   {
     id: "revenue",
     label: "ACTIVE AWAY ALERTS",
-    value: "4",
+    value: "0",
     trend: "Monitored",
     trendType: "positive",
     iconType: "revenue",
@@ -54,8 +54,8 @@ const defaultMetrics: MetricCardData[] = [
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<
-    "members" | "service_charges" | "away" | "vehicles" | "checkin" | "overview"
-  >("members");
+    "overview" | "members" | "service_charges" | "away" | "vehicles" | "checkin"
+  >("overview");
   const [metrics, setMetrics] = useState<MetricCardData[]>(defaultMetrics);
 
   useEffect(() => {
@@ -175,7 +175,7 @@ export default function DashboardPage() {
               </h1>
               <p className="text-sm sm:text-base text-muted mt-1 font-medium">
                 Here&apos;s an overview of everything happening across
-                Post Army House Estate today.
+                Post Army Housing Estate today.
               </p>
             </div>
           </div>

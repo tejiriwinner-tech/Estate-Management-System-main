@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
       listing_type: r.listing_type || "rent",
       property_type: r.property_type || "Apartment",
       zone: r.zone || "Phase 1",
-      address: r.address || "Post Army House Estate",
+      address: r.address || "Post Army Housing Estate",
       beds: Number(r.beds || 3),
       baths: Number(r.baths || 2),
       price: Math.round(Number(r.price_kobo ? Number(r.price_kobo) / 100 : r.price || 3500000)),
@@ -54,10 +54,10 @@ export async function GET(req: NextRequest) {
       rejection_reason: r.rejection_reason,
       photos: Array.isArray(r.photos) ? r.photos : ["https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80"],
       agent: {
-        id: Number(r.agent_id || 4),
-        name: r.agent_name || "Marcus Reed",
-        email: r.agent_email || "agent@lincolnestate.ng",
-        phone: r.agent_phone || "+234 804 567 8901",
+        id: Number(r.agent_id || 1),
+        name: r.agent_name || "Estate Administration",
+        email: r.agent_email || "",
+        phone: r.agent_phone || "",
       },
       created_at: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString(),
     }));
@@ -72,5 +72,32 @@ export async function GET(req: NextRequest) {
     });
   } catch (err: any) {
     return NextResponse.json({ message: "Could not fetch approval queue.", error: err.message }, { status: 500 });
+  }
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { title, description, listing_type, property_type, zone, address, beds, baths, price, price_period, photos } = body;
+    if (!title || !price) {
+      return NextResponse.json({ message: "Title and price are required." }, { status: 422 });
+    }
+    const priceKobo = Math.round(Number(price) * 100);
+    const res = await sql`
+      INSERT INTO listings (
+        title, description, listing_type, property_type, zone, address,
+        beds, baths, price_kobo, price_period, availability, approval_status, photos, created_at, updated_at
+      )
+      VALUES (
+        ${String(title).trim()}, ${description || ""}, ${listing_type || "rent"}, ${property_type || "Apartment"},
+        ${zone || "Phase 1"}, ${address || "Post Army Housing Estate"},
+        ${Number(beds || 1)}, ${Number(baths || 1)}, ${priceKobo}, ${price_period || null},
+        'available', 'approved', ${Array.isArray(photos) && photos.length > 0 ? photos : null}, NOW(), NOW()
+      )
+      RETURNING *
+    `;
+    return NextResponse.json({ data: res[0], message: "House listing published!" }, { status: 201 });
+  } catch (err: any) {
+    return NextResponse.json({ message: "Could not create listing.", error: err.message }, { status: 500 });
   }
 }

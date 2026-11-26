@@ -34,7 +34,7 @@ export function UnifiedPortalShell({
   displayNameOverride,
   homeHref,
   messagesHref,
-  searchPlaceholder = "Search Post Army House Estate...",
+  searchPlaceholder = "Search Post Army Housing Estate...",
   navItems,
   footerExtra,
   children,
@@ -82,12 +82,12 @@ export function UnifiedPortalShell({
               className="flex items-center gap-3 group"
             >
               <div className="relative flex items-center justify-center w-10 h-10 rounded-full bg-[#B22222] text-white font-extrabold text-sm shadow-sm">
-                <span>PA</span>
+                <span>PAHE</span>
                 <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-[#C9A227] border-2 border-white" />
               </div>
               <div className="flex flex-col">
                 <span className="font-extrabold text-sm tracking-tight text-slate-900 leading-tight">
-                  Post Army House
+                  Post Army Housing
                 </span>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-[#C9A227]">
                   {portalLabel}

@@ -73,6 +73,7 @@ export interface EarningsPoint {
 
 export interface NewListingInput {
   title: string;
+  description?: string;
   type: PropertyType;
   zone: string;
   address: string;

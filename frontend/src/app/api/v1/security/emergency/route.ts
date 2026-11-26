@@ -57,7 +57,7 @@ export async function GET() {
       history,
       total: activeAlerts.length,
       contacts: [
-        { name: "Post Army House Estate Police Liaison", number: "+234 803 123 4567" },
+        { name: "Post Army Housing Estate Police Liaison", number: "+234 803 123 4567" },
         { name: "Central Fire Service Command", number: "+234 802 987 6543" },
         { name: "Emergency Paramedic Unit", number: "+234 800 546 2656" },
       ],

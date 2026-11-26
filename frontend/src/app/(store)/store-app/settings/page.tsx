@@ -63,7 +63,7 @@ function StoreSettingsContent() {
           </p>
           <h1 className="text-2xl font-extrabold text-slate-900 mt-0.5">Store Settings</h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Manage your Post Army House Estate storefront profile, shop unit, and availability.
+            Manage your Post Army Housing Estate storefront profile, shop unit, and availability.
           </p>
         </div>
 

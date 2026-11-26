@@ -27,7 +27,7 @@ export const SAMPLE_LISTINGS: ApiListing[] = [
   {
     id: 1,
     title: "Luxury 4-Bedroom Terrace Duplex",
-    description: "Beautifully finished modern terrace duplex located in the serene Phase 1 zone of Post Army House Estate. Features 24/7 power, treated water, and dedicated security.",
+    description: "Beautifully finished modern terrace duplex located in the serene Phase 1 zone of Post Army Housing Estate. Features 24/7 power, treated water, and dedicated security.",
     listing_type: "rent",
     property_type: "Duplex",
     zone: "Phase 1",
@@ -127,34 +127,16 @@ export async function fetchPublicListings(params: Record<string, string>) {
   try {
     const qs = new URLSearchParams(Object.entries(params).filter(([, v]) => v)).toString();
     const res = await call<{ data: ApiListing[]; meta: { page: number; last_page: number; total: number } }>(`/public/listings${qs ? `?${qs}` : ""}`);
-    if (res && res.data && res.data.length > 0) {
+    if (res && Array.isArray(res.data)) {
       return res;
     }
   } catch {
-    // Fall through to sample listings if API is unreachable
-  }
-
-  // Fallback to sample listings
-  let filtered = [...SAMPLE_LISTINGS];
-  if (params.listing_type) {
-    filtered = filtered.filter((i) => i.listing_type === params.listing_type);
-  }
-  if (params.beds) {
-    filtered = filtered.filter((i) => (i.beds || 0) >= Number(params.beds));
-  }
-  if (params.max_price) {
-    filtered = filtered.filter((i) => i.price <= Number(params.max_price));
-  }
-  if (params.q) {
-    const q = params.q.toLowerCase();
-    filtered = filtered.filter(
-      (i) => i.title.toLowerCase().includes(q) || i.address.toLowerCase().includes(q) || i.zone.toLowerCase().includes(q)
-    );
+    // Return empty list if API fails — never show fake seeder listings
   }
 
   return {
-    data: filtered,
-    meta: { page: 1, last_page: 1, total: filtered.length },
+    data: [],
+    meta: { page: 1, last_page: 1, total: 0 },
   };
 }
 

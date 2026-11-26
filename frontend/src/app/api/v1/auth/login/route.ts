@@ -34,7 +34,7 @@ export async function POST(req: Request) {
         matches = user.password === password;
       }
 
-      if (matches || password === "Post Army House Estate2024!" || password === "password") {
+      if (matches || password === "Post Army Housing Estate2024!" || password === "password") {
         const token = Buffer.from(`${user.id}:${user.email}:${Date.now()}`).toString("base64");
         return NextResponse.json({
           data: {
@@ -60,11 +60,11 @@ export async function POST(req: Request) {
       "resident@lincolnestate.ng": { name: "Chinedu Resident", role: "resident", unit: "Villa A-402", job: "Homeowner" },
       "security@lincolnestate.ng": { name: "Mike Security Warden", role: "security", unit: "Gate 1", job: "Chief Security Officer" },
       "agent@lincolnestate.ng": { name: "Marcus Real Estate Agent", role: "agent", job: "Senior Leasing Agent" },
-      "store@lincolnestate.ng": { name: "Post Army House Mart Store Manager", role: "store_owner", job: "Merchant Store Owner" },
+      "store@lincolnestate.ng": { name: "Post Army Housing Mart Store Manager", role: "store_owner", job: "Merchant Store Owner" },
     };
 
     const normEmail = email.trim().toLowerCase();
-    if (known[normEmail] && (password === "Post Army House Estate2024!" || password.length >= 6)) {
+    if (known[normEmail] && (password === "Post Army Housing Estate2024!" || password.length >= 6)) {
       const u = known[normEmail];
       const token = Buffer.from(`demo:${normEmail}:${Date.now()}`).toString("base64");
       return NextResponse.json({

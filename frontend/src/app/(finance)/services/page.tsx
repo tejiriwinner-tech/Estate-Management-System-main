@@ -187,7 +187,7 @@ export default function ServiceManagementPage() {
 
       {/* 5. Footer */}
       <footer className="pt-4 pb-2 text-center text-xs font-medium text-slate-400">
-        © 2024 Post Army House Estate Corporate. All rights reserved. Built for secure
+        © 2024 Post Army Housing Estate Corporate. All rights reserved. Built for secure
         property management.
       </footer>
 

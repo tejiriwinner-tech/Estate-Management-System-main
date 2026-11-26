@@ -80,9 +80,9 @@ export default function LoginPage() {
         {/* Brand */}
         <div className="mb-6 flex flex-col items-center text-white">
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-primary shadow-lg ring-4 ring-white/25">
-            <span className="font-serif text-2xl font-bold italic">LE</span>
+            <span className="font-serif text-2xl font-bold italic">PAHE</span>
           </div>
-          <p className="mt-2.5 text-xl font-bold tracking-tight drop-shadow-sm">Post Army House Estate</p>
+          <p className="mt-2.5 text-xl font-bold tracking-tight drop-shadow-sm">Post Army Housing Estate</p>
         </div>
 
         {/* Card */}
@@ -93,7 +93,7 @@ export default function LoginPage() {
             </div>
             <h1 className="mt-2 text-2xl font-bold text-primary">Sign In</h1>
             <p className="mt-1 max-w-[290px] text-xs leading-relaxed text-slate-500">
-              Welcome back to Post Army House Estate. Sign in to keep managing your estate, payments and
+              Welcome back to Post Army Housing Estate. Sign in to keep managing your estate, payments and
               residents.
             </p>
           </div>
@@ -212,7 +212,7 @@ export default function LoginPage() {
         </div>
 
         <p className="mt-6 text-center text-[11px] text-white/80">
-          © {new Date().getFullYear()} Post Army House Estate. All rights reserved.
+          © {new Date().getFullYear()} Post Army Housing Estate. All rights reserved.
         </p>
       </div>
     </div>

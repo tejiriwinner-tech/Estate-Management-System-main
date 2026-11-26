@@ -94,7 +94,7 @@ export default function AdminStoreManagementPage() {
         <div>
           <h1 className="text-2xl font-extrabold text-dark tracking-tight">Store Management</h1>
           <p className="text-sm text-muted">
-            Create estate stores and provision Store Admin login credentials for Post Army House Estate.
+            Create estate stores and provision Store Admin login credentials for Post Army Housing Estate.
           </p>
         </div>
 
@@ -120,7 +120,7 @@ export default function AdminStoreManagementPage() {
         <div className="p-5 bg-surface-card rounded-2xl border border-border/80 shadow-2xs">
           <span className="text-[11px] font-bold uppercase tracking-wider text-muted">Total Stores</span>
           <p className="text-2xl font-black text-dark mt-1">{stores.length}</p>
-          <span className="text-[11px] text-muted">Registered in Post Army House Estate</span>
+          <span className="text-[11px] text-muted">Registered in Post Army Housing Estate</span>
         </div>
         <div className="p-5 bg-surface-card rounded-2xl border border-border/80 shadow-2xs">
           <span className="text-[11px] font-bold uppercase tracking-wider text-muted">Active Stores</span>

@@ -2,8 +2,10 @@
 
 // KAN-66: admin approval queue. A listing only appears on the public landing page once approved here.
 import React, { useCallback, useEffect, useState } from "react";
-import { Check, X, Trash2 } from "lucide-react";
+import { Check, Plus, X, Trash2 } from "lucide-react";
 import { ApiListing, approveListing, deleteListing, fetchApprovalQueue, rejectListing } from "@/services/listingsApi";
+import { AddListingModal } from "@/components/agent-portal/AddListingModal";
+import type { NewListingInput } from "@/types/agentPortal";
 
 type Tab = "pending" | "approved" | "rejected";
 const TABS: Tab[] = ["pending", "approved", "rejected"];
@@ -15,6 +17,40 @@ export default function ListingApprovalPage() {
   const [error, setError] = useState<string | null>(null);
   const [rejecting, setRejecting] = useState<ApiListing | null>(null);
   const [reason, setReason] = useState("");
+  const [addOpen, setAddOpen] = useState(false);
+
+  const handleAdminCreateListing = async (input: NewListingInput) => {
+    try {
+      const kind = input.listingType ?? "rent";
+      const res = await fetch("/api/v1/admin/listings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: input.title,
+          description: input.description || "",
+          listing_type: kind,
+          property_type: input.type,
+          zone: input.zone,
+          address: input.address,
+          beds: input.beds,
+          baths: input.baths,
+          price: input.rentPerYear,
+          price_period: kind === "rent" ? "per_year" : null,
+          photos: input.image ? [input.image] : [],
+        }),
+      });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        setError(j?.message || "Could not publish listing.");
+        return;
+      }
+      setAddOpen(false);
+      setTab("approved");
+      await load("approved");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not publish listing.");
+    }
+  };
 
   const load = useCallback(async (t: Tab) => {
     try {
@@ -45,9 +81,19 @@ export default function ListingApprovalPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-extrabold text-dark">Listing approvals</h1>
-        <p className="text-sm text-muted">Listings from estate agents appear on the public landing page only after you approve them.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-extrabold text-dark">Listing approvals</h1>
+          <p className="text-sm text-muted">Publish estate house listings directly or approve listings submitted by estate agents.</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setAddOpen(true)}
+          className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-primary-hover cursor-pointer self-start sm:self-auto"
+        >
+          <Plus className="h-4 w-4" />
+          <span>Add House Listing</span>
+        </button>
       </div>
 
       <div className="flex gap-2">
@@ -100,6 +146,11 @@ export default function ListingApprovalPage() {
           </div>
         </div>
       )}
+      <AddListingModal
+        isOpen={addOpen}
+        onClose={() => setAddOpen(false)}
+        onCreate={handleAdminCreateListing}
+      />
     </div>
   );
 }

@@ -48,7 +48,7 @@ export function DesktopReceipt({ receipt }: DesktopReceiptProps) {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-8 border-b border-slate-100 gap-4">
           <div className="flex items-center gap-3.5">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-white font-bold text-2xl shadow-md shadow-primary/20">
-              <span className="italic font-serif">LE</span>
+              <span className="italic font-serif">PAHE</span>
             </div>
             <div>
               <div className="flex items-center">
@@ -189,7 +189,7 @@ export function DesktopReceipt({ receipt }: DesktopReceiptProps) {
             <div>
               <p className="text-xs font-bold text-dark">Digital Verification</p>
               <p className="text-[10px] text-slate-400 leading-relaxed mt-1 max-w-[220px]">
-                Scan this code to verify the authenticity of this receipt on the Post Army House Estate Secure Portal.
+                Scan this code to verify the authenticity of this receipt on the Post Army Housing Estate Secure Portal.
               </p>
             </div>
           </div>

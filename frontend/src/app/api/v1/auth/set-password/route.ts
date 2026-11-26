@@ -9,6 +9,6 @@ export async function POST(req: NextRequest) {
   }
   return NextResponse.json({
     data: { ok: true },
-    message: "Your Post Army House Estate account password has been set. You may now sign in.",
+    message: "Your Post Army Housing Estate account password has been set. You may now sign in.",
   });
 }

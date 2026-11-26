@@ -320,7 +320,7 @@ export function VehicleManagementMobileView({
 
       {/* ================= CORPORATE FOOTER ================= */}
       <footer className="pt-6 border-t border-border/60 text-center text-[11px] text-muted leading-relaxed">
-        <p>© 2024 Post Army House Estate Corporate. All rights reserved. Built for secure property management.</p>
+        <p>© 2024 Post Army Housing Estate Corporate. All rights reserved. Built for secure property management.</p>
       </footer>
     </div>
   );

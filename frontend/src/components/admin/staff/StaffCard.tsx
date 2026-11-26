@@ -92,18 +92,10 @@ export function StaffCard({ member, onView, onEdit, onDelete }: StaffCardProps) 
       </div>
 
       {/* Bottom Action Bar */}
-      <div className="flex items-center justify-between pt-4 mt-4 border-t border-border/60 text-muted">
-        <button
-          onClick={() => onView(member)}
-          className="p-1.5 rounded-lg hover:text-dark hover:bg-surface-subtle transition-colors"
-          title="View profile"
-        >
-          <Eye className="w-4 h-4" />
-        </button>
-
+      <div className="flex items-center justify-end gap-2 pt-4 mt-4 border-t border-border/60 text-muted">
         <button
           onClick={() => onEdit(member)}
-          className="p-1.5 rounded-lg hover:text-accent hover:bg-surface-subtle transition-colors"
+          className="p-1.5 rounded-lg hover:text-accent hover:bg-surface-subtle transition-colors cursor-pointer"
           title="Edit staff details"
         >
           <Pencil className="w-4 h-4" />
@@ -111,7 +103,7 @@ export function StaffCard({ member, onView, onEdit, onDelete }: StaffCardProps) 
 
         <button
           onClick={() => onDelete(member)}
-          className="p-1.5 rounded-lg hover:text-primary hover:bg-primary-light transition-colors"
+          className="p-1.5 rounded-lg hover:text-primary hover:bg-primary-light transition-colors cursor-pointer"
           title="Delete staff"
         >
           <Trash2 className="w-4 h-4" />

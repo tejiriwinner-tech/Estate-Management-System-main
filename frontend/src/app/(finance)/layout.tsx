@@ -3,8 +3,8 @@ import "./globals.css";
 import { AppShell } from "@/components/layout/AppShell";
 
 export const metadata: Metadata = {
-  title: "Post Army House Estate - Finance Dashboard",
-  description: "Post Army House Estate Management Finance and Billing System",
+  title: "Post Army Housing Estate - Finance Dashboard",
+  description: "Post Army Housing Estate Management Finance and Billing System",
 };
 
 export default function RootLayout({

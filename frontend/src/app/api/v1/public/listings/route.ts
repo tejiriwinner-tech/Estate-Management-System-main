@@ -7,7 +7,7 @@ const FALLBACK_LISTINGS = [
   {
     id: 1,
     title: "Luxury 4-Bedroom Terrace Duplex",
-    description: "Beautifully finished modern terrace duplex located in the serene Phase 1 zone of Post Army House Estate. Features 24/7 power, treated water, and dedicated security.",
+    description: "Beautifully finished modern terrace duplex located in the serene Phase 1 zone of Post Army Housing Estate. Features 24/7 power, treated water, and dedicated security.",
     listing_type: "rent",
     property_type: "Duplex",
     zone: "Phase 1",

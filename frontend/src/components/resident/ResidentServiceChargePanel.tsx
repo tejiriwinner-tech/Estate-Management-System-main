@@ -368,7 +368,7 @@ export function ResidentServiceChargePanel({
                 <div className="text-left sm:text-right text-[11px] text-slate-600 space-y-0.5">
                   <div className="font-bold text-slate-800 flex items-center sm:justify-end gap-1">
                     <Building2 className="w-3.5 h-3.5 text-[#C9A227]" />
-                    <span>Post Army House Estate Service Account</span>
+                    <span>Post Army Housing Estate Service Account</span>
                   </div>
                   <p className="font-mono font-semibold">Zenith Bank • 1018472910</p>
                 </div>

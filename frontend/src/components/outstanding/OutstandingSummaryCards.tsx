@@ -9,10 +9,11 @@ interface OutstandingSummaryCardsProps {
 }
 
 export function OutstandingSummaryCards({ metrics }: OutstandingSummaryCardsProps) {
+  const safe = metrics || { totalOutstanding: 0, overdueCount: 0, pendingCount: 0, partialCount: 0 };
   const cards = [
     {
       label: "TOTAL OUTSTANDING",
-      value: `₦${metrics.totalOutstanding.toLocaleString("en-US", { minimumFractionDigits: 2 })}`,
+      value: `₦${(Number(safe.totalOutstanding) || 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}`,
       icon: TrendingDown,
       iconBg: "bg-primary/10",
       iconColor: "text-primary",
@@ -20,7 +21,7 @@ export function OutstandingSummaryCards({ metrics }: OutstandingSummaryCardsProp
     },
     {
       label: "OVERDUE",
-      value: metrics.overdueCount.toString(),
+      value: String(safe.overdueCount ?? 0),
       icon: AlertTriangle,
       iconBg: "bg-red-50",
       iconColor: "text-red-500",
@@ -28,7 +29,7 @@ export function OutstandingSummaryCards({ metrics }: OutstandingSummaryCardsProp
     },
     {
       label: "PENDING",
-      value: metrics.pendingCount.toString(),
+      value: String(safe.pendingCount ?? 0),
       icon: Clock,
       iconBg: "bg-accent/10",
       iconColor: "text-accent",
@@ -36,7 +37,7 @@ export function OutstandingSummaryCards({ metrics }: OutstandingSummaryCardsProp
     },
     {
       label: "PARTIAL PAYMENT",
-      value: metrics.partialCount.toString(),
+      value: String(safe.partialCount ?? 0),
       icon: CreditCard,
       iconBg: "bg-blue-50",
       iconColor: "text-blue-500",

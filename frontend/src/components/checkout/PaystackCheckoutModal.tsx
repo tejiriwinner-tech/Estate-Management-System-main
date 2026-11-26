@@ -82,7 +82,7 @@ export function PaystackCheckoutModal({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-white font-bold text-sm shadow-xs">
-                <span className="italic font-serif">LE</span>
+                <span className="italic font-serif">PAHE</span>
               </div>
               <div>
                 <p className="text-xs font-extrabold tracking-wide text-accent">
@@ -235,7 +235,7 @@ export function PaystackCheckoutModal({
                 9948201942
               </p>
               <p className="text-xs font-bold text-dark">
-                Paystack-Titan / Post Army House Estate Escrow
+                Paystack-Titan / Post Army Housing Estate Escrow
               </p>
               <p className="text-[11px] text-slate-500 pt-1">
                 Click confirm below once transfer of ₦

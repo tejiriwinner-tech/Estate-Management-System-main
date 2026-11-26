@@ -145,7 +145,7 @@ export default function ResidentDashboard() {
         <div>
           <div className="flex items-center gap-2 text-xs font-semibold text-[#B22222]">
             <span className="w-2 h-2 rounded-full bg-[#B22222]" />
-            <span>Post Army House Estate • Resident Portal</span>
+            <span>Post Army Housing Estate • Resident Portal</span>
           </div>
           <h1 className="mt-1 text-2xl font-extrabold text-gray-900 tracking-tight">
             Welcome back, {residentName}
@@ -297,7 +297,7 @@ export default function ResidentDashboard() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-sm font-extrabold text-gray-900">Featured Estate Store Products</h2>
-              <p className="text-xs text-slate-400">Uploaded by verified Post Army House Estate merchants</p>
+              <p className="text-xs text-slate-400">Uploaded by verified Post Army Housing Estate merchants</p>
             </div>
             <Link href="/resident/store" className="text-xs font-bold text-[#B22222] hover:underline">
               Open Storefront →

@@ -38,12 +38,12 @@ export default function Sidebar() {
       {/* Brand Header */}
       <div className="flex items-center gap-3 px-6 h-20 border-b border-gray-200/60">
         <div className="relative flex items-center justify-center w-11 h-11 rounded-full bg-[#B22222] text-white font-bold text-lg shadow-md shrink-0">
-          <span className="tracking-tighter">LE</span>
+          <span className="tracking-tighter">PAHE</span>
           <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-[#C9A227] rounded-full border-2 border-white" />
         </div>
         <div className="flex flex-col">
           <span className="font-extrabold text-base tracking-tight text-gray-900 leading-tight">
-            Post Army House<span className="text-[#B22222]"> Estate</span>
+            Post Army Housing<span className="text-[#B22222]"> Estate</span>
           </span>
           <span className="text-[10px] font-semibold uppercase tracking-wider text-[#C9A227]">
             Security Command

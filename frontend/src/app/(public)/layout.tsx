@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Post Army House Estate - Homes and properties",
+  title: "Post Army Housing Estate - Homes and properties",
   description: "Houses and properties for rent or sale from agents within the estate.",
 };
 

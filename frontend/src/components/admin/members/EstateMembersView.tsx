@@ -77,12 +77,16 @@ export function EstateMembersView() {
     );
   }, [members, searchQuery]);
 
-  // Compute pending service charge amount per user
-  const pendingByMember = useMemo(() => {
-    const map = new Map<number, number>();
+  // Compute pending & total service charges per user
+  const chargeStatsByMember = useMemo(() => {
+    const map = new Map<number, { pending: number; total: number }>();
     for (const c of allCharges) {
-      if (c.user_id && c.status === "Pending") {
-        map.set(c.user_id, (map.get(c.user_id) || 0) + c.amount);
+      if (c.user_id) {
+        const uid = Number(c.user_id);
+        const cur = map.get(uid) || { pending: 0, total: 0 };
+        cur.total += 1;
+        if (c.status !== "Paid") cur.pending += Number(c.amount || 0);
+        map.set(uid, cur);
       }
     }
     return map;
@@ -231,7 +235,8 @@ export function EstateMembersView() {
                 </tr>
               ) : (
                 filteredMembers.map((member) => {
-                  const pendingDue = pendingByMember.get(member.id) || 0;
+                  const st = chargeStatsByMember.get(member.id) || { pending: 0, total: 0 };
+                  const pendingDue = st.pending;
                   return (
                     <tr
                       key={member.id}
@@ -254,10 +259,14 @@ export function EstateMembersView() {
                             <Clock className="w-3.5 h-3.5 text-amber-600" />
                             <span>₦{pendingDue.toLocaleString()} Due</span>
                           </span>
-                        ) : (
+                        ) : st.total > 0 ? (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                             <span>Cleared</span>
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200">
+                            <span>No Bills</span>
                           </span>
                         )}
                       </td>
@@ -299,7 +308,8 @@ export function EstateMembersView() {
             </div>
           ) : (
             filteredMembers.map((member) => {
-              const pendingDue = pendingByMember.get(member.id) || 0;
+              const st = chargeStatsByMember.get(member.id) || { pending: 0, total: 0 };
+              const pendingDue = st.pending;
               return (
                 <div key={member.id} className="p-4 space-y-3 bg-surface-card">
                   <div className="flex items-start justify-between gap-2">
@@ -352,7 +362,7 @@ export function EstateMembersView() {
         {/* Footer */}
         <div className="px-6 py-3.5 bg-slate-50/50 border-t border-border/60 flex items-center justify-between text-xs font-semibold text-muted">
           <span>Showing {filteredMembers.length} of {totalCount} registered members</span>
-          <span>Post Army House Estate Administration</span>
+          <span>Post Army Housing Estate Administration</span>
         </div>
       </div>
 

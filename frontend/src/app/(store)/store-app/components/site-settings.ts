@@ -31,7 +31,7 @@ export const SITE_SETTINGS_STORAGE_KEY = "lincoln-estate-site-settings";
 const settingsEventName = "lincoln-estate-settings-updated";
 
 export const defaultSiteSettings: SiteSettings = {
-  siteName: "Post Army House Estate",
+  siteName: "Post Army Housing Estate",
   tagline: "A better way to manage your estate",
   profileName: "Administrator",
   profileEmail: "admin@lincolnestate.ng",

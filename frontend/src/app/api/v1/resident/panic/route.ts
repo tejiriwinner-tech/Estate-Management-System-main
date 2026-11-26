@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
-    const location = body.location || "Villa A-402, Post Army House Estate";
+    const location = body.location || "Villa A-402, Post Army Housing Estate";
     const note = body.note || "RESIDENT PANIC EMERGENCY TRIGGERED";
     const userId = body.user_id || 2;
 

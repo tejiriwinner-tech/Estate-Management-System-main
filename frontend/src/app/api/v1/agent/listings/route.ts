@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
         ) VALUES (
           4, ${body.title || "Estate Property"}, ${body.description || null},
           ${body.listing_type || "rent"}, ${body.property_type || body.type || "Apartment"},
-          ${body.zone || "Phase 1"}, ${body.address || "Post Army House Estate"},
+          ${body.zone || "Phase 1"}, ${body.address || "Post Army Housing Estate"},
           ${Number(body.beds || 3)}, ${Number(body.baths || 2)},
           ${priceKobo}, ${body.price_period || "per_year"},
           'available', 'pending', NOW(), NOW()

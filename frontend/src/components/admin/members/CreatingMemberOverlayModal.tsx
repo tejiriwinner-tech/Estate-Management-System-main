@@ -121,7 +121,7 @@ export function CreatingMemberOverlayModal({
           <div>
             <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[#B22222]">
               <UserPlus className="w-3.5 h-3.5" />
-              <span>Post Army House Estate Registry</span>
+              <span>Post Army Housing Estate Registry</span>
             </div>
             <h2 id="create-new-user-title" className="text-lg font-extrabold text-slate-900 mt-0.5">
               Register New Resident

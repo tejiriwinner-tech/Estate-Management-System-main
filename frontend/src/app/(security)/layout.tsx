@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Post Army House Estate – Security",
-  description: "Post Army House Estate Management Security Portal",
+  title: "Post Army Housing Estate – Security",
+  description: "Post Army Housing Estate Management Security Portal",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

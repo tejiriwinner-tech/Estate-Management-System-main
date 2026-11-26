@@ -91,12 +91,12 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           <Link href="/admin/dashboard" className="flex items-center gap-3 group">
             {/* Monogram Logo */}
             <div className="relative flex items-center justify-center w-11 h-11 rounded-full bg-primary text-white font-bold text-lg shadow-md transition-transform group-hover:scale-105">
-              <span className="tracking-tighter">LE</span>
+              <span className="tracking-tighter">PAHE</span>
               <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-accent rounded-full border-2 border-white" />
             </div>
             <div className="flex flex-col">
               <span className="font-extrabold text-base tracking-tight text-dark">
-                Post Army House<span className="text-primary"> Estate</span>
+                Post Army Housing<span className="text-primary"> Estate</span>
               </span>
               <span className="text-[10px] font-semibold tracking-wider text-muted uppercase">
                 Admin Dashboard

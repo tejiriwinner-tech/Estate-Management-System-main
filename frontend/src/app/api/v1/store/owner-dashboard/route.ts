@@ -58,7 +58,7 @@ export async function GET() {
           category: store?.category || "General",
           merchantId: store ? `ST-${String(store.id).padStart(3, "0")}` : "—",
           joinedAt: store?.created_at ? new Date(store.created_at).toISOString().split("T")[0] : "—",
-          tier: "Post Army House Estate Store",
+          tier: "Post Army Housing Estate Store",
           totalRevenue: totalRevenue.toFixed(2),
           pendingSettlements: pendingSettlements.toFixed(2),
           activeProducts: productsCount,

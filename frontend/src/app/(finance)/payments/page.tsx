@@ -202,7 +202,7 @@ export default function PaymentRecordsPage() {
 
         {/* Bottom Copyright Notice matching Figma */}
         <footer className="pt-6 pb-2 text-center text-xs font-medium text-slate-400 border-t border-slate-100">
-          © 2024 Post Army House Estate Finance Management. All rights reserved. System V2.4.1
+          © 2024 Post Army Housing Estate Finance Management. All rights reserved. System V2.4.1
         </footer>
       </div>
     </>

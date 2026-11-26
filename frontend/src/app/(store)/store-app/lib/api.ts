@@ -24,12 +24,12 @@ export async function storeFetch<T>(path: string, init: RequestInit = {}): Promi
     return (json.data ?? json) as T;
   } catch (err: any) {
     if (path.includes("/store/me")) {
-      return { id: 1, name: "Post Army House Mart", isOpen: true, is_open: true } as unknown as T;
+      return { id: 1, name: "Post Army Housing Mart", isOpen: true, is_open: true } as unknown as T;
     }
     if (path.includes("/store/owner-dashboard")) {
       return {
         merchant: {
-          name: "Post Army House Mart",
+          name: "Post Army Housing Mart",
           merchantId: "LM-001",
           joinedAt: "2024-01-15",
           tier: "Official Estate Vendor",

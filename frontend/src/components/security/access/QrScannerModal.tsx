@@ -116,7 +116,7 @@ export function QrScannerModal({ isOpen, onClose, onVerified }: QrScannerModalPr
             </div>
 
             <p className="text-[11px] text-slate-400">
-              Only active passes issued by verified Post Army House Estate residents will be granted clearance.
+              Only active passes issued by verified Post Army Housing Estate residents will be granted clearance.
             </p>
 
             <button

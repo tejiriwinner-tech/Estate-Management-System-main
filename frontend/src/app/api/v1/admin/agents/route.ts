@@ -29,7 +29,7 @@ export async function GET() {
         initials: initials || "AG",
         email: u.email,
         phone: u.phone || "—",
-        zone: u.unit_number || "Post Army House Estate",
+        zone: u.unit_number || "Post Army Housing Estate",
         status: (u.status === "active" ? "Active" : "Inactive") as any,
         joinedOn: u.created_at ? new Date(u.created_at).toISOString().split("T")[0] : new Date().toISOString().split("T")[0],
         activeListings: Number(u.listings_count) || 0,
@@ -72,7 +72,7 @@ export async function POST(req: Request) {
         name, email, password, phone, role, status, job_title, department, created_at, updated_at
       )
       VALUES (
-        ${name}, ${email}, 'Post Army House Estate2024!', ${phone || null}, 'agent', 'active',
+        ${name}, ${email}, 'Post Army Housing Estate2024!', ${phone || null}, 'agent', 'active',
         'Certified Estate Agent', ${zone || 'Commercial Hub'}, NOW(), NOW()
       )
       RETURNING *

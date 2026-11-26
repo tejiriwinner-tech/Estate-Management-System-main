@@ -13,16 +13,16 @@ export function EstateUpdatesWidget({ update }: EstateUpdatesWidgetProps) {
   const defaultUpdate: EstateUpdate = {
     id: "1",
     headlinePrefix: "Update From ",
-    headlineHighlight: "Estate Admin",
+    headlineHighlight: "Post Army Housing Estate",
     imageUrl:
       "https://images.unsplash.com/photo-1590856029826-c7a73142bbf1?auto=format&fit=crop&w=1200&q=80",
-    imageAlt: "Estate Security Patrol Vehicles",
+    imageAlt: "Estate Security & Operations",
     leadParagraph:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      "All estate portals—Resident, Store Owner, Agent, and Security Command—are unified under Post Army Housing Estate.",
     bodyParagraph:
-      "Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.",
-    publishedAt: "Today, 11:00 AM",
-    author: "Chief Security Officer",
+      "Use the tabs above to manage residents, issue service charges, monitor away notices, verify vehicle decals, and review gate check-ins in real time.",
+    publishedAt: "Live Operations",
+    author: "Estate Administration",
   };
 
   const currentUpdate = update || defaultUpdate;

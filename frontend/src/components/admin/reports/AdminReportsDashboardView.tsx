@@ -182,7 +182,7 @@ export function AdminReportsDashboardView() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h1 className="text-2xl font-extrabold text-dark tracking-tight">Service Charge Report</h1>
-              <p className="text-xs text-muted">Paid and outstanding estate service charge ledger across Post Army House Estate.</p>
+              <p className="text-xs text-muted">Paid and outstanding estate service charge ledger across Post Army Housing Estate.</p>
             </div>
             <div className="flex items-center gap-2">
               {(["All", "Paid", "Pending"] as const).map((s) => (

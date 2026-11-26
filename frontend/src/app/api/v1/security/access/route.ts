@@ -62,7 +62,7 @@ export async function GET() {
           code: `PASS-${p.id}`,
           guestName: p.name,
           hostName: p.invited_by || "Resident",
-          unit: "Post Army House Estate",
+          unit: "Post Army Housing Estate",
           status: p.status || "active",
           validFrom: p.created_at ? new Date(p.created_at).toISOString().split("T")[0] : "Today",
           validUntil: p.expires_at ? new Date(p.expires_at).toISOString().split("T")[0] : "Tomorrow",

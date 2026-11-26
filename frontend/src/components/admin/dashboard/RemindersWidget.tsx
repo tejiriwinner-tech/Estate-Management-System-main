@@ -10,26 +10,7 @@ interface RemindersWidgetProps {
 
 export function RemindersWidget({ initialReminders }: RemindersWidgetProps) {
   const [reminders, setReminders] = useState<ReminderItem[]>(
-    initialReminders || [
-      {
-        id: "1",
-        text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore",
-        time: "9:30am",
-        completed: false,
-      },
-      {
-        id: "2",
-        text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore",
-        time: "9:30am",
-        completed: false,
-      },
-      {
-        id: "3",
-        text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore",
-        time: "9:30am",
-        completed: false,
-      },
-    ]
+    initialReminders || []
   );
 
   const [isModalOpen, setIsModalOpen] = useState(false);

@@ -9,7 +9,7 @@ export async function GET() {
       {
         id: "tpl-monthly-rev",
         title: "Monthly Service Charge & Revenue Statement",
-        description: "Consolidated inflow of security levies, utility fees, and Paystack settlements across Post Army House Estate.",
+        description: "Consolidated inflow of security levies, utility fees, and Paystack settlements across Post Army Housing Estate.",
         badgeLabel: "Most Used",
         badgeTone: "primary",
         iconType: "monthly",

@@ -8,7 +8,7 @@ import { StoreShell } from "../components/store-screens";
 const MERCHANTS = [
   {
     id: "LM-001",
-    name: "Post Army House Mart",
+    name: "Post Army Housing Mart",
     category: "Supermarket & Household Groceries",
     zone: "Army Estate Phase 1 — Commercial Plaza",
     phone: "+234 802 555 0148",

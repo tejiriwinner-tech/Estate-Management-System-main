@@ -1,6 +1,6 @@
 "use client";
 
-// Shell for the resident app: luxury Post Army House Estate executive design system
+// Shell for the resident app: luxury Post Army Housing Estate executive design system
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useState } from "react";
@@ -95,12 +95,12 @@ export function ResidentShell({ children }: { children: React.ReactNode }) {
           <Link href="/resident" className="flex items-center gap-3 group">
             {/* Monogram Logo */}
             <div className="relative flex items-center justify-center w-11 h-11 rounded-full bg-[#B22222] text-white font-bold text-lg shadow-md transition-transform group-hover:scale-105">
-              <span className="tracking-tighter">LE</span>
+              <span className="tracking-tighter">PAHE</span>
               <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-[#C9A227] rounded-full border-2 border-white" />
             </div>
             <div className="flex flex-col">
               <span className="font-extrabold text-base tracking-tight text-gray-900 leading-tight">
-                Post Army House<span className="text-[#B22222]"> Estate</span>
+                Post Army Housing<span className="text-[#B22222]"> Estate</span>
               </span>
               <span className="text-[10px] font-semibold tracking-wider text-[#C9A227] uppercase">
                 Resident Portal
@@ -238,7 +238,7 @@ export function ResidentShell({ children }: { children: React.ReactNode }) {
                   Transmit SOS Panic Alert?
                 </h2>
                 <p className="mt-2 text-xs text-slate-500 leading-relaxed">
-                  Post Army House Estate Central Security Command and patrol officers will immediately receive your unit coordinates ({displayUnit}) with emergency priority.
+                  Post Army Housing Estate Central Security Command and patrol officers will immediately receive your unit coordinates ({displayUnit}) with emergency priority.
                 </p>
                 <div className="mt-6 flex gap-3">
                   <button

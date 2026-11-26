@@ -14,7 +14,7 @@ export function UnderConstruction({ moduleName }: UnderConstructionProps) {
       </div>
       <h2 className="text-2xl font-bold text-dark mb-2">{moduleName} Module</h2>
       <p className="text-muted max-w-md mb-6 text-sm">
-        This module is part of the Post Army House Estate roadmap and will be implemented in subsequent phases.
+        This module is part of the Post Army Housing Estate roadmap and will be implemented in subsequent phases.
       </p>
       <Link
         href="/admin/dashboard"
