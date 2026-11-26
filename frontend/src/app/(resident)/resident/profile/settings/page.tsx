@@ -21,6 +21,7 @@ export default function SettingsTab() {
   const [phone, setPhone] = useState("");
   const [unitNumber, setUnitNumber] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [savingProfile, setSavingProfile] = useState(false);
 
   const [s, setS] = useState<Record<Key, boolean> | null>(null);
@@ -33,9 +34,26 @@ export default function SettingsTab() {
       setPhone(data.phone || "");
       setUnitNumber(data.unit_number || "");
       setAvatarUrl(data.avatar_url || null);
+      setCoverUrl(data.cover_url || "preset:crimson-gold");
       setS(data.settings);
     }
   }, [data]);
+
+  const handleCoverSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 3 * 1024 * 1024) {
+      setMsg("Cover image must be under 3MB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        setCoverUrl(reader.result);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -64,6 +82,7 @@ export default function SettingsTab() {
         phone: phone.trim(),
         unit_number: unitNumber.trim(),
         avatar_url: avatarUrl,
+        cover_url: coverUrl,
       });
       await reload();
       setMsg("Profile & photo saved! Admin and Security can now view your updated photo.");
@@ -143,6 +162,42 @@ export default function SettingsTab() {
             <p className="text-[11px] text-slate-500">
               Visible to Estate Admin &amp; Gate Security for fast identity verification (PNG/JPG up to 2MB).
             </p>
+          </div>
+        </div>
+
+        {/* Cover Banner Customization */}
+        <div id="cover" className="rounded-xl border border-slate-200 bg-white p-4 space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <p className="text-xs font-extrabold text-slate-800">Profile Cover Background</p>
+              <p className="text-[11px] text-slate-500">Choose an estate theme or upload your own cover image (up to 3MB).</p>
+            </div>
+            <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-[11px] font-bold text-slate-800 cursor-pointer">
+              <Camera className="w-3.5 h-3.5 text-[#B22222]" />
+              <span>Upload Cover Photo</span>
+              <input type="file" accept="image/*" onChange={handleCoverSelect} className="hidden" />
+            </label>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            {[
+              { id: "preset:crimson-gold", label: "Crimson & Gold", cls: "from-[#B22222] via-[#8F1A1A] to-[#C9A227]/85" },
+              { id: "preset:charcoal-gold", label: "Charcoal Executive", cls: "from-[#1A1A1A] via-[#2D2D2D] to-[#C9A227]/80" },
+              { id: "preset:emerald-palm", label: "Emerald Palm", cls: "from-emerald-900 via-emerald-700 to-teal-500" },
+              { id: "preset:royal-navy", label: "Royal Navy", cls: "from-slate-900 via-blue-900 to-indigo-700" },
+            ].map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => setCoverUrl(p.id)}
+                className={`rounded-xl p-1.5 border text-left transition-all cursor-pointer ${
+                  coverUrl === p.id ? "border-[#B22222] ring-2 ring-[#B22222]/20" : "border-slate-200 hover:border-slate-300"
+                }`}
+              >
+                <div className={`h-8 w-full rounded-lg bg-gradient-to-r ${p.cls}`} />
+                <p className="text-[10px] font-bold text-slate-700 mt-1 px-0.5">{p.label}</p>
+              </button>
+            ))}
           </div>
         </div>
 

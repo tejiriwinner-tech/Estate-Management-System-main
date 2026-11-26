@@ -3,7 +3,9 @@ import { readSession } from "@/components/auth/session";
 const API = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
 
 export async function residentFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
-  const token = readSession()?.token;
+  const session = readSession();
+  const token = session?.token;
+  const email = session?.email;
   const isForm = typeof FormData !== "undefined" && init.body instanceof FormData;
   try {
     const res = await fetch(`${API}/resident${path}`, {
@@ -13,6 +15,7 @@ export async function residentFetch<T>(path: string, init: RequestInit = {}): Pr
         Accept: "application/json",
         ...(isForm ? {} : { "Content-Type": "application/json" }),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(email ? { "x-user-email": email } : {}),
         ...(init.headers ?? {}),
       },
     });
@@ -54,7 +57,7 @@ export interface Reminder { id: number; text: string; due_time: string | null; i
 export interface EstateUpdate { headline_prefix: string; headline_highlight: string; image_url: string; lead_paragraph: string; body_paragraph: string; published_at: string | null }
 export interface DashboardData { neighbors: number; total_paid: number; family_activities: number; reminders: Reminder[]; estate_update: EstateUpdate | null }
 export interface Profile {
-  id: number; name: string; email: string; phone: string | null; unit_number: string | null; avatar_url: string | null;
+  id: number; name: string; email: string; phone: string | null; unit_number: string | null; avatar_url: string | null; cover_url?: string | null;
   resident_code: string; about: string | null;
   settings: { sms_notifications: boolean; email_notifications: boolean; members_can_chat: boolean };
 }

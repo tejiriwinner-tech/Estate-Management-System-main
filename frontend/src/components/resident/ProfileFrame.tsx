@@ -15,13 +15,37 @@ const TABS = [
   { href: "/resident/profile/settings", label: "Settings" },
 ];
 
+const COVER_PRESETS: Record<string, string> = {
+  "preset:crimson-gold": "bg-gradient-to-r from-[#B22222] via-[#8F1A1A] to-[#C9A227]/85",
+  "preset:charcoal-gold": "bg-gradient-to-r from-[#1A1A1A] via-[#2D2D2D] to-[#C9A227]/80",
+  "preset:emerald-palm": "bg-gradient-to-r from-emerald-900 via-emerald-700 to-teal-500",
+  "preset:royal-navy": "bg-gradient-to-r from-slate-900 via-blue-900 to-indigo-700",
+};
+
 export function ProfileFrame({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { data, error, loading } = useResident<Profile>("/profile");
+  const cover = data?.cover_url || "preset:crimson-gold";
+  const isImageCover = cover.startsWith("data:") || cover.startsWith("http") || cover.startsWith("/");
+  const presetClass = COVER_PRESETS[cover] || COVER_PRESETS["preset:crimson-gold"];
+
   return (
     <div className="space-y-8">
       <Card className="p-4 shadow-xs border border-slate-200/80">
-        <div className="h-44 rounded-xl bg-gradient-to-r from-[#B22222] via-[#8F1A1A] to-[#C9A227]/80 sm:h-52" aria-hidden />
+        <div className={`relative h-44 rounded-xl overflow-hidden sm:h-52 ${!isImageCover ? presetClass : "bg-slate-900"}`}>
+          {isImageCover && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={cover} alt="Profile cover" className="h-full w-full object-cover" />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
+          <Link
+            href="/resident/profile/settings#cover"
+            className="absolute top-3.5 right-3.5 inline-flex items-center gap-1.5 rounded-xl bg-black/45 hover:bg-black/65 backdrop-blur-xs px-3 py-1.5 text-[11px] font-bold text-white border border-white/20 transition-colors"
+          >
+            <Camera className="w-3.5 h-3.5 text-[#C9A227]" />
+            <span>Change Cover</span>
+          </Link>
+        </div>
         <StateMsg loading={loading} error={error} />
         {data && (
           <div className="-mt-12 flex flex-wrap items-end justify-between gap-6 px-4 pb-2">
