@@ -38,24 +38,23 @@ export async function GET() {
       };
     });
 
+    const checkedOutCount = logs.filter((l) => l.status === "checked_out").length;
+    const insideCount = logs.filter((l) => l.status === "in_estate").length;
     const metrics = [
-      { id: "total-checkins", label: "TOTAL CHECK-INS", value: String(logs.length + 12), iconType: "checkin" as const },
-      { id: "total-checkouts", label: "TOTAL CHECK-OUTS", value: String(logs.filter((l) => l.status === "checked_out").length + 4), iconType: "checkout" as const },
-      { id: "residents-inside", label: "RESIDENTS INSIDE", value: "84", iconType: "residents" as const },
-      { id: "visitors-inside", label: "VISITORS INSIDE", value: String(logs.filter((l) => l.status === "in_estate").length || 5), iconType: "visitors" as const },
+      { id: "total-checkins", label: "TOTAL CHECK-INS", value: String(logs.length), iconType: "checkin" as const },
+      { id: "total-checkouts", label: "TOTAL CHECK-OUTS", value: String(checkedOutCount), iconType: "checkout" as const },
+      { id: "residents-inside", label: "RESIDENTS INSIDE", value: String(logs.filter((l) => l.person_type === "Resident" && l.status === "in_estate").length), iconType: "residents" as const },
+      { id: "visitors-inside", label: "VISITORS INSIDE", value: String(insideCount), iconType: "visitors" as const },
     ];
 
     const summary = {
-      vehicles_entered: 42,
-      pedestrians: 18,
+      vehicles_entered: 0,
+      pedestrians: 0,
       alert_title: "Normal Security Posture",
-      alert_description: "All automated boom barriers and biometric scanners are active.",
+      alert_description: "No active security incidents reported.",
       incidents: [],
-      active_personnel: [
-        { id: 1, name: "Mike Warden", role: "Gate 1 Lead", avatar_url: null },
-        { id: 2, name: "John Okon", role: "Gate 2 Patrol", avatar_url: null },
-      ],
-      extra_personnel_count: 2,
+      active_personnel: [],
+      extra_personnel_count: 0,
     };
 
     const mobileLogs = logs.map((l) => ({

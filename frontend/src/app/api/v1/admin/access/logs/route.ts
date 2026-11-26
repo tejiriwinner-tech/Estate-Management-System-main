@@ -14,11 +14,7 @@ export async function GET() {
         LIMIT 50
       `;
     } catch {
-      logs = [
-        { id: 1, visitor_name: "Tunde Bakare", host_name: "Chinedu Resident", unit_number: "Villa A-402", gate_number: "Gate 1", direction: "in", status: "granted", reason: "Visitor", created_at: new Date().toISOString() },
-        { id: 2, visitor_name: "DHL Courier Delivery", host_name: "Marcus Reed", unit_number: "Commercial Hub", gate_number: "Gate 2", direction: "in", status: "granted", reason: "Delivery", created_at: new Date().toISOString() },
-        { id: 3, visitor_name: "John Unknown", host_name: "Unassigned", unit_number: "Unknown", gate_number: "Gate 1", direction: "in", status: "denied", reason: "No pass or clearance", created_at: new Date().toISOString() },
-      ];
+      logs = [];
     }
 
     return NextResponse.json({

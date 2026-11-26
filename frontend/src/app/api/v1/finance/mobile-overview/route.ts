@@ -6,73 +6,71 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    let collectedToday = "₦450,000";
-    let pendingActive = "₦1,250,000";
+    let collectedTodayNaira = 0;
+    let pendingActiveNaira = 0;
+    let pendingCount = 0;
+    const recentTransactions: MobileDashboardData["recentTransactions"] = [];
+
+    try {
+      const scRows = await sql`
+        SELECT id, resident_name, unit_number, service_type, amount, status, created_at
+        FROM service_charges
+        ORDER BY id DESC
+        LIMIT 20
+      `;
+      for (const r of scRows) {
+        const amt = Number(r.amount || 0);
+        if (r.status === "Paid") {
+          collectedTodayNaira += amt;
+        } else {
+          pendingActiveNaira += amt;
+          pendingCount += 1;
+        }
+        if (recentTransactions.length < 5) {
+          recentTransactions.push({
+            id: `sc-${r.id}`,
+            title: `${r.resident_name || "Resident"} - ${r.service_type || "Service Charge"}`,
+            subtitle: `${r.unit_number || "Estate"} • ${r.created_at ? new Date(r.created_at).toLocaleDateString("en-NG") : "Recent"}`,
+            amount: `₦${amt.toLocaleString()}`,
+            type: "income",
+            status: r.status === "Paid" ? "PAID" : "PROCESSING",
+            icon: "home",
+          });
+        }
+      }
+    } catch {
+      // Empty fallback
+    }
 
     const data: MobileDashboardData = {
       greetingName: "Admin",
       metrics: [
         {
           id: "m1",
-          label: "Collected Today",
-          value: collectedToday,
+          label: "Collected Revenue",
+          value: `₦${collectedTodayNaira.toLocaleString()}`,
           accentColor: "emerald",
           icon: "wallet",
           badgeType: "trend",
-          badgeValue: "+12%",
-          badgeLabel: "vs yesterday",
+          badgeValue: "Live",
+          badgeLabel: "verified",
         },
         {
           id: "m2",
           label: "Pending Active",
-          value: pendingActive,
+          value: `₦${pendingActiveNaira.toLocaleString()}`,
           accentColor: "amber",
           icon: "flag",
           badgeType: "action",
-          actionText: "5 Invoices",
+          actionText: `${pendingCount} Invoices`,
         },
       ],
-      trendMonths: [
-        { month: "Jun", value: 3.2 },
-        { month: "Jul", value: 3.9 },
-        { month: "Aug", value: 4.1 },
-        { month: "Sep", value: 3.8 },
-        { month: "Oct", value: 4.5 },
-        { month: "Nov", value: 4.2, isSelected: true },
-      ],
-      recentTransactions: [
-        {
-          id: "tx-1",
-          title: "Chief Adebayo - Security Levy",
-          subtitle: "Phase 1, Villa 4 • Today, 10:45 AM",
-          amount: "₦150,000",
-          type: "income",
-          status: "PAID",
-          icon: "home",
-        },
-        {
-          id: "tx-2",
-          title: "Mrs. Ngozi Eze - Maintenance",
-          subtitle: "Phase 2, Block B2 • Yesterday",
-          amount: "₦75,000",
-          type: "income",
-          status: "PAID",
-          icon: "wrench",
-        },
-        {
-          id: "tx-3",
-          title: "Dr. Kunle Alabi - Power Levy",
-          subtitle: "Phase 1, Plot 12 • Nov 21",
-          amount: "₦120,000",
-          type: "income",
-          status: "PROCESSING",
-          icon: "building",
-        },
-      ],
+      trendMonths: [],
+      recentTransactions,
     };
 
     return NextResponse.json({ data });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ message: "Could not load mobile finance overview.", error: err.message }, { status: 500 });
   }
 }

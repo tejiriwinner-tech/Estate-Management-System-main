@@ -16,34 +16,28 @@ export async function GET() {
       console.error("Error loading vehicles:", e.message);
     }
 
-    const defaultVehicles = [
-      { id: 1, owner_name: "Chinedu Resident", owner_role: "Resident", house_unit: "Villa A-402", vehicle_type: "Toyota Prado SUV", plate_number: "ABC-123-XY", status: "active", registered_at: "2024-01-15" },
-      { id: 2, owner_name: "Marcus Reed", owner_role: "Agent", house_unit: "Commercial Hub", vehicle_type: "Mercedes C300 Sedan", plate_number: "KJA-456-ZZ", status: "active", registered_at: "2024-02-20" },
-    ];
+    const vehicles = rawVehicles.map((v) => ({
+      id: v.id,
+      owner_name: v.owner_name || "Resident",
+      owner_role: v.owner_role || "Resident",
+      house_unit: v.house_unit || "—",
+      vehicle_type: v.vehicle_type || "Saloon",
+      plate_number: v.plate_number,
+      status: v.status || "active",
+      registered_at: v.created_at ? new Date(v.created_at).toISOString().split("T")[0] : "Today",
+    }));
 
-    const vehicles = rawVehicles.length > 0
-      ? rawVehicles.map((v) => ({
-          id: v.id,
-          owner_name: v.owner_name || "Resident",
-          owner_role: v.owner_role || "Resident",
-          house_unit: v.house_unit || "Villa A-402",
-          vehicle_type: v.vehicle_type || "Saloon",
-          plate_number: v.plate_number,
-          status: v.status || "active",
-          registered_at: v.created_at ? new Date(v.created_at).toISOString().split("T")[0] : "Today",
-        }))
-      : defaultVehicles;
-
+    const activeCount = vehicles.filter((v: any) => v.status === "active").length;
     const metrics = [
-      { title: "Total Registered", value: String(vehicles.length), change: "+2 this month", isPositive: true },
-      { title: "Active Decals", value: String(vehicles.filter((v: any) => v.status === "active").length), change: "100%", isPositive: true },
-      { title: "Scanners Online", value: "3/3", change: "Optimal", isPositive: true },
+      { title: "Total Registered", value: String(vehicles.length), change: "Live directory", isPositive: true },
+      { title: "Active Decals", value: String(activeCount), change: vehicles.length ? `${Math.round((activeCount / vehicles.length) * 100)}%` : "0%", isPositive: true },
+      { title: "Scanners Online", value: "0/3", change: "Offline", isPositive: false },
     ];
 
     const scanners = [
-      { id: "SC-1", name: "Main Gate Inbound", location: "Gate 1", last_ping: "Just now", online: true, is_enabled: true },
-      { id: "SC-2", name: "Main Gate Outbound", location: "Gate 1", last_ping: "Just now", online: true, is_enabled: true },
-      { id: "SC-3", name: "Service Gate", location: "Gate 2", last_ping: "1 min ago", online: true, is_enabled: true },
+      { id: "SC-1", name: "Main Gate Inbound", location: "Gate 1", last_ping: "No signal", online: false, is_enabled: false },
+      { id: "SC-2", name: "Main Gate Outbound", location: "Gate 1", last_ping: "No signal", online: false, is_enabled: false },
+      { id: "SC-3", name: "Service Gate", location: "Gate 2", last_ping: "No signal", online: false, is_enabled: false },
     ];
 
     return NextResponse.json({

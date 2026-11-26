@@ -28,15 +28,6 @@ export async function GET() {
       console.warn("Security activity DB err:", e.message);
     }
 
-    if (rows.length === 0) {
-      rows = [
-        { id: "1", name: "Chinedu Resident", out: "08:30 AM", outWith: "Personal Vehicle", in: "14:22 PM", inWith: "Solo" },
-        { id: "2", name: "Ngozi Adeleke", out: "10:15 AM", outWith: "Solo", in: "13:00 PM", inWith: "Family Dependent" },
-        { id: "3", name: "Engr. Tunde Bakare", out: "-", outWith: "-", in: "11:45 AM", inWith: "Facility Pass" },
-      ];
-      total = rows.length;
-    }
-
     return NextResponse.json({ rows, total });
   } catch (err: any) {
     return NextResponse.json({ message: "Could not fetch activity report.", error: err.message }, { status: 500 });

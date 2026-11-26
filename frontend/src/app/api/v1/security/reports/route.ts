@@ -48,37 +48,6 @@ export async function GET(req: NextRequest) {
       console.warn("Security reports DB err:", e.message);
     }
 
-    if (rows.length === 0) {
-      if (category === "life_threat") {
-        rows = [
-          {
-            id: "1",
-            name: "Villa A-402 Resident",
-            houseNumber: "Villa A-402",
-            date: new Date().toLocaleDateString("en-NG"),
-            report: "Routine SOS system perimeter test conducted - Verified operational.",
-          },
-        ];
-      } else {
-        rows = [
-          {
-            id: "1",
-            name: "Main Gate ANPR Sensor",
-            houseNumber: "Gate 1",
-            date: new Date().toLocaleDateString("en-NG"),
-            report: "Plate recognition accuracy 99.8% across 148 passages.",
-          },
-          {
-            id: "2",
-            name: "North Perimeter Beam",
-            houseNumber: "Phase 2",
-            date: new Date().toLocaleDateString("en-NG"),
-            report: "Zero unauthorized fence vibration or contact detected.",
-          },
-        ];
-      }
-    }
-
     return NextResponse.json({ rows, total: rows.length });
   } catch (err: any) {
     return NextResponse.json({ message: "Could not fetch reports.", error: err.message }, { status: 500 });

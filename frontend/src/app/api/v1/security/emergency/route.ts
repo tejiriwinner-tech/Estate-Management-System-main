@@ -52,22 +52,6 @@ export async function GET() {
       console.warn("Security emergency DB err:", e.message);
     }
 
-    if (history.length === 0) {
-      history = [
-        {
-          id: "1",
-          type: "Panic Test",
-          resident: "Chinedu Resident",
-          houseUnit: "Villa A-402",
-          date: new Date().toLocaleDateString("en-NG"),
-          time: "09:15 AM",
-          resolvedAt: "09:20 AM",
-          resolvedBy: "Officer SO-04",
-          status: "Resolved",
-        },
-      ];
-    }
-
     return NextResponse.json({
       active: activeAlerts,
       history,

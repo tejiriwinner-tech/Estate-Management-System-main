@@ -5,8 +5,8 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    let collectedToday = "₦2,450,000";
-    let pendingActive = "12 Active";
+    let collectedTodayNaira = 0;
+    let pendingCount = 0;
     let recentPayments: any[] = [];
 
     try {
@@ -20,32 +20,30 @@ export async function GET() {
         LIMIT 10
       `;
 
-      if (rows.length > 0) {
-        recentPayments = rows.map((r: any) => ({
+      for (const r of rows) {
+        const amt = Math.round(Number(r.amount_kobo || 0) / 100);
+        if (r.status === "success" || r.status === "paid") {
+          collectedTodayNaira += amt;
+        } else {
+          pendingCount += 1;
+        }
+        recentPayments.push({
           id: String(r.id),
           name: r.resident_name || "Estate Resident",
           purpose: r.service_name || "Estate Levy",
-          amount: `₦${(Math.round(Number(r.amount_kobo || 0) / 100)).toLocaleString()}`,
-          status: r.status === "success" ? "Paid" : "Processing",
+          amount: `₦${amt.toLocaleString()}`,
+          status: r.status === "success" || r.status === "paid" ? "Paid" : "Processing",
           iconType: "house",
-        }));
+        });
       }
     } catch (e: any) {
       console.error("Mobile summary error:", e.message);
     }
 
-    if (recentPayments.length === 0) {
-      recentPayments = [
-        { id: "1", name: "Chief Adeleke", purpose: "Security Levy (Q4)", amount: "₦150,000", status: "Paid", iconType: "house" },
-        { id: "2", name: "Mrs. Ngozi Eze", purpose: "Facility Maintenance", amount: "₦75,000", status: "Paid", iconType: "wrench" },
-        { id: "3", name: "Marcus Reed", purpose: "Power Levy", amount: "₦45,000", status: "Processing", iconType: "car" },
-      ];
-    }
-
     return NextResponse.json({
       metrics: {
-        collectedToday,
-        pendingActive,
+        collectedToday: `₦${collectedTodayNaira.toLocaleString()}`,
+        pendingActive: `${pendingCount} Active`,
       },
       recentPayments,
     });
