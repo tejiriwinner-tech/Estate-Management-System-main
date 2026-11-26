@@ -95,10 +95,10 @@ export default function AccessControlPage() {
     <div className="flex flex-col gap-5 relative">
       {error && <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">{error}</div>}
       {/* Page header */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
+      <div className="flex flex-wrap items-center justify-between gap-4 bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs">
         <div>
-          <h2 className="text-xl font-bold text-[--color-text]">Access Control Monitoring</h2>
-          <p className="text-sm text-[--color-text-muted] mt-0.5">Live surveillance and entry authorisation management.</p>
+          <h2 className="text-lg font-extrabold text-slate-900">Access Control Monitoring</h2>
+          <p className="text-xs text-slate-500 mt-0.5">Live surveillance, QR pass verification, and gate entry authorisation.</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <button
@@ -238,10 +238,10 @@ export default function AccessControlPage() {
               <h3 className="text-base font-bold text-[--color-text]">New Temporary Pass</h3>
               <button type="button" aria-label="Close" onClick={() => setDrawerOpen(false)}><X className="h-4 w-4" /></button>
             </div>
-            <input required value={pass.name} onChange={(e) => setPass({ ...pass, name: e.target.value })} placeholder="Guest name" className="w-full rounded-lg border border-[--color-border] px-3 py-2 text-sm" />
-            <input value={pass.invited_by} onChange={(e) => setPass({ ...pass, invited_by: e.target.value })} placeholder="Invited by (unit or resident)" className="w-full rounded-lg border border-[--color-border] px-3 py-2 text-sm" />
-            <input type="number" min={5} max={10080} value={pass.minutes} onChange={(e) => setPass({ ...pass, minutes: e.target.value })} placeholder="Expires in (minutes) - blank for one-time" className="w-full rounded-lg border border-[--color-border] px-3 py-2 text-sm" />
-            <button disabled={saving} className="w-full rounded-lg bg-[--color-primary] py-2.5 text-sm font-bold text-white disabled:opacity-60">Create pass</button>
+            <input required value={pass.name} onChange={(e) => setPass({ ...pass, name: e.target.value })} placeholder="Guest name" className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" />
+            <input value={pass.invited_by} onChange={(e) => setPass({ ...pass, invited_by: e.target.value })} placeholder="Invited by (unit or resident)" className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" />
+            <input type="number" min={5} max={10080} value={pass.minutes} onChange={(e) => setPass({ ...pass, minutes: e.target.value })} placeholder="Expires in (minutes) - blank for one-time" className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" />
+            <button disabled={saving} className="w-full rounded-xl bg-[#B22222] hover:bg-[#991B1B] py-2.5 text-sm font-bold text-white disabled:opacity-60">Create pass</button>
           </form>
         </div>
       )}

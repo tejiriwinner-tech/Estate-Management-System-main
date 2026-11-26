@@ -24,6 +24,7 @@ import { useRequireRole } from "@/components/auth/useRequireRole";
 import { send } from "@/lib/resident/api";
 import { useChatSummary } from "@/lib/chat/useChatSummary";
 import { NotificationPopover } from "@/components/chat/NotificationPopover";
+import { CodedEmergencyTrigger } from "@/components/emergency/CodedEmergencyTrigger";
 
 const NAV = [
   { href: "/resident", label: "Dashboard", icon: LayoutDashboard, exact: true },
@@ -198,13 +199,13 @@ export function ResidentShell({ children }: { children: React.ReactNode }) {
 
         {/* Footer Emergency & Logout */}
         <div className="mt-auto pt-4 space-y-2 border-t border-gray-100">
-          <button
-            onClick={() => setPanic("confirm")}
-            className="w-full flex items-center justify-center gap-2 rounded-xl bg-red-50 border border-red-200 px-3 py-2.5 text-xs font-bold text-red-700 hover:bg-[#B22222] hover:text-white transition-all shadow-xs group"
-          >
-            <ShieldAlert className="w-4 h-4 text-red-600 group-hover:text-white transition-colors" />
-            <span>SOS Emergency Alert</span>
-          </button>
+          <CodedEmergencyTrigger
+            senderName={name}
+            senderRole="Resident"
+            senderEmail={email}
+            defaultLocation={displayUnit}
+            buttonLabel="SOS Emergency Alert"
+          />
 
           <button
             onClick={logout}

@@ -30,7 +30,7 @@ const NAV_ITEMS = [
   { label: "Station Info", href: "/security/about", icon: Info },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ activeEmergencyCount = 0 }: { activeEmergencyCount?: number }) {
   const pathname = usePathname();
 
   return (
@@ -73,6 +73,11 @@ export default function Sidebar() {
                 )}
               />
               <span className="flex-1">{label}</span>
+              {href === "/security/emergency" && activeEmergencyCount > 0 && (
+                <span className="ml-auto rounded-full bg-red-600 px-2 py-0.5 text-[10px] font-extrabold text-white animate-pulse">
+                  {activeEmergencyCount}
+                </span>
+              )}
             </Link>
           );
         })}

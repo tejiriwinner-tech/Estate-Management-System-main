@@ -13,6 +13,7 @@ import {
 import { UnifiedPortalShell, type UnifiedNavItem } from "@/components/layout/UnifiedPortalShell";
 import { useRequireRole } from "@/components/auth/useRequireRole";
 import { readSession } from "@/components/auth/session";
+import { CodedEmergencyTrigger } from "@/components/emergency/CodedEmergencyTrigger";
 
 export interface StoreIdentity {
   id: number;
@@ -103,6 +104,15 @@ export function StorePortalShell({ children }: { children: React.ReactNode }) {
         messagesHref="/store-app/messages"
         searchPlaceholder="Search orders, products, SKUs, or customers..."
         navItems={STORE_NAV}
+        footerExtra={
+          <CodedEmergencyTrigger
+            senderName={store?.owner_name || "Shop Owner"}
+            senderRole="Shop Owner"
+            senderEmail={store?.owner_email}
+            defaultLocation={store ? `${store.name} (${store.shop_unit})` : "Commercial Plaza Shop"}
+            buttonLabel="SOS Emergency Alert"
+          />
+        }
       >
         {children}
       </UnifiedPortalShell>

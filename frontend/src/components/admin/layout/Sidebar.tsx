@@ -17,8 +17,9 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/admin/utils";
-import { clearSession } from "@/components/auth/session";
+import { clearSession, readSession } from "@/components/auth/session";
 import { useChatSummary } from "@/lib/chat/useChatSummary";
+import { CodedEmergencyTrigger } from "@/components/emergency/CodedEmergencyTrigger";
 
 interface SidebarProps {
   isOpen?: boolean;
@@ -237,7 +238,14 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         </nav>
 
         {/* Security / System Footer */}
-        <div className="p-4 border-t border-border/60">
+        <div className="p-4 border-t border-border/60 space-y-2">
+          <CodedEmergencyTrigger
+            senderName={readSession()?.name || "Estate Administrator"}
+            senderRole="Admin"
+            senderEmail={readSession()?.email}
+            defaultLocation="Estate Administration HQ"
+            buttonLabel="SOS Emergency Alert"
+          />
           <button
             onClick={() => {
               if (confirm("Are you sure you want to log out?")) {

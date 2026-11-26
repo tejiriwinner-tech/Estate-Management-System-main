@@ -60,27 +60,27 @@ export default function BlacklistPage() {
     <div className="flex flex-col gap-5">
       {error && <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">{error}</div>}
       {/* Page header */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
+      <div className="flex flex-wrap items-center justify-between gap-4 bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs">
         <div>
-          <h2 className="text-xl font-bold text-[--color-text]">Blacklist &amp; Watchlist</h2>
-          <p className="text-sm text-[--color-text-muted] mt-0.5">
+          <h2 className="text-lg font-extrabold text-slate-900">Blacklist &amp; Watchlist</h2>
+          <p className="text-xs text-slate-500 mt-0.5">
             Manage restricted personnel and monitor high-risk entities within the estate perimeter.
           </p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowFilter(!showFilter)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border text-xs font-semibold transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-xs font-bold transition-colors ${
               showFilter || riskFilter !== "ALL"
-                ? "border-slate-800 bg-slate-900 text-white"
-                : "border-[--color-border] text-[--color-text-muted] hover:bg-gray-50"
+                ? "border-slate-900 bg-slate-900 text-white"
+                : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
             }`}
           >
             <Filter className="w-3.5 h-3.5" /> Filter List
           </button>
           <button
             onClick={() => setDrawerOpen(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[--color-danger] text-white text-xs font-bold hover:opacity-90 transition-opacity"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#B22222] text-white text-xs font-extrabold hover:bg-[#991B1B] shadow-xs transition-colors"
           >
             <UserX className="w-3.5 h-3.5" /> Add to Blacklist
           </button>

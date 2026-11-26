@@ -49,21 +49,23 @@ export default function EstateActivityPage() {
     <div className="flex flex-col gap-5">
       <SecurityError message={error ?? saveError} />
       {/* Stat header */}
-      <div className="bg-white rounded-xl border border-[--color-border] p-5 flex items-center justify-between gap-4">
+      <div className="bg-white rounded-2xl border border-slate-200 p-5 flex flex-wrap items-center justify-between gap-4 shadow-2xs">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-xl bg-[--color-primary-light] flex items-center justify-center shrink-0">
-            <Activity className="w-7 h-7 text-[--color-primary]" />
+          <div className="w-12 h-12 rounded-2xl bg-red-50 border border-red-200 flex items-center justify-center shrink-0">
+            <Activity className="w-6 h-6 text-[#B22222]" />
           </div>
           <div>
-            <p className="text-3xl font-bold text-[--color-text]">{rows.length}</p>
-            <p className="text-sm text-[--color-text-muted] mt-0.5">Estate Activities</p>
+            <h2 className="text-lg font-extrabold text-slate-900">Incident &amp; Gate Activity Reports</h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              {rows.length} logged estate gate movement{rows.length === 1 ? "" : "s"} &amp; incident entries
+            </p>
           </div>
         </div>
         <button
           onClick={() => setModalOpen(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[--color-primary] text-white text-xs font-bold hover:bg-[--color-primary-dark] transition-colors"
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#B22222] text-white text-xs font-extrabold hover:bg-[#991B1B] shadow-xs transition-colors"
         >
-          <Plus className="w-3.5 h-3.5" /> Add Activity
+          <Plus className="w-3.5 h-3.5" /> Log Activity
         </button>
       </div>
 

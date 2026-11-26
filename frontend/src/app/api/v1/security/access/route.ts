@@ -46,16 +46,18 @@ export async function GET() {
           gate: l.gate || "Gate 1",
           status: l.status === "granted" ? "Granted" : "Denied",
         })),
-        total: logs.length || 24,
-        trafficBars,
-        entriesLast12h: logs.filter((l) => l.status === "granted").length || 18,
-        latestVerified: {
-          name: logs[0]?.name || "Chinedu Resident",
-          role: "Verified Resident",
-          verificationType: "Biometric Scanner",
-          gate: "Gate 1 (Main Gate)",
-          time: "Just now",
-        },
+        total: logs.length,
+        trafficBars: logs.length > 0 ? trafficBars : [],
+        entriesLast12h: logs.filter((l) => l.status === "granted" || l.status === "Success").length,
+        latestVerified: logs[0]
+          ? {
+              name: logs[0].name || "Visitor",
+              role: logs[0].resident_name ? "Resident Guest" : "Verified Entry",
+              verificationType: logs[0].verification_type || "QR / Gate Check",
+              gate: logs[0].gate || "Gate 1",
+              time: new Date(logs[0].created_at || Date.now()).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+            }
+          : null,
         latestDenied: null,
         passes: passes.map((p) => ({
           id: `GP-${p.id}`,
