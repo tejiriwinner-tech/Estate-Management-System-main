@@ -75,6 +75,29 @@ export default function ResidentMarketplacePage() {
   const [residentName, setResidentName] = useState(session?.name || "Estate Resident");
   const [unit, setUnit] = useState((session as any)?.unit_number || (session as any)?.unit || "");
 
+  // Payment Proof state (shared by Cart & Single-Item Checkout)
+  const [paymentMethod, setPaymentMethod] = useState("Bank Transfer");
+  const [paymentRef, setPaymentRef] = useState("");
+  const [proofUrl, setProofUrl] = useState("");
+  const [proofName, setProofName] = useState("");
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+
+  const handleProofUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 3 * 1024 * 1024) {
+      setPaymentError("Payment receipt file must be under 3MB.");
+      return;
+    }
+    setPaymentError(null);
+    setProofName(file.name);
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") setProofUrl(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
   // Shopping Cart Drawer
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
@@ -160,6 +183,11 @@ export default function ResidentMarketplacePage() {
   const handleCartCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
     if (cart.length === 0) return;
+    if (!paymentRef.trim() || !proofUrl) {
+      setPaymentError("Please enter your transaction reference AND upload proof of payment before checking out.");
+      return;
+    }
+    setPaymentError(null);
     setSubmitting(true);
     try {
       for (const item of cart) {
@@ -175,13 +203,20 @@ export default function ResidentMarketplacePage() {
             resident_email: session?.email || "resident@lincolnestate.ng",
             unit_number: unit || "Estate Unit",
             delivery_comment: cartComment.trim(),
+            payment_method: paymentMethod,
+            payment_reference: paymentRef.trim(),
+            payment_proof_url: proofUrl,
+            payment_proof_name: proofName,
           }),
         });
       }
-      setToast(`Placed ${cart.length} item order(s) for delivery to ${unit || "your unit"}!`);
+      setToast(`Placed ${cart.length} item order(s) with payment proof for delivery to ${unit || "your unit"}!`);
       setTimeout(() => setToast(null), 5000);
       setCart([]);
       setCartComment("");
+      setPaymentRef("");
+      setProofUrl("");
+      setProofName("");
       setCartOpen(false);
       await loadAll();
     } finally {
@@ -192,6 +227,11 @@ export default function ResidentMarketplacePage() {
   const handleOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selected) return;
+    if (!paymentRef.trim() || !proofUrl) {
+      setPaymentError("Please enter your transaction reference AND upload proof of payment before confirming your order.");
+      return;
+    }
+    setPaymentError(null);
     setSubmitting(true);
     try {
       const res = await fetch("/api/v1/store/orders", {
@@ -206,14 +246,25 @@ export default function ResidentMarketplacePage() {
           resident_email: session?.email || "resident@lincolnestate.ng",
           unit_number: unit || "Estate Unit",
           delivery_comment: comment.trim(),
+          payment_method: paymentMethod,
+          payment_reference: paymentRef.trim(),
+          payment_proof_url: proofUrl,
+          payment_proof_name: proofName,
         }),
       });
       const json = await res.json();
-      setToast(json.message || "Order placed!");
+      if (!res.ok) {
+        setPaymentError(json?.message || "Order failed.");
+        return;
+      }
+      setToast(json.message || "Order confirmed with payment proof!");
       setTimeout(() => setToast(null), 5000);
       setSelected(null);
       setQty(1);
       setComment("");
+      setPaymentRef("");
+      setProofUrl("");
+      setProofName("");
       await loadAll();
     } finally {
       setSubmitting(false);
@@ -589,16 +640,44 @@ export default function ResidentMarketplacePage() {
                     className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs font-medium"
                   />
                 </div>
+                <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-3 space-y-2.5">
+                  <p className="text-[11px] font-extrabold uppercase tracking-wider text-amber-900">
+                    Required: Proof of Payment
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <select
+                      value={paymentMethod}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                      className="rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs font-semibold"
+                    >
+                      <option>Bank Transfer</option>
+                      <option>Paystack / Card</option>
+                      <option>POS Receipt</option>
+                    </select>
+                    <input
+                      required
+                      value={paymentRef}
+                      onChange={(e) => setPaymentRef(e.target.value)}
+                      placeholder="Transaction Ref / Sender"
+                      className="rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs font-medium"
+                    />
+                  </div>
+                  <label className="flex items-center justify-center gap-2 rounded-lg border border-dashed border-amber-400 bg-white px-3 py-2 text-xs font-bold text-slate-700 cursor-pointer hover:bg-amber-50">
+                    <span>{proofName ? `Receipt attached: ${proofName}` : "Upload Payment Receipt (Image / PDF)"}</span>
+                    <input type="file" accept="image/*,.pdf" onChange={handleProofUpload} className="hidden" />
+                  </label>
+                  {paymentError && <p className="text-[11px] font-bold text-rose-600">{paymentError}</p>}
+                </div>
                 <div className="flex items-center justify-between rounded-xl bg-slate-50 p-3">
                   <span className="text-xs font-bold text-slate-600">Total Amount</span>
                   <span className="text-lg font-black text-[#B22222]">₦{cartTotal.toLocaleString()}</span>
                 </div>
                 <button
                   type="submit"
-                  disabled={submitting}
-                  className="w-full rounded-xl bg-[#B22222] hover:bg-[#991b1b] py-3 text-xs font-extrabold text-white cursor-pointer disabled:opacity-60"
+                  disabled={submitting || !paymentRef.trim() || !proofUrl}
+                  className="w-full rounded-xl bg-[#B22222] hover:bg-[#991b1b] py-3 text-xs font-extrabold text-white cursor-pointer disabled:opacity-50"
                 >
-                  {submitting ? "Placing Orders..." : "Checkout & Place Order"}
+                  {submitting ? "Verifying & Placing Orders..." : "Confirm Payment & Place Order"}
                 </button>
               </form>
             )}
@@ -650,12 +729,40 @@ export default function ResidentMarketplacePage() {
                   Delivery Comments / Instructions
                 </label>
                 <textarea
-                  rows={3}
+                  rows={2}
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                   placeholder="e.g. Deliver to gate, call 0803... on arrival"
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs font-medium"
                 />
+              </div>
+              <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-3 space-y-2.5">
+                <p className="text-[11px] font-extrabold uppercase tracking-wider text-amber-900">
+                  Required: Proof of Payment
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  <select
+                    value={paymentMethod}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    className="rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs font-semibold"
+                  >
+                    <option>Bank Transfer</option>
+                    <option>Paystack / Card</option>
+                    <option>POS Receipt</option>
+                  </select>
+                  <input
+                    required
+                    value={paymentRef}
+                    onChange={(e) => setPaymentRef(e.target.value)}
+                    placeholder="Transaction Ref / Sender"
+                    className="rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs font-medium"
+                  />
+                </div>
+                <label className="flex items-center justify-center gap-2 rounded-lg border border-dashed border-amber-400 bg-white px-3 py-2 text-xs font-bold text-slate-700 cursor-pointer hover:bg-amber-50">
+                  <span>{proofName ? `Receipt attached: ${proofName}` : "Upload Payment Receipt (Image / PDF)"}</span>
+                  <input type="file" accept="image/*,.pdf" onChange={handleProofUpload} className="hidden" />
+                </label>
+                {paymentError && <p className="text-[11px] font-bold text-rose-600">{paymentError}</p>}
               </div>
               <div className="rounded-xl bg-slate-50 p-3 flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-600">Total Amount</span>
@@ -673,8 +780,8 @@ export default function ResidentMarketplacePage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={submitting}
-                  className="px-5 py-2 rounded-xl bg-[#B22222] text-white text-xs font-bold hover:bg-[#8F1A1A] disabled:opacity-60 cursor-pointer"
+                  disabled={submitting || !paymentRef.trim() || !proofUrl}
+                  className="px-5 py-2 rounded-xl bg-[#B22222] text-white text-xs font-bold hover:bg-[#8F1A1A] disabled:opacity-50 cursor-pointer"
                 >
                   {submitting ? "Placing Order..." : "Confirm Order"}
                 </button>

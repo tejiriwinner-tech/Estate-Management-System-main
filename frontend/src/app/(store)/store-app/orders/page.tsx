@@ -26,6 +26,10 @@ interface StoreOrder {
   resident_email?: string;
   unit_number: string;
   delivery_comment: string;
+  payment_method?: string;
+  payment_reference?: string;
+  payment_proof_url?: string | null;
+  payment_proof_name?: string | null;
   status: string;
   created_at?: string;
 }
@@ -290,7 +294,23 @@ function OrdersControlContent() {
                         )}
                       </td>
                       <td className="py-4 px-5 font-extrabold text-slate-900">
-                        ₦{o.total_naira.toLocaleString()}
+                        <p>₦{o.total_naira.toLocaleString()}</p>
+                        {o.payment_reference && (
+                          <p className="text-[10px] font-semibold text-slate-500 mt-0.5">
+                            {o.payment_method || "Transfer"} • {o.payment_reference}
+                          </p>
+                        )}
+                        {o.payment_proof_url && (
+                          <a
+                            href={o.payment_proof_url}
+                            target="_blank"
+                            rel="noreferrer"
+                            download={o.payment_proof_name || `${o.order_no}-proof`}
+                            className="inline-block text-[10px] font-bold text-[#B22222] hover:underline mt-0.5"
+                          >
+                            View Payment Proof →
+                          </a>
+                        )}
                       </td>
                       <td className="py-4 px-5">
                         <span

@@ -40,7 +40,7 @@ export function ProfileFrame({ children }: { children: React.ReactNode }) {
               <div className="pt-10">
                 <p className="text-2xl font-extrabold text-gray-900">{data.name}</p>
                 <p className="text-sm font-semibold text-slate-500">
-                  {data.resident_code} • {data.unit_number || "Villa A-402"}
+                  {data.resident_code} • {data.unit_number || "Estate Unit"}
                 </p>
               </div>
             </div>

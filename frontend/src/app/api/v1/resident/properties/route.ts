@@ -16,23 +16,6 @@ export async function GET() {
       console.error("Properties GET error:", e.message);
     }
 
-    if (properties.length === 0) {
-      properties = [
-        {
-          id: 1,
-          type: "Residential",
-          name: "Villa Duplex",
-          property_number: "Villa A-402",
-          sector: "Sector 1 - North Gate",
-          unit_type: "4-Bedroom Terrace",
-          ownership_status: "Owner-Occupier",
-          colour: "White / Stone Grey",
-          others: "Private borehole & solar array",
-          status: "Verified",
-        },
-      ];
-    }
-
     return NextResponse.json({ data: properties });
   } catch (err: any) {
     return NextResponse.json({ message: "Could not fetch properties.", error: err.message }, { status: 500 });

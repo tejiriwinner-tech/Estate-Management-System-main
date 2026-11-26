@@ -16,13 +16,6 @@ export async function GET() {
       console.error("Family GET error:", e.message);
     }
 
-    if (members.length === 0) {
-      members = [
-        { id: 1, name: "Ngozi Adeleke", role_in_family: "Spouse", age: 34, gender: "Female" },
-        { id: 2, name: "David Adeleke", role_in_family: "Child", age: 8, gender: "Male" },
-      ];
-    }
-
     return NextResponse.json({ data: members });
   } catch (err: any) {
     return NextResponse.json({ message: "Could not fetch family members.", error: err.message }, { status: 500 });

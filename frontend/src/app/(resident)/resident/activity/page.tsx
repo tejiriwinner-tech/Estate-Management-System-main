@@ -11,7 +11,22 @@ import { ResidentGatePassModal } from "@/components/qr/ResidentGatePassModal";
 export default function ResidentGatePassesPage() {
   const { data, loading, reload } = useResident<Activity[]>("/activity");
   const session = readSession();
-  const residentName = session?.name || "Chinedu Resident";
+  const [residentName, setResidentName] = useState(session?.name || "Resident");
+  const [unitNumber, setUnitNumber] = useState("Estate Unit");
+
+  React.useEffect(() => {
+    const email = session?.email || "";
+    fetch("/api/v1/resident/profile", {
+      headers: email ? { "x-user-email": email } : {},
+      cache: "no-store",
+    })
+      .then((r) => r.json())
+      .then((j) => {
+        if (j?.data?.name) setResidentName(j.data.name);
+        if (j?.data?.unit_number) setUnitNumber(j.data.unit_number);
+      })
+      .catch(() => {});
+  }, [session?.email]);
 
   // Modals
   const [myGatePassOpen, setMyGatePassOpen] = useState(false);
@@ -25,10 +40,9 @@ export default function ResidentGatePassesPage() {
   // Visitor form
   const [visitorName, setVisitorName] = useState("");
   const [purpose, setPurpose] = useState("Social Visit");
-  const [passes, setPasses] = useState([
-    { id: "1", visitor: "Engr. Tunde Bakare", purpose: "Facility Maintenance", code: "LP-8841", pin: "491028", validTill: "Today, 6:00 PM" },
-    { id: "2", visitor: "Chiamaka Okafor", purpose: "Personal Guest", code: "LP-6290", pin: "739201", validTill: "Today, 10:00 PM" },
-  ]);
+  const [passes, setPasses] = useState<
+    Array<{ id: string; visitor: string; purpose: string; code: string; pin: string; validTill: string }>
+  >([]);
 
   // Household check-out form
   const [memberOutName, setMemberOutName] = useState("");
@@ -58,7 +72,7 @@ export default function ResidentGatePassesPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: newPass.visitor,
-          invited_by: `${residentName} (Villa A-402)`,
+          invited_by: `${residentName} (${unitNumber})`,
           code: newPass.code,
           expires_in_minutes: 1440,
         }),
