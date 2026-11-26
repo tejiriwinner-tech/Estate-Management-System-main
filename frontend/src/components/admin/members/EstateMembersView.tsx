@@ -77,20 +77,29 @@ export function EstateMembersView() {
     );
   }, [members, searchQuery]);
 
-  // Compute pending & total service charges per user
+  // Compute pending & total service charges per member (match by user_id, resident_name, or unit_number)
   const chargeStatsByMember = useMemo(() => {
     const map = new Map<number, { pending: number; total: number }>();
-    for (const c of allCharges) {
-      if (c.user_id) {
-        const uid = Number(c.user_id);
-        const cur = map.get(uid) || { pending: 0, total: 0 };
-        cur.total += 1;
-        if (c.status !== "Paid") cur.pending += Number(c.amount || 0);
-        map.set(uid, cur);
+    for (const m of members) {
+      const mName = m.name.trim().toLowerCase();
+      const mUnit = m.house_no.trim().toLowerCase();
+      let pending = 0;
+      let total = 0;
+      for (const c of allCharges) {
+        const byId = c.user_id && Number(c.user_id) === Number(m.id);
+        const byName = !c.user_id && c.resident_name && c.resident_name.trim().toLowerCase() === mName;
+        const byUnit = !c.user_id && mUnit && mUnit !== "assigned unit" && c.unit_number && c.unit_number.trim().toLowerCase() === mUnit;
+        if (byId || byName || byUnit) {
+          total += 1;
+          if ((c.status || "").toLowerCase() !== "paid") {
+            pending += Number(c.amount || 0);
+          }
+        }
       }
+      map.set(m.id, { pending, total });
     }
     return map;
-  }, [allCharges]);
+  }, [allCharges, members]);
 
   const handleAddMember = async (p: NewMemberInput) => {
     try {
@@ -327,9 +336,13 @@ export function EstateMembersView() {
                       <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
                         ₦{pendingDue.toLocaleString()} Due
                       </span>
-                    ) : (
+                    ) : st.total > 0 ? (
                       <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                         Cleared
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200">
+                        No Bills
                       </span>
                     )}
                   </div>
