@@ -32,11 +32,18 @@ export async function GET(req: NextRequest) {
       date: p.paid_at ? new Date(p.paid_at).toLocaleDateString("en-NG", { month: "short", day: "numeric", year: "numeric" }) : "Today",
     }));
 
+    const totalCollectedKobo = (payments || [])
+      .filter((p) => p.status === "success" || p.status === "paid")
+      .reduce((acc, p) => acc + (Number(p.amount_kobo) || 0), 0);
+    const pendingKobo = (payments || [])
+      .filter((p) => p.status === "pending")
+      .reduce((acc, p) => acc + (Number(p.amount_kobo) || 0), 0);
+
     return NextResponse.json({
       summary: {
-        totalCollected: "₦24,800,000",
+        totalCollected: `₦${Math.round(totalCollectedKobo / 100).toLocaleString()}`,
         totalTransactions: formatted.length,
-        pendingVerification: "₦350,000",
+        pendingVerification: `₦${Math.round(pendingKobo / 100).toLocaleString()}`,
       },
       data: formatted,
     });
