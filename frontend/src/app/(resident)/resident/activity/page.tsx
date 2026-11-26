@@ -98,12 +98,20 @@ export default function ResidentGatePassesPage() {
           expires_in_minutes: 1440,
         }),
       });
-      const json = await res.json();
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setPasses((prev) => prev.filter((p) => p.code !== code));
+        setSelectedPass(null);
+        setMsg(json?.message || "Could not save visitor pass to database. Please try again.");
+        return;
+      }
       if (json?.data?.id) {
         setPasses((prev) => prev.map((p) => (p.code === code ? { ...p, id: String(json.data.id) } : p)));
       }
     } catch {
-      // Non-blocking
+      setPasses((prev) => prev.filter((p) => p.code !== code));
+      setSelectedPass(null);
+      setMsg("Network error saving visitor pass. Please try again.");
     }
   };
 
