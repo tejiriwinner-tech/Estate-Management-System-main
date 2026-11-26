@@ -44,6 +44,8 @@ async function ensureTable() {
   await sql`ALTER TABLE service_charges ADD COLUMN IF NOT EXISTS paid_at TIMESTAMP`;
   await sql`ALTER TABLE service_charges ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW()`;
   await sql`ALTER TABLE service_charges ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT NOW()`;
+  await sql`ALTER TABLE service_charges ADD COLUMN IF NOT EXISTS name VARCHAR(255)`;
+  await sql`ALTER TABLE service_charges ALTER COLUMN name DROP NOT NULL`;
   const idCol = await sql`
     SELECT data_type FROM information_schema.columns
     WHERE table_name = 'service_charges' AND column_name = 'id'
@@ -54,7 +56,7 @@ async function ensureTable() {
   } else {
     await sql`CREATE SEQUENCE IF NOT EXISTS service_charges_id_seq`;
     await sql`ALTER TABLE service_charges ALTER COLUMN id SET DEFAULT nextval('service_charges_id_seq')`;
-    await sql`SELECT setval('service_charges_id_seq', COALESCE((SELECT MAX(id::bigint) FROM service_charges), 0) + 1, false)`;
+    await sql`SELECT setval('service_charges_id_seq', COALESCE((SELECT MAX(id::bigint) FROM service_charges), 0) + 1, false)`.catch(() => {});
   }
   tableEnsured = true;
 }
