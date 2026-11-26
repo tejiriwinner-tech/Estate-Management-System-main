@@ -19,6 +19,7 @@ import {
 import ResidentAccessTable, { type ResidentRow } from "@/components/security/hq/ResidentAccessTable";
 import { type IntelItem } from "@/components/security/hq/IntelFeedCard";
 import { SecurityError, useSecurityData } from "@/lib/security/useSecurity";
+import { SecurityDispatchMap } from "@/components/security/SecurityDispatchMap";
 import { parseCodedAlert } from "@/lib/emergencyCodes";
 
 interface LiveEmergency {
@@ -287,6 +288,8 @@ export default function SecurityHQPage() {
               </div>
             </div>
           </div>
+
+          <SecurityDispatchMap alerts={liveEmergencies} />
 
           <ResidentAccessTable rows={data.residents} />
         </div>

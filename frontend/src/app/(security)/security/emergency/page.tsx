@@ -6,6 +6,7 @@ import { Download, MapPin, Radio, CheckCircle2, ShieldAlert, Clock, ExternalLink
 import EmergencyHistoryTable, { type HistoryRow } from "@/components/security/emergency/EmergencyHistoryTable";
 import { CodedEmergencyTrigger } from "@/components/emergency/CodedEmergencyTrigger";
 import { DispatchContactsCard } from "@/components/security/DispatchContactsCard";
+import { SecurityDispatchMap } from "@/components/security/SecurityDispatchMap";
 import { EMERGENCY_CODE_LIST, parseCodedAlert, type EmergencyCodeKey } from "@/lib/emergencyCodes";
 
 interface LiveEmergency {
@@ -164,6 +165,9 @@ export default function EmergencyAlertsPage() {
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <div className="xl:col-span-2 flex flex-col gap-6">
+          {/* Always-visible Live GPS Dispatch & Pinpoint Map */}
+          <SecurityDispatchMap alerts={filteredAlerts} />
+
           {/* Active Emergencies */}
           <div className="rounded-2xl bg-white border border-slate-200 p-5 shadow-2xs">
             <div className="flex items-center justify-between mb-4">
