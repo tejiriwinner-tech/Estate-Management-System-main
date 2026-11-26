@@ -195,6 +195,13 @@ function StoreDashboardContent() {
               </button>
             )}
             <Link
+              href="/resident/store"
+              className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 hover:bg-white/15 px-3.5 py-2.5 text-xs font-bold text-white transition-colors"
+            >
+              <Store className="w-3.5 h-3.5 text-[#C9A227]" />
+              <span>Resident Storefront</span>
+            </Link>
+            <Link
               href="/store-app/orders"
               className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 hover:bg-white/15 px-4 py-2.5 text-xs font-bold text-white transition-colors"
             >
@@ -276,6 +283,13 @@ function StoreDashboardContent() {
               <h2 className="text-sm font-extrabold text-slate-900">Resident Customer Orders</h2>
               <p className="text-xs text-slate-400">Live orders with resident delivery instructions</p>
             </div>
+            <Link
+              href="/resident/store"
+              className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 hover:bg-white/15 px-3.5 py-2.5 text-xs font-bold text-white transition-colors"
+            >
+              <Store className="w-3.5 h-3.5 text-[#C9A227]" />
+              <span>Resident Storefront</span>
+            </Link>
             <Link
               href="/store-app/orders"
               className="inline-flex items-center gap-1 text-xs font-bold text-[#B22222] hover:underline"

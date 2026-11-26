@@ -99,3 +99,58 @@ export async function PATCH(req: NextRequest) {
     );
   }
 }
+
+export async function PUT(req: NextRequest) {
+  try {
+    const body = await req.json().catch(() => ({}));
+    const { id, name, category, shop_unit, owner_name } = body;
+
+    if (!name || !owner_name) {
+      return NextResponse.json(
+        { message: "Store name and Store Admin name are required." },
+        { status: 422 }
+      );
+    }
+
+    const rows = id
+      ? await sql`
+          UPDATE estate_stores
+          SET name = ${String(name).trim()},
+              category = ${String(category || "General & Groceries").trim()},
+              shop_unit = ${String(shop_unit || "Commercial Plaza").trim()},
+              owner_name = ${String(owner_name).trim()},
+              updated_at = NOW()
+          WHERE id = ${Number(id)}
+          RETURNING id, name, category, shop_unit, owner_name, owner_email, status
+        `
+      : await sql`
+          UPDATE estate_stores
+          SET name = ${String(name).trim()},
+              category = ${String(category || "General & Groceries").trim()},
+              shop_unit = ${String(shop_unit || "Commercial Plaza").trim()},
+              owner_name = ${String(owner_name).trim()},
+              updated_at = NOW()
+          WHERE id = (SELECT id FROM estate_stores ORDER BY id DESC LIMIT 1)
+          RETURNING id, name, category, shop_unit, owner_name, owner_email, status
+        `;
+
+    if (rows.length === 0) {
+      return NextResponse.json({ message: "Store not found." }, { status: 404 });
+    }
+
+    const s = rows[0];
+    return NextResponse.json({
+      data: {
+        ...s,
+        isOpen: (s.status || "active") === "active",
+        is_open: (s.status || "active") === "active",
+      },
+      message: "Store settings saved.",
+    });
+  } catch (err: any) {
+    return NextResponse.json(
+      { message: "Could not save store settings", error: err.message },
+      { status: 500 }
+    );
+  }
+}

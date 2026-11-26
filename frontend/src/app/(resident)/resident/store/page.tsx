@@ -6,6 +6,9 @@ import { readSession } from "@/components/auth/session";
 
 interface StoreProduct {
   id: number;
+  store_id?: number;
+  store_name?: string;
+  shop_unit?: string;
   sku: string;
   name: string;
   category: string;
@@ -36,7 +39,7 @@ export default function ResidentMarketplacePage() {
   // Order Modal
   const [selected, setSelected] = useState<StoreProduct | null>(null);
   const [qty, setQty] = useState(1);
-  const [unit, setUnit] = useState("Villa A-402");
+  const [unit, setUnit] = useState((session as any)?.unit_number || (session as any)?.unit || "");
   const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -44,7 +47,7 @@ export default function ResidentMarketplacePage() {
   const loadAll = useCallback(async () => {
     try {
       const [pRes, oRes] = await Promise.all([
-        fetch("/api/v1/store/products", { cache: "no-store" }).then((r) => r.json()),
+        fetch("/api/v1/store/products?activeOnly=true", { cache: "no-store" }).then((r) => r.json()),
         fetch(`/api/v1/store/orders${session?.email ? `?email=${encodeURIComponent(session.email)}` : ""}`, { cache: "no-store" }).then((r) => r.json()),
       ]);
       setProducts(pRes?.data || []);
@@ -152,6 +155,12 @@ export default function ResidentMarketplacePage() {
       {/* E-Commerce Product Grid */}
       {loading ? (
         <div className="py-12 text-center text-xs text-slate-400">Loading store products…</div>
+      ) : filtered.length === 0 ? (
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-12 text-center space-y-2">
+          <Store className="w-8 h-8 text-slate-300 mx-auto" />
+          <p className="text-sm font-bold text-slate-700">No store products available yet</p>
+          <p className="text-xs text-slate-400">Products uploaded by active estate stores will appear here.</p>
+        </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
           {filtered.map((p) => (
@@ -175,6 +184,11 @@ export default function ResidentMarketplacePage() {
 
               <div className="p-4 flex-1 flex flex-col justify-between gap-3">
                 <div>
+                  {p.store_name && (
+                    <p className="text-[10px] font-extrabold uppercase tracking-wider text-[#B22222] mb-0.5 truncate">
+                      {p.store_name}{p.shop_unit ? ` • ${p.shop_unit}` : ""}
+                    </p>
+                  )}
                   <h3 className="text-sm font-extrabold text-gray-900 leading-snug">{p.name}</h3>
                   {p.description && <p className="text-[11px] text-slate-500 mt-1 line-clamp-2">{p.description}</p>}
                 </div>
