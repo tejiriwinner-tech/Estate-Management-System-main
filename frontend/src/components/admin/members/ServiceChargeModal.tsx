@@ -48,7 +48,7 @@ export function ServiceChargeModal({
 
   const [form, setForm] = useState({
     service_type: SERVICE_PRESETS[0].label,
-    amount: String(SERVICE_PRESETS[0].amount),
+    amount: "",
     billing_cycle: "Monthly",
     due_date: new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0],
     notes: "",
@@ -84,7 +84,6 @@ export function ServiceChargeModal({
       setForm((prev) => ({
         ...prev,
         service_type: found.label,
-        amount: String(found.amount),
         billing_cycle: found.cycle,
       }));
     } else {
@@ -223,7 +222,7 @@ export function ServiceChargeModal({
               >
                 {SERVICE_PRESETS.map((p) => (
                   <option key={p.label} value={p.label}>
-                    {p.label} (₦{p.amount.toLocaleString()})
+                    {p.label}
                   </option>
                 ))}
               </select>
@@ -234,7 +233,8 @@ export function ServiceChargeModal({
               <input
                 type="number"
                 required
-                min={500}
+                min={1}
+                placeholder="Enter amount (e.g. 35000)"
                 value={form.amount}
                 onChange={(e) => setForm({ ...form, amount: e.target.value })}
                 className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#B22222]"
