@@ -9,10 +9,16 @@ import { cn } from "@/lib/admin/utils";
 
 export function AdminReportTableView() {
   const { data: rd } = useAdminReports();
-  const alerts: LifeThreatAlertItem[] = rd.lifeThreatAlerts;
+  const alerts: (LifeThreatAlertItem & { status?: string; details?: string })[] = rd.lifeThreatAlerts;
   const TOTAL_LIFE_THREAT_ALERTS = rd.lifeThreatTotal;
 
   const [showAlertToast, setShowAlertToast] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<"ALL" | "Ongoing" | "Resolved">("ALL");
+
+  const filtered = alerts.filter((a) => {
+    if (statusFilter === "ALL") return true;
+    return (a.status || "Ongoing") === statusFilter;
+  });
 
   return (
     <div className="space-y-4 animate-in fade-in duration-300 pb-8">
@@ -65,21 +71,41 @@ export function AdminReportTableView() {
       )}
 
       {/* ================= MAIN ZEBRA-STRIPED TABLE CARD ================= */}
+      <div className="flex flex-wrap items-center gap-2">
+        {(["ALL", "Ongoing", "Resolved"] as const).map((tab) => (
+          <button
+            key={tab}
+            type="button"
+            onClick={() => setStatusFilter(tab)}
+            className={cn(
+              "px-3.5 py-1.5 rounded-xl text-xs font-bold border transition-colors",
+              statusFilter === tab
+                ? "bg-[#B22222] text-white border-[#B22222]"
+                : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+            )}
+          >
+            {tab === "ALL" ? `All Alerts (${alerts.length})` : tab}
+          </button>
+        ))}
+      </div>
+
       <div className="bg-surface-card rounded-2xl border border-border/80 shadow-xs overflow-hidden">
         {/* Desktop & Tablet Zebra Table (sm and up) */}
         <div className="hidden sm:block overflow-x-auto">
           <table className="w-full border-collapse text-left">
             <thead>
               <tr className="bg-surface-card border-b border-border/50 text-xs sm:text-sm font-bold text-dark">
-                <th className="py-4 pl-6 pr-4 w-[42%]">Name</th>
-                <th className="py-4 px-4 w-[32%]">House Number</th>
-                <th className="py-4 pl-4 pr-6 w-[26%]">Date</th>
+                <th className="py-4 pl-6 pr-4 w-[40%]">Alert / Sender</th>
+                <th className="py-4 px-4 w-[25%]">Location</th>
+                <th className="py-4 px-4 w-[15%]">Status</th>
+                <th className="py-4 pl-4 pr-6 w-[20%]">Date</th>
               </tr>
             </thead>
 
             <tbody>
-              {alerts.map((item, idx) => {
+              {filtered.map((item, idx) => {
                 const isStriped = idx % 2 === 1;
+                const isResolved = item.status === "Resolved";
                 return (
                   <tr
                     key={item.id}
@@ -88,11 +114,23 @@ export function AdminReportTableView() {
                       isStriped ? "bg-[#EFEFEF]" : "bg-surface-card"
                     )}
                   >
-                    <td className="py-4 pl-6 pr-4 font-normal text-dark">
+                    <td className="py-4 pl-6 pr-4 font-semibold text-dark">
                       {item.name}
                     </td>
                     <td className="py-4 px-4 font-normal text-dark">
                       {item.house_number}
+                    </td>
+                    <td className="py-4 px-4">
+                      <span
+                        className={cn(
+                          "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border",
+                          isResolved
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                            : "bg-red-50 text-red-700 border-red-200"
+                        )}
+                      >
+                        {item.status || "Ongoing"}
+                      </span>
                     </td>
                     <td className="py-4 pl-4 pr-6 font-normal text-dark">
                       {item.date}
@@ -100,14 +138,22 @@ export function AdminReportTableView() {
                   </tr>
                 );
               })}
+              {filtered.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="py-8 text-center text-xs text-slate-500">
+                    No emergency or incident alerts match this filter.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
 
         {/* Mobile Responsive Zebra Card Stack (< 640px) */}
         <div className="sm:hidden divide-y divide-border/60">
-          {alerts.map((item, idx) => {
+          {filtered.map((item, idx) => {
             const isStriped = idx % 2 === 1;
+            const isResolved = item.status === "Resolved";
             return (
               <div
                 key={item.id}
@@ -121,21 +167,28 @@ export function AdminReportTableView() {
                     {item.name}
                   </div>
                   <div className="text-xs font-semibold text-muted mt-0.5">
-                    Date: {item.date}
+                    {item.house_number} • {item.date}
                   </div>
                 </div>
 
-                <span className="px-2.5 py-1 rounded-lg bg-accent-light/75 text-dark text-xs font-extrabold shrink-0">
-                  {item.house_number}
+                <span
+                  className={cn(
+                    "px-2.5 py-1 rounded-full text-xs font-extrabold shrink-0 border",
+                    isResolved
+                      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                      : "bg-red-50 text-red-700 border-red-200"
+                  )}
+                >
+                  {item.status || "Ongoing"}
                 </span>
               </div>
             );
           })}
         </div>
 
-        {/* Card Footer Row: "11 of 120" */}
+        {/* Card Footer Row */}
         <div className="px-6 py-4 bg-surface-card border-t border-border/50 text-xs sm:text-sm font-extrabold text-dark">
-          {alerts.length} of {TOTAL_LIFE_THREAT_ALERTS}
+          {filtered.length} of {TOTAL_LIFE_THREAT_ALERTS}
         </div>
       </div>
     </div>
