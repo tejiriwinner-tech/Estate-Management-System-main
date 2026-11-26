@@ -272,7 +272,9 @@ export function ServiceDirectoryCard({
       {/* 4. Pagination Footer */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-6 py-4 border-t border-slate-100 text-xs">
         <p className="font-medium text-slate-400">
-          Showing 1-{services.length} of 12 entries
+          {services.length === 0
+            ? "Showing 0 of 0 entries"
+            : `Showing 1-${services.length} of ${services.length} entries`}
         </p>
 
         <div className="flex items-center gap-1.5">
