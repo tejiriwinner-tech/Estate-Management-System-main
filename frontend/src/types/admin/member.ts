@@ -11,4 +11,9 @@ export interface NewMemberInput {
   email: string;
   house_no: string;
   date_moved_in: string; // yyyy-mm-dd or empty
+  phone?: string;
+  zone?: string;
+  residency_type?: string;
+  password?: string;
+  avatar_url?: string;
 }

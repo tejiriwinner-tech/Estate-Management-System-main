@@ -94,8 +94,12 @@ export function EstateMembersView() {
         name: p.name,
         email: p.email,
         role: "resident",
-        unit_number: p.house_no || undefined,
+        phone: p.phone,
+        unit_number: p.zone ? `${p.house_no} (${p.zone})` : p.house_no || undefined,
+        job_title: p.residency_type || "Homeowner",
         moved_in_at: p.date_moved_in || undefined,
+        avatar_url: p.avatar_url,
+        password: p.password,
       });
       await load();
       setError(null);

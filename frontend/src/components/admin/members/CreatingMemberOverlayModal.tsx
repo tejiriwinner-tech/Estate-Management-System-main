@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import Image from "next/image";
-import { ImageIcon } from "lucide-react";
+import { Camera, UserPlus, X, ShieldCheck, Building2, Phone, Mail, KeyRound } from "lucide-react";
 import { NewMemberInput } from "@/types/admin/member";
+import { AGENT_ZONES } from "@/types/agent";
 
 interface CreatingMemberOverlayModalProps {
   isOpen: boolean;
@@ -20,21 +20,27 @@ export function CreatingMemberOverlayModal({
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
-  const [saving, setSaving] = useState(false);
+  const [phone, setPhone] = useState("");
+  const [zone, setZone] = useState<string>(AGENT_ZONES[0]);
   const [houseNo, setHouseNo] = useState("");
+  const [residencyType, setResidencyType] = useState("Homeowner");
   const [dateMovedIn, setDateMovedIn] = useState("");
+  const [password, setPassword] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string>("");
-  const [imageFileName, setImageFileName] = useState<string>("");
+  const [saving, setSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       setFullName("");
       setEmail("");
+      setPhone("");
+      setZone(AGENT_ZONES[0]);
       setHouseNo("");
-      setDateMovedIn("");
+      setResidencyType("Homeowner");
+      setDateMovedIn(new Date().toISOString().split("T")[0]);
+      setPassword("");
       setAvatarUrl("");
-      setImageFileName("");
       setErrorMsg(null);
     }
   }, [isOpen]);
@@ -44,7 +50,10 @@ export function CreatingMemberOverlayModal({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setImageFileName(file.name);
+    if (file.size > 2 * 1024 * 1024) {
+      setErrorMsg("Profile photo must be 2MB or smaller.");
+      return;
+    }
     const reader = new FileReader();
     reader.onloadend = () => {
       if (typeof reader.result === "string") {
@@ -57,112 +66,103 @@ export function CreatingMemberOverlayModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName.trim()) {
-      setErrorMsg("Please enter the member's Full Name.");
+      setErrorMsg("Please enter the resident's Full Name.");
       return;
     }
     if (!/^\S+@\S+\.\S+$/.test(email.trim())) {
       setErrorMsg("Please enter a valid email address.");
       return;
     }
+    if (!houseNo.trim()) {
+      setErrorMsg("Please enter the House / Villa number.");
+      return;
+    }
+
     setSaving(true);
+    setErrorMsg(null);
     try {
       await onAddMember({
         name: fullName.trim(),
-        email: email.trim(),
+        email: email.trim().toLowerCase(),
+        phone: phone.trim() || undefined,
+        zone,
         house_no: houseNo.trim(),
+        residency_type: residencyType,
         date_moved_in: dateMovedIn.trim(),
+        password: password.trim() || undefined,
+        avatar_url: avatarUrl || undefined,
       });
       onClose();
     } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : "Could not add the member.");
+      setErrorMsg(err instanceof Error ? err.message : "Could not add the resident.");
     } finally {
       setSaving(false);
     }
   };
 
-  const inputBaseClass =
-    "w-full rounded-2xl border-[1.5px] border-primary/75 bg-primary-light/20 px-4 sm:px-6 py-3.5 sm:py-4 text-base sm:text-2xl font-normal text-dark placeholder:text-primary/85 focus:outline-none focus:ring-2 focus:ring-accent focus:border-primary transition-all";
+  const inputClass =
+    "w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#B22222]/20 focus:border-[#B22222] transition-all";
+  const labelClass = "block text-[11px] font-bold text-slate-700 mb-1";
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-dark/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-150"
       onClick={onClose}
     >
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="create-new-user-title"
-        className="bg-surface-card w-full max-w-2xl rounded-2xl shadow-2xl px-5 sm:px-12 py-7 sm:py-10 my-auto animate-in zoom-in-95 duration-200"
+        className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-auto animate-in zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Centered Title */}
-        <h2
-          id="create-new-user-title"
-          className="text-lg sm:text-2xl md:text-[28px] font-bold uppercase tracking-wide text-primary text-center mb-6 sm:mb-9"
-        >
-          CREATE NEW USER
-        </h2>
+        {/* Header */}
+        <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/60 flex items-start justify-between">
+          <div>
+            <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[#B22222]">
+              <UserPlus className="w-3.5 h-3.5" />
+              <span>Post Army House Estate Registry</span>
+            </div>
+            <h2 id="create-new-user-title" className="text-lg font-extrabold text-slate-900 mt-0.5">
+              Register New Resident
+            </h2>
+            <p className="text-xs text-slate-500">
+              Creates a verified resident profile and portal login credentials.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-200/60 transition-colors"
+            aria-label="Close modal"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
           {errorMsg && (
-            <div className="px-4 py-2.5 rounded-xl bg-primary-light text-primary text-xs sm:text-sm font-bold text-center">
+            <div role="alert" className="px-4 py-2.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-bold">
               {errorMsg}
             </div>
           )}
 
-          {/* 1. Full Name */}
-          <div>
-            <input
-              type="text"
-              value={fullName}
-              onChange={(e) => {
-                setFullName(e.target.value);
-                if (errorMsg) setErrorMsg(null);
-              }}
-              placeholder="Full Name"
-              aria-label="Full Name"
-              className={inputBaseClass}
-            />
-          </div>
-
-          {/* 1b. Email (needed to create the login) */}
-          <div>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email"
-              aria-label="Email"
-              className={inputBaseClass}
-            />
-          </div>
-
-          {/* 2. House No */}
-          <div>
-            <input
-              type="text"
-              value={houseNo}
-              onChange={(e) => setHouseNo(e.target.value)}
-              placeholder="House No"
-              aria-label="House No"
-              className={inputBaseClass}
-            />
-          </div>
-
-          {/* 3. Date Moved In */}
-          <div>
-            <input
-              value={dateMovedIn}
-              onChange={(e) => setDateMovedIn(e.target.value)}
-              type="date"
-              placeholder="Date Moved In"
-              aria-label="Date Moved In"
-              className={inputBaseClass}
-            />
-          </div>
-
-          {/* 4. Upload Image */}
-          <div>
+          {/* Avatar Upload Strip */}
+          <div className="flex items-center gap-4 p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
+            <div className="relative w-16 h-16 rounded-full bg-white border-2 border-[#B22222]/25 overflow-hidden flex items-center justify-center shrink-0">
+              {avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={avatarUrl} alt="Resident preview" className="w-full h-full object-cover" />
+              ) : (
+                <UserPlus className="w-6 h-6 text-slate-400" />
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold text-slate-900">Resident Identification Photo</p>
+              <p className="text-[11px] text-slate-500">
+                Used by Security Command &amp; Admin for gate verification (optional, PNG/JPG up to 2MB).
+              </p>
+            </div>
             <input
               ref={fileInputRef}
               type="file"
@@ -173,45 +173,149 @@ export function CreatingMemberOverlayModal({
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className={`${inputBaseClass} flex items-center justify-between text-left cursor-pointer hover:bg-primary-light/30`}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-xs font-bold text-slate-800 shrink-0 shadow-2xs"
             >
-              <div className="flex items-center gap-3 min-w-0">
-                <span className="text-primary/90 truncate">
-                  {imageFileName ? imageFileName : "Upload Image"}
-                </span>
-                <ImageIcon className="w-6 h-6 sm:w-8 sm:h-8 text-accent shrink-0 stroke-[2.2]" />
-              </div>
-
-              {avatarUrl && (
-                <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden border border-primary shrink-0">
-                  <Image
-                    src={avatarUrl}
-                    alt="Uploaded member preview"
-                    fill
-                    className="object-cover"
-                    sizes="40px"
-                  />
-                </div>
-              )}
+              <Camera className="w-3.5 h-3.5 text-[#B22222]" />
+              <span>{avatarUrl ? "Change Photo" : "Upload Photo"}</span>
             </button>
           </div>
 
-          {/* Bottom Action Row: Cancel (Left) & Add Member (Right) */}
-          <div className="pt-4 sm:pt-6 flex flex-col-reverse xs:flex-row items-stretch xs:items-center justify-between gap-3.5 sm:gap-6">
+          {/* Detailed 2-Column Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className={labelClass}>Full Name *</label>
+              <input
+                type="text"
+                required
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="e.g. Col. Chinedu Okafor"
+                className={inputClass}
+              />
+            </div>
+
+            <div>
+              <label className={labelClass}>
+                <span className="inline-flex items-center gap-1">
+                  <Mail className="w-3 h-3 text-[#B22222]" /> Email Address *
+                </span>
+              </label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="resident@postarmyhouse.ng"
+                className={inputClass}
+              />
+            </div>
+
+            <div>
+              <label className={labelClass}>
+                <span className="inline-flex items-center gap-1">
+                  <Phone className="w-3 h-3 text-[#C9A227]" /> Phone Number
+                </span>
+              </label>
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="+234 803 000 0000"
+                className={inputClass}
+              />
+            </div>
+
+            <div>
+              <label className={labelClass}>
+                <span className="inline-flex items-center gap-1">
+                  <ShieldCheck className="w-3 h-3 text-emerald-600" /> Residency Type
+                </span>
+              </label>
+              <select
+                value={residencyType}
+                onChange={(e) => setResidencyType(e.target.value)}
+                className={inputClass}
+              >
+                <option value="Homeowner">Homeowner / Landlord</option>
+                <option value="Tenant">Verified Tenant</option>
+                <option value="Household Member">Household Member</option>
+              </select>
+            </div>
+
+            <div>
+              <label className={labelClass}>Estate Sector / Phase</label>
+              <select
+                value={zone}
+                onChange={(e) => setZone(e.target.value)}
+                className={inputClass}
+              >
+                {AGENT_ZONES.map((z) => (
+                  <option key={z} value={z}>
+                    {z}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className={labelClass}>
+                <span className="inline-flex items-center gap-1">
+                  <Building2 className="w-3 h-3 text-[#B22222]" /> House / Villa No. *
+                </span>
+              </label>
+              <input
+                type="text"
+                required
+                value={houseNo}
+                onChange={(e) => setHouseNo(e.target.value)}
+                placeholder="e.g. Villa A-402 or Plot 12"
+                className={inputClass}
+              />
+            </div>
+
+            <div>
+              <label className={labelClass}>Date Moved In</label>
+              <input
+                type="date"
+                value={dateMovedIn}
+                onChange={(e) => setDateMovedIn(e.target.value)}
+                className={inputClass}
+              />
+            </div>
+
+            <div>
+              <label className={labelClass}>
+                <span className="inline-flex items-center gap-1">
+                  <KeyRound className="w-3 h-3 text-[#B22222]" /> Initial Login Password
+                </span>
+              </label>
+              <input
+                type="password"
+                minLength={6}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Leave blank for default password"
+                className={inputClass}
+              />
+            </div>
+          </div>
+
+          {/* Footer Actions */}
+          <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="min-w-[150px] sm:min-w-[200px] px-8 py-3.5 rounded-2xl bg-dark hover:bg-dark/90 text-white text-base sm:text-2xl font-medium shadow-sm transition-all active:scale-98 text-center"
+              className="px-5 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-bold text-slate-700 transition-colors"
             >
               Cancel
             </button>
-
             <button
               type="submit"
               disabled={saving}
-              className="min-w-[150px] sm:min-w-[200px] px-8 py-3.5 rounded-2xl bg-primary hover:bg-primary-hover text-white text-base sm:text-2xl font-medium shadow-sm transition-all active:scale-98 text-center"
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#B22222] hover:bg-[#8F1A1A] text-white text-xs font-bold shadow-sm transition-all disabled:opacity-50"
             >
-              Add Member
+              <UserPlus className="w-4 h-4" />
+              <span>{saving ? "Registering…" : "Register Resident"}</span>
             </button>
           </div>
         </form>

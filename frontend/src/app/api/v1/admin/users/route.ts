@@ -39,15 +39,9 @@ export async function GET(req: Request) {
       `;
       total = countResult[0]?.count || users.length;
     } catch (e) {
-      console.warn("Falling back to seeded users", e);
-      users = [
-        { id: 1, name: "Estate Administrator", email: "admin@lincolnestate.ng", phone: "+234 802 555 0148", role: "admin", status: "active", unit_number: "HQ", moved_in_at: "2024-01-01", created_at: "2024-01-01" },
-        { id: 2, name: "Chinedu Resident", email: "resident@lincolnestate.ng", phone: "+234 801 234 5678", role: "resident", status: "active", unit_number: "Villa A-402", moved_in_at: "2024-03-15", created_at: "2024-03-15" },
-        { id: 3, name: "Mike Security Warden", email: "security@lincolnestate.ng", phone: "+234 803 456 7890", role: "security", status: "active", unit_number: "Gate 1", moved_in_at: "2024-02-01", created_at: "2024-02-01" },
-        { id: 4, name: "Marcus Real Estate Agent", email: "agent@lincolnestate.ng", phone: "+234 804 567 8901", role: "agent", status: "active", unit_number: "Commercial Hub", moved_in_at: "2024-04-10", created_at: "2024-04-10" },
-        { id: 5, name: "Post Army House Mart Store Manager", email: "store@lincolnestate.ng", phone: "+234 805 678 9012", role: "store_owner", status: "active", unit_number: "Store A", moved_in_at: "2024-05-01", created_at: "2024-05-01" },
-      ];
-      total = users.length;
+      console.warn("Admin users GET fallback:", e);
+      users = [];
+      total = 0;
     }
 
     return NextResponse.json({
@@ -67,22 +61,23 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { name, email, role, unit_number, phone, job_title, moved_in_at } = body;
+    const { name, email, role, unit_number, phone, job_title, moved_in_at, avatar_url, password } = body;
 
     if (!name || !email) {
       return NextResponse.json({ message: "Name and email are required." }, { status: 422 });
     }
 
-    const defaultPassHash = await bcrypt.hash("Post Army House Estate2024!", 10);
+    const defaultPassHash = await bcrypt.hash(password || "PostArmy2024!", 10);
 
     try {
       const inserted = await sql`
         INSERT INTO users (
-          name, email, password, role, unit_number, phone, job_title, moved_in_at, status, created_at, updated_at
+          name, email, password, role, unit_number, phone, job_title, moved_in_at, avatar_url, status, created_at, updated_at
         ) VALUES (
           ${name}, ${email.toLowerCase().trim()}, ${defaultPassHash}, ${role || "resident"},
           ${unit_number || null}, ${phone || null}, ${job_title || null},
           ${moved_in_at || new Date().toISOString().split("T")[0]},
+          ${avatar_url || null},
           'active', NOW(), NOW()
         )
         RETURNING id, name, email, phone, role, status, unit_number, moved_in_at, created_at, avatar_url, job_title

@@ -45,7 +45,7 @@ export const adminUsers = {
         active_staff: number;
       };
     }>("/users/stats"),
-  create: (b: { name: string; email: string; role: string; unit_number?: string; moved_in_at?: string; phone?: string; job_title?: string; staff_id?: string }) =>
+  create: (b: { name: string; email: string; role: string; unit_number?: string; moved_in_at?: string; phone?: string; job_title?: string; staff_id?: string; avatar_url?: string; password?: string }) =>
     adminFetch<{ data: AdminUser }>("/users", { method: "POST", body: JSON.stringify(b) }),
   update: (id: number, b: Partial<AdminUser>) =>
     adminFetch<{ data: AdminUser }>(`/users/${id}`, { method: "PUT", body: JSON.stringify(b) }),
