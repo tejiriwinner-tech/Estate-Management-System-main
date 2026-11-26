@@ -41,6 +41,9 @@ async function ensureTable() {
   await sql`ALTER TABLE service_charges ADD COLUMN IF NOT EXISTS paid_at TIMESTAMP`;
   await sql`ALTER TABLE service_charges ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW()`;
   await sql`ALTER TABLE service_charges ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT NOW()`;
+  await sql`CREATE SEQUENCE IF NOT EXISTS service_charges_id_seq`;
+  await sql`ALTER TABLE service_charges ALTER COLUMN id SET DEFAULT nextval('service_charges_id_seq')`;
+  await sql`SELECT setval('service_charges_id_seq', COALESCE((SELECT MAX(id) FROM service_charges), 0) + 1, false)`;
 }
 
 export async function GET(req: NextRequest) {
