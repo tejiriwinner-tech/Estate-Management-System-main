@@ -72,6 +72,9 @@ export function parseCodedAlert(message: string): {
   sender: string;
   role: string;
   details: string;
+  gpsLat: number | null;
+  gpsLng: number | null;
+  gpsAccuracy: number | null;
 } {
   const raw = message || "";
   let codeKey: EmergencyCodeKey = "CODE_AMBER";
@@ -81,7 +84,8 @@ export function parseCodedAlert(message: string): {
   else if (/CODE[_\s]?AMBER/i.test(raw)) codeKey = "CODE_AMBER";
 
   const senderMatch = raw.match(/Sender:\s*([^|()]+?)(?:\s*\(([^)]+)\))?(?:\s*\||$)/i);
-  const detailsMatch = raw.match(/Details:\s*(.+)$/i);
+  const gpsMatch = raw.match(/GPS:\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)(?:\s*\(±(\d+)m\))?/i);
+  const detailsMatch = raw.match(/Details:\s*(.+?)(?:\s*\|\s*GPS:|$)/i);
 
   return {
     codeKey,
@@ -89,5 +93,8 @@ export function parseCodedAlert(message: string): {
     sender: senderMatch?.[1]?.trim() || "Estate Member",
     role: senderMatch?.[2]?.trim() || "Resident",
     details: detailsMatch?.[1]?.trim() || raw.replace(/^\[CODE[^\]]+\]\s*/i, "").trim(),
+    gpsLat: gpsMatch ? Number(gpsMatch[1]) : null,
+    gpsLng: gpsMatch ? Number(gpsMatch[2]) : null,
+    gpsAccuracy: gpsMatch?.[3] ? Number(gpsMatch[3]) : null,
   };
 }

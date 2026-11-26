@@ -15,6 +15,9 @@ export async function POST(req: Request) {
     const senderEmail = String(body.sender_email || "").trim();
     const location = String(body.location || "Post Army Housing Estate").trim();
     const note = String(body.note || "").trim();
+    const lat = typeof body.latitude === "number" && Number.isFinite(body.latitude) ? body.latitude : null;
+    const lng = typeof body.longitude === "number" && Number.isFinite(body.longitude) ? body.longitude : null;
+    const acc = typeof body.accuracy === "number" && Number.isFinite(body.accuracy) ? Math.round(body.accuracy) : null;
 
     let userId: number | null = null;
     if (senderEmail) {
@@ -26,9 +29,14 @@ export async function POST(req: Request) {
       }
     }
 
+    const gpsSegment =
+      lat !== null && lng !== null
+        ? ` | GPS: ${lat.toFixed(6)},${lng.toFixed(6)}${acc !== null ? ` (±${acc}m)` : ""}`
+        : "";
+
     const formattedMessage = `[${spec.label}] ${spec.title} | Sender: ${senderName} (${senderRole}) | Details: ${
       note || spec.protocol
-    }`;
+    }${gpsSegment}`;
 
     let panicRecord: any = null;
     try {

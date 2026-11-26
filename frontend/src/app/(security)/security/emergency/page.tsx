@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { securityFetch } from "@/lib/security/api";
-import { Download, MapPin, Radio, CheckCircle2, ShieldAlert, Clock } from "lucide-react";
+import { Download, MapPin, Radio, CheckCircle2, ShieldAlert, Clock, ExternalLink, Crosshair } from "lucide-react";
 import EmergencyHistoryTable, { type HistoryRow } from "@/components/security/emergency/EmergencyHistoryTable";
 import { CodedEmergencyTrigger } from "@/components/emergency/CodedEmergencyTrigger";
 import { DispatchContactsCard } from "@/components/security/DispatchContactsCard";
@@ -217,6 +217,32 @@ export default function EmergencyAlertsPage() {
                         <p className="text-[11px] text-slate-600 bg-white/70 rounded-lg p-2 border border-slate-200/70">
                           {parsed.details}
                         </p>
+                        {parsed.gpsLat !== null && parsed.gpsLng !== null && (
+                          <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
+                            <div className="flex items-center justify-between px-2.5 py-1.5 bg-slate-50 border-b border-slate-200 text-[10px]">
+                              <span className="inline-flex items-center gap-1 font-bold text-emerald-700">
+                                <Crosshair className="w-3 h-3" />
+                                GPS: {parsed.gpsLat.toFixed(5)}, {parsed.gpsLng.toFixed(5)}
+                                {parsed.gpsAccuracy ? ` (±${parsed.gpsAccuracy}m)` : ""}
+                              </span>
+                              <a
+                                href={`https://www.google.com/maps?q=${parsed.gpsLat},${parsed.gpsLng}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 font-extrabold text-[#B22222] hover:underline"
+                              >
+                                <span>Google Maps</span>
+                                <ExternalLink className="w-3 h-3" />
+                              </a>
+                            </div>
+                            <iframe
+                              title={`GPS Pin for ${em.location}`}
+                              src={`https://www.openstreetmap.org/export/embed.html?bbox=${parsed.gpsLng - 0.004}%2C${parsed.gpsLat - 0.004}%2C${parsed.gpsLng + 0.004}%2C${parsed.gpsLat + 0.004}&layer=mapnik&marker=${parsed.gpsLat}%2C${parsed.gpsLng}`}
+                              className="w-full h-36 border-0"
+                              loading="lazy"
+                            />
+                          </div>
+                        )}
                       </div>
                       <button
                         onClick={() => void handleResolve(em)}

@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { AlertTriangle, MapPin, Radio, ShieldAlert, ShieldCheck, X } from "lucide-react";
+import { AlertTriangle, Crosshair, MapPin, Radio, ShieldAlert, ShieldCheck, X } from "lucide-react";
 import { EMERGENCY_CODE_LIST, type EmergencyCodeKey } from "@/lib/emergencyCodes";
 
 interface CodedEmergencyTriggerProps {
@@ -28,10 +28,40 @@ export function CodedEmergencyTrigger({
   const [note, setNote] = useState("");
   const [phase, setPhase] = useState<"form" | "sending" | "sent" | "error">("form");
   const [errorMsg, setErrorMsg] = useState("");
+  const [gpsStatus, setGpsStatus] = useState<"idle" | "locating" | "locked" | "denied">("idle");
+  const [gpsCoords, setGpsCoords] = useState<{ lat: number; lng: number; accuracy: number } | null>(null);
 
   useEffect(() => {
     setLocation(defaultLocation);
   }, [defaultLocation]);
+
+  const requestGps = useCallback(() => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      setGpsStatus("denied");
+      return;
+    }
+    setGpsStatus("locating");
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setGpsCoords({
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+          accuracy: Math.round(pos.coords.accuracy || 0),
+        });
+        setGpsStatus("locked");
+      },
+      () => {
+        setGpsStatus("denied");
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 15000 }
+    );
+  }, []);
+
+  useEffect(() => {
+    if (open) {
+      requestGps();
+    }
+  }, [open, requestGps]);
 
   const handleDispatch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,6 +79,9 @@ export function CodedEmergencyTrigger({
           sender_email: senderEmail,
           location: location.trim(),
           note: note.trim(),
+          latitude: gpsCoords?.lat ?? null,
+          longitude: gpsCoords?.lng ?? null,
+          accuracy: gpsCoords?.accuracy ?? null,
         }),
       });
       const json = await res.json().catch(() => ({}));
@@ -93,7 +126,7 @@ export function CodedEmergencyTrigger({
         typeof document !== "undefined" &&
         createPortal(
           <div
-            className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4"
+            className="fixed inset-0 z-[99999] flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4"
             onClick={resetAndClose}
           >
             <div
@@ -180,9 +213,23 @@ export function CodedEmergencyTrigger({
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
-                      Exact Location / Unit / Shop / Gate
-                    </label>
+                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                      <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                        Exact Location / Unit / Shop / Gate
+                      </label>
+                      <button
+                        type="button"
+                        onClick={requestGps}
+                        className="inline-flex items-center gap-1 text-[11px] font-bold text-[#B22222] hover:underline"
+                      >
+                        <Crosshair className="w-3.5 h-3.5" />
+                        {gpsStatus === "locating"
+                          ? "Locking GPS..."
+                          : gpsStatus === "locked"
+                          ? "Refresh GPS"
+                          : "Enable Live GPS"}
+                      </button>
+                    </div>
                     <div className="relative">
                       <MapPin className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                       <input
@@ -193,6 +240,24 @@ export function CodedEmergencyTrigger({
                         placeholder="e.g. Villa A-402, Commercial Plaza Shop A-02, Gate 1..."
                         className="w-full rounded-xl border border-slate-200 pl-9 pr-3 py-2.5 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#B22222]"
                       />
+                    </div>
+                    <div className="mt-1.5 flex items-center gap-1.5 text-[11px]">
+                      {gpsStatus === "locked" && gpsCoords && (
+                        <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 border border-emerald-200 px-2.5 py-1 font-semibold text-emerald-700">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                          Live GPS Pin Locked: {gpsCoords.lat.toFixed(5)}, {gpsCoords.lng.toFixed(5)} (±{gpsCoords.accuracy}m)
+                        </span>
+                      )}
+                      {gpsStatus === "locating" && (
+                        <span className="text-amber-700 font-semibold">
+                          Acquiring device GPS coordinates for Security map pinpoint...
+                        </span>
+                      )}
+                      {gpsStatus === "denied" && (
+                        <span className="text-slate-500">
+                          Turn on device location / browser GPS permission to auto-pinpoint on Security map, or type your exact location above.
+                        </span>
+                      )}
                     </div>
                   </div>
 

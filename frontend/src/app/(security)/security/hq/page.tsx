@@ -13,6 +13,8 @@ import {
   Users,
   ArrowRight,
   RefreshCw,
+  Crosshair,
+  ExternalLink,
 } from "lucide-react";
 import ResidentAccessTable, { type ResidentRow } from "@/components/security/hq/ResidentAccessTable";
 import { type IntelItem } from "@/components/security/hq/IntelFeedCard";
@@ -218,6 +220,23 @@ export default function SecurityHQPage() {
                           <span>Sender: {parsed.sender} ({parsed.role})</span>
                         </p>
                         <p className="text-[11px] text-slate-600">{parsed.details}</p>
+                        {parsed.gpsLat !== null && parsed.gpsLng !== null && (
+                          <div className="mt-2 flex flex-wrap items-center gap-2">
+                            <span className="inline-flex items-center gap-1 rounded-lg bg-white px-2.5 py-1 text-[10px] font-bold text-emerald-700 border border-emerald-200">
+                              <Crosshair className="w-3 h-3" />
+                              GPS: {parsed.gpsLat.toFixed(5)}, {parsed.gpsLng.toFixed(5)}
+                            </span>
+                            <a
+                              href={`https://www.google.com/maps?q=${parsed.gpsLat},${parsed.gpsLng}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 rounded-lg bg-[#B22222] px-2.5 py-1 text-[10px] font-extrabold text-white hover:bg-[#991B1B]"
+                            >
+                              <span>Pinpoint on Map</span>
+                              <ExternalLink className="w-3 h-3" />
+                            </a>
+                          </div>
+                        )}
                       </div>
                       <button
                         onClick={() => void handleResolve(em)}
