@@ -45,7 +45,24 @@ export function ResidentShell({ children }: { children: React.ReactNode }) {
   const [panic, setPanic] = useState<"idle" | "confirm" | "sent" | "error">("idle");
   const session = readSession();
   const email = session?.email ?? "";
-  const name = session?.name ?? (email ? email.split("@")[0] : "Resident");
+  const [profileName, setProfileName] = useState<string>("");
+  const [unitNumber, setUnitNumber] = useState<string>("");
+  const name = profileName || session?.name || (email ? email.split("@")[0] : "Resident");
+  const displayUnit = unitNumber || "Estate Resident";
+
+  React.useEffect(() => {
+    if (!allowed) return;
+    fetch("/api/v1/resident/profile", {
+      headers: email ? { "x-user-email": email } : {},
+      cache: "no-store",
+    })
+      .then((r) => r.json())
+      .then((j) => {
+        if (j?.data?.name) setProfileName(j.data.name);
+        if (j?.data?.unit_number) setUnitNumber(j.data.unit_number);
+      })
+      .catch(() => {});
+  }, [allowed, email]);
 
   if (!allowed) return null;
 
@@ -56,7 +73,7 @@ export function ResidentShell({ children }: { children: React.ReactNode }) {
 
   const sendPanic = async () => {
     try {
-      await send("/panic", "POST", {});
+      await send("/panic", "POST", { location: displayUnit });
       setPanic("sent");
     } catch {
       setPanic("error");
@@ -121,7 +138,7 @@ export function ResidentShell({ children }: { children: React.ReactNode }) {
             </div>
             <div className="hidden text-left xl:block">
               <p className="text-xs font-bold text-gray-900 leading-tight">{name}</p>
-              <p className="text-[10px] font-medium text-slate-500">Villa A-402</p>
+              <p className="text-[10px] font-medium text-slate-500">{displayUnit}</p>
             </div>
           </Link>
         </div>
@@ -221,7 +238,7 @@ export function ResidentShell({ children }: { children: React.ReactNode }) {
                   Transmit SOS Panic Alert?
                 </h2>
                 <p className="mt-2 text-xs text-slate-500 leading-relaxed">
-                  Post Army House Estate Central Security Command and patrol officers will immediately receive your unit coordinates (Villa A-402) with emergency priority.
+                  Post Army House Estate Central Security Command and patrol officers will immediately receive your unit coordinates ({displayUnit}) with emergency priority.
                 </p>
                 <div className="mt-6 flex gap-3">
                   <button
@@ -248,7 +265,7 @@ export function ResidentShell({ children }: { children: React.ReactNode }) {
                   Security Dispatched
                 </h2>
                 <p className="mt-2 text-xs text-slate-500 leading-relaxed">
-                  Gate 1 and Mobile Patrol Sector 2 have been alerted to Villa A-402. Remain in a safe position. Response team is en route.
+                  Gate 1 and Mobile Patrol Sector 2 have been alerted to {displayUnit}. Remain in a safe position. Response team is en route.
                 </p>
                 <button
                   onClick={() => setPanic("idle")}
