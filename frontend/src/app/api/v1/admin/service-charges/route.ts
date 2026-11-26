@@ -3,7 +3,10 @@ import { sql } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
+let tableEnsured = false;
+
 async function ensureTable() {
+  if (tableEnsured) return;
   await sql`
     CREATE TABLE IF NOT EXISTS service_charges (
       id SERIAL PRIMARY KEY,
@@ -44,6 +47,7 @@ async function ensureTable() {
   await sql`CREATE SEQUENCE IF NOT EXISTS service_charges_id_seq`;
   await sql`ALTER TABLE service_charges ALTER COLUMN id SET DEFAULT nextval('service_charges_id_seq')`;
   await sql`SELECT setval('service_charges_id_seq', COALESCE((SELECT MAX(id) FROM service_charges), 0) + 1, false)`;
+  tableEnsured = true;
 }
 
 export async function GET(req: NextRequest) {

@@ -13,13 +13,11 @@ export const sql =
   global._sql ||
   postgres(connectionString, {
     ssl: "require",
-    max: 10,
-    idle_timeout: 20,
+    max: 1,
+    idle_timeout: 5,
     connect_timeout: 10,
   });
 
-if (process.env.NODE_ENV !== "production") {
-  global._sql = sql;
-}
+global._sql = sql;
 
 export default sql;
