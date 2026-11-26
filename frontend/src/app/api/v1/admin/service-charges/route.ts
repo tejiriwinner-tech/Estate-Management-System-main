@@ -25,10 +25,22 @@ async function ensureTable() {
       updated_at TIMESTAMP DEFAULT NOW()
     )
   `;
+  await sql`ALTER TABLE service_charges ADD COLUMN IF NOT EXISTS user_id INTEGER`;
+  await sql`ALTER TABLE service_charges ADD COLUMN IF NOT EXISTS resident_name VARCHAR(255)`;
+  await sql`ALTER TABLE service_charges ADD COLUMN IF NOT EXISTS unit_number VARCHAR(100) DEFAULT 'Assigned Unit'`;
+  await sql`ALTER TABLE service_charges ADD COLUMN IF NOT EXISTS service_type VARCHAR(255)`;
+  await sql`ALTER TABLE service_charges ADD COLUMN IF NOT EXISTS amount NUMERIC(12, 2) DEFAULT 0`;
+  await sql`ALTER TABLE service_charges ADD COLUMN IF NOT EXISTS billing_cycle VARCHAR(50) DEFAULT 'Monthly'`;
+  await sql`ALTER TABLE service_charges ADD COLUMN IF NOT EXISTS due_date DATE`;
+  await sql`ALTER TABLE service_charges ADD COLUMN IF NOT EXISTS status VARCHAR(30) DEFAULT 'Pending'`;
+  await sql`ALTER TABLE service_charges ADD COLUMN IF NOT EXISTS invoice_no VARCHAR(80)`;
+  await sql`ALTER TABLE service_charges ADD COLUMN IF NOT EXISTS notes TEXT`;
   await sql`ALTER TABLE service_charges ADD COLUMN IF NOT EXISTS receipt_url TEXT`;
   await sql`ALTER TABLE service_charges ADD COLUMN IF NOT EXISTS receipt_name VARCHAR(255)`;
   await sql`ALTER TABLE service_charges ADD COLUMN IF NOT EXISTS payment_reference VARCHAR(120)`;
   await sql`ALTER TABLE service_charges ADD COLUMN IF NOT EXISTS paid_at TIMESTAMP`;
+  await sql`ALTER TABLE service_charges ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW()`;
+  await sql`ALTER TABLE service_charges ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT NOW()`;
 }
 
 export async function GET(req: NextRequest) {
