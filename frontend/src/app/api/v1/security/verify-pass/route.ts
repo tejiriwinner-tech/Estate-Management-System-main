@@ -110,6 +110,33 @@ export async function POST(req: NextRequest) {
           );
         }
 
+        if (p.status === "checked_out" || p.status === "confirmed_out") {
+          return NextResponse.json(
+            {
+              valid: false,
+              status: "PASS COMPLETED",
+              message: `Visitor pass ${lookupCode} for ${guestName} has already checked out.`,
+            },
+            { status: 403 }
+          );
+        }
+
+        if (p.status === "used") {
+          await sql`UPDATE guest_passes SET status = 'checked_out', updated_at = NOW() WHERE id = ${Number(p.id)}`.catch(() => {});
+          await logGateClearance(guestName, `Visitor Check-Out ${lookupCode} • Host: ${hostUnit}`, "out", "granted");
+          return NextResponse.json({
+            valid: true,
+            passType: "VISITOR_CHECKOUT",
+            action: "Visitor Check-Out",
+            code: lookupCode,
+            personName: guestName,
+            unit: hostUnit,
+            purpose,
+            status: "CHECK-OUT VERIFIED",
+            message: `Check-out verified for ${guestName} (Host: ${hostUnit}). Exit logged for resident confirmation.`,
+          });
+        }
+
         await sql`UPDATE guest_passes SET status = 'used', updated_at = NOW() WHERE id = ${Number(p.id)}`.catch(() => {});
         await logGateClearance(guestName, `Visitor Pass ${lookupCode} • Host: ${hostUnit} • ${purpose}`, "in", "granted");
 

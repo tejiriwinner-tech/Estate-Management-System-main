@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/db";
+import { insertAccessLog } from "@/lib/security/accessLogsDb";
 
 export const dynamic = "force-dynamic";
 
@@ -124,6 +125,60 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ data: res[0], message: "Guest pass created successfully." }, { status: 201 });
   } catch (err: any) {
     return NextResponse.json({ message: "Could not create guest pass.", error: err.message }, { status: 500 });
+  }
+}
+
+export async function PATCH(req: NextRequest) {
+  try {
+    await ensureGuestPassesTable();
+    const body = await req.json().catch(() => ({}));
+    const id = Number(body.id);
+    const action = String(body.action || "").trim();
+
+    if (!id || !["check_out", "confirm_exit"].includes(action)) {
+      return NextResponse.json({ message: "Valid pass id and action are required." }, { status: 400 });
+    }
+
+    const existing = await sql`SELECT * FROM guest_passes WHERE id = ${id} LIMIT 1`;
+    if (existing.length === 0) {
+      return NextResponse.json({ message: "Visitor pass not found." }, { status: 404 });
+    }
+
+    const p = existing[0];
+    const guestName = p.guest_name || p.name || "Visitor";
+    const host = p.invited_by || "Resident";
+    const code = p.code || `PASS-${p.id}`;
+    const nextStatus = action === "check_out" ? "checked_out" : "confirmed_out";
+
+    const updated = await sql`
+      UPDATE guest_passes
+      SET status = ${nextStatus}, updated_at = NOW()
+      WHERE id = ${id}
+      RETURNING *
+    `;
+
+    await insertAccessLog({
+      name: guestName,
+      role: "Visitor",
+      gate: "Gate 1",
+      direction: "out",
+      status: "granted",
+      verificationType: action === "check_out" ? "Security Exit Verify" : "Resident Exit Confirm",
+      reason:
+        action === "check_out"
+          ? `Visitor Check-Out ${code} • Host: ${host}`
+          : `Resident Confirmed Exit ${code} • Host: ${host}`,
+    }).catch(() => {});
+
+    return NextResponse.json({
+      data: updated[0],
+      message:
+        action === "check_out"
+          ? `${guestName} checked out at Gate 1.`
+          : `Exit confirmed for ${guestName}.`,
+    });
+  } catch (err: any) {
+    return NextResponse.json({ message: "Could not update visitor pass.", error: err.message }, { status: 500 });
   }
 }
 

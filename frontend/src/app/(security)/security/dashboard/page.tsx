@@ -356,6 +356,7 @@ export default function DashboardPage() {
             <div className="space-y-2.5">
               {passes.map((p) => {
                 const isCheckedIn = p.status === "used";
+                const isCheckedOut = p.status === "checked_out";
                 return (
                   <div
                     key={p.id}
@@ -368,10 +369,12 @@ export default function DashboardPage() {
                           className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold border ${
                             isCheckedIn
                               ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                              : isCheckedOut
+                              ? "bg-blue-50 text-blue-700 border-blue-200"
                               : "bg-amber-50 text-amber-800 border-amber-200"
                           }`}
                         >
-                          {isCheckedIn ? "Checked In" : "Awaiting"}
+                          {isCheckedIn ? "Checked In" : isCheckedOut ? "Checked Out" : "Awaiting"}
                         </span>
                       </div>
                       <p className="text-[11px] text-slate-500 truncate mt-0.5">
@@ -379,8 +382,23 @@ export default function DashboardPage() {
                       </p>
                     </div>
                     {isCheckedIn ? (
-                      <span className="shrink-0 rounded-lg bg-emerald-600 px-3 py-1.5 font-mono text-[11px] font-bold text-white">
-                        Cleared ({p.code})
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          await fetch("/api/v1/security/access/passes", {
+                            method: "PATCH",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ id: p.id, action: "check_out" }),
+                          });
+                          void reload();
+                        }}
+                        className="shrink-0 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 font-mono text-[11px] font-bold text-white transition-colors cursor-pointer"
+                      >
+                        Verify Check-Out
+                      </button>
+                    ) : isCheckedOut ? (
+                      <span className="shrink-0 rounded-lg bg-blue-600 px-3 py-1.5 font-mono text-[11px] font-bold text-white">
+                        Exit Logged
                       </span>
                     ) : (
                       <button

@@ -99,7 +99,7 @@ export async function GET() {
     try {
       const passRows = await sql`
         SELECT * FROM guest_passes
-        WHERE status IN ('active', 'used')
+        WHERE status IN ('active', 'used', 'checked_out')
         ORDER BY id DESC
         LIMIT 20
       `;

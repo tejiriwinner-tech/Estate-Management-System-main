@@ -32,13 +32,14 @@ export default function ResidentGatePassesPage() {
         if (Array.isArray(j?.data)) {
           setPasses(
             j.data
-              .filter((p: any) => p.status === "active")
+              .filter((p: any) => p.status !== "revoked")
               .map((p: any) => ({
                 id: String(p.id),
                 visitor: p.guest_name || "Visitor",
                 purpose: p.purpose || "Social Visit",
                 code: p.code,
                 pin: p.pin || "—",
+                status: p.status || "active",
                 validTill: p.valid_until ? new Date(p.valid_until).toLocaleString("en-NG") : "24 Hours",
               }))
           );
@@ -60,7 +61,7 @@ export default function ResidentGatePassesPage() {
   const [visitorName, setVisitorName] = useState("");
   const [purpose, setPurpose] = useState("Social Visit");
   const [passes, setPasses] = useState<
-    Array<{ id: string; visitor: string; purpose: string; code: string; pin: string; validTill: string }>
+    Array<{ id: string; visitor: string; purpose: string; code: string; pin: string; status?: string; validTill: string }>
   >([]);
 
   // Household check-out form
@@ -237,34 +238,78 @@ export default function ResidentGatePassesPage() {
             </h2>
 
             <div className="mt-3 divide-y divide-gray-100">
-              {passes.map((p) => (
-                <div key={p.id} className="py-3.5 flex items-center justify-between gap-3">
-                  <div>
-                    <div className="text-sm font-bold text-gray-900">{p.visitor}</div>
-                    <div className="text-xs text-slate-500 flex items-center gap-2 mt-0.5">
-                      <span>{p.purpose}</span>
-                      <span>•</span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" /> {p.validTill}
+              {passes.map((p) => {
+                const st = p.status || "active";
+                const canConfirmOut = st === "used" || st === "checked_out";
+                const statusLabel =
+                  st === "used"
+                    ? "Checked In (Inside)"
+                    : st === "checked_out"
+                    ? "Checked Out by Security"
+                    : st === "confirmed_out"
+                    ? "Exit Confirmed"
+                    : "Awaiting Arrival";
+                const statusClass =
+                  st === "confirmed_out"
+                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                    : st === "checked_out"
+                    ? "bg-blue-50 text-blue-700 border-blue-200"
+                    : st === "used"
+                    ? "bg-amber-50 text-amber-800 border-amber-200"
+                    : "bg-slate-100 text-slate-600 border-slate-200";
+                return (
+                  <div key={p.id} className="py-3.5 flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-gray-900">{p.visitor}</span>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${statusClass}`}>
+                          {statusLabel}
+                        </span>
+                      </div>
+                      <div className="text-xs text-slate-500 flex items-center gap-2 mt-0.5">
+                        <span>{p.purpose}</span>
+                        <span>•</span>
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" /> {p.validTill}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-mono text-xs font-black text-[#B22222] bg-[#FEF2F2] px-2.5 py-1 rounded-lg border border-[#B22222]/20">
+                        {p.code}
                       </span>
+                      {canConfirmOut && (
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            await fetch("/api/v1/security/access/passes", {
+                              method: "PATCH",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ id: Number(p.id), action: "confirm_exit" }),
+                            });
+                            setPasses((prev) =>
+                              prev.map((x) => (x.id === p.id ? { ...x, status: "confirmed_out" } : x))
+                            );
+                          }}
+                          className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-colors"
+                        >
+                          <ShieldCheck className="w-3.5 h-3.5" />
+                          <span>Confirm Check-Out</span>
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedPass(p)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-colors"
+                      >
+                        <QrCode className="w-3.5 h-3.5 text-[#C9A227]" />
+                        <span>Show QR</span>
+                      </button>
                     </div>
                   </div>
-
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs font-black text-[#B22222] bg-[#FEF2F2] px-2.5 py-1 rounded-lg border border-[#B22222]/20">
-                      {p.code}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setSelectedPass(p)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-colors"
-                    >
-                      <QrCode className="w-3.5 h-3.5 text-[#C9A227]" />
-                      <span>Show QR</span>
-                    </button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 

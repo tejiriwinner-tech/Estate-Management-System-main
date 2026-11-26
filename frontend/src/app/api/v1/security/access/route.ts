@@ -26,7 +26,7 @@ export async function GET() {
       console.error("Error fetching security access:", e.message);
     }
 
-    const mappedLogs = logs.map((l) => {
+    let mappedLogs = logs.map((l) => {
       const st = String(l.status || "").toLowerCase();
       return {
         id: String(l.id),
@@ -34,13 +34,30 @@ export async function GET() {
         time: new Date(l.created_at || Date.now()).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         name: l.visitor_name || l.person_name || l.name || "Visitor",
         role: l.role || "Visitor",
-        verificationType: l.verification_type || "QR Code",
+        verificationType: (l.verification_type || "QR Code") as "QR Code" | "Face ID" | "Manual" | "Biometric",
         gateNo: l.gate_number || l.gate || "Gate 1",
         gate: l.gate_number || l.gate || "Gate 1",
-        status: st === "denied" ? "Denied" : "Success",
+        status: (st === "denied" ? "Denied" : "Success") as "Success" | "Denied",
         timestamp: new Date(l.created_at || Date.now()).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       };
     });
+
+    // Include passes that were verified prior to access_logs schema unification
+    if (mappedLogs.length === 0 && passes.length > 0) {
+      const clearedPasses = passes.filter((p) => ["used", "checked_out", "confirmed_out"].includes(String(p.status || "")));
+      mappedLogs = clearedPasses.map((p) => ({
+        id: `pass-${p.id}`,
+        date: new Date(p.updated_at || p.created_at || Date.now()).toLocaleDateString(),
+        time: new Date(p.updated_at || p.created_at || Date.now()).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        name: p.guest_name || p.name || "Visitor",
+        role: `Visitor (${p.code || `PASS-${p.id}`})`,
+        verificationType: "QR Code" as const,
+        gateNo: "Gate 1",
+        gate: "Gate 1",
+        status: "Success" as const,
+        timestamp: new Date(p.updated_at || p.created_at || Date.now()).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      }));
+    }
 
     const latestGranted = mappedLogs.find((l) => l.status === "Success") || null;
     const latestDeniedRow = logs.find((l) => String(l.status || "").toLowerCase() === "denied") || null;
@@ -68,16 +85,25 @@ export async function GET() {
               gate: latestDeniedRow.gate_number || latestDeniedRow.gate || "Gate 1",
             }
           : null,
-        passes: passes.map((p) => ({
-          id: `GP-${p.id}`,
-          code: p.code || `PASS-${p.id}`,
-          guestName: p.guest_name || p.name || "Visitor",
-          hostName: p.invited_by || "Resident",
-          unit: "Post Army Housing Estate",
-          status: p.status || "active",
-          validFrom: p.created_at ? new Date(p.created_at).toISOString().split("T")[0] : "Today",
-          validUntil: p.valid_until || p.expires_at ? new Date(p.valid_until || p.expires_at).toISOString().split("T")[0] : "Today",
-        })),
+        passes: passes.map((p) => {
+          const st = String(p.status || "active");
+          const label =
+            st === "used"
+              ? "Checked In"
+              : st === "checked_out"
+              ? "Checked Out"
+              : st === "confirmed_out"
+              ? "Exit Confirmed"
+              : st === "revoked"
+              ? "Revoked"
+              : "Awaiting Arrival";
+          return {
+            id: `GP-${p.id}`,
+            name: p.guest_name || p.name || "Visitor",
+            subtitle: `${p.code || `PASS-${p.id}`} • Host: ${p.invited_by || "Resident"} • ${label}`,
+            status: ["used", "checked_out", "confirmed_out"].includes(st) ? "cleared" : "pending",
+          };
+        }),
       },
     });
   } catch (err: any) {
