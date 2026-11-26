@@ -36,56 +36,24 @@ export async function GET() {
       console.warn("Meetings GET fallback:", e.message);
     }
 
-    if (reports.length === 0) {
-      reports = [
-        {
-          id: 1,
-          title: "Q4 Estate Security & Solar Infrastructure Directive",
-          body: "All street illumination arrays and Gate 1/Gate 2 optical QR scanners are now online on 24/7 clean inverter backup. Residents are encouraged to use their Digital Exit QR Pass for express gate clearance.",
-          category: "directive",
-          priority: "urgent",
-          author: "Estate Administrator",
-          held_at: new Date().toISOString(),
-        },
-        {
-          id: 2,
-          title: "Scheduled Water Treatment Plant Servicing — Phase 1 to 5",
-          body: "Routine filtration media replacement will hold this Saturday between 9:00 AM and 12:00 PM WAT. Reserve tanks remain fully pressurized with zero supply interruption expected.",
-          category: "maintenance",
-          priority: "normal",
-          author: "Facility Engineering Desk",
-          held_at: new Date(Date.now() - 86400000).toISOString(),
-        },
-        {
-          id: 3,
-          title: "Visitor & Commercial Delivery Gate Protocol Reminder",
-          body: "All guests, artisans, and dispatch riders must present an active Post Army House Estate QR Gate Pass generated from the Resident Portal upon arrival at Main Gate 1.",
-          category: "security",
-          priority: "normal",
-          author: "Security Command",
-          held_at: new Date(Date.now() - 172800000).toISOString(),
-        },
-      ];
-    } else {
-      reports = reports.map((r: any) => {
-        const meta = decodeNoticeTitle(String(r.title || ""));
-        return {
-          id: Number(r.id),
-          title: meta.title,
-          body: r.body,
-          category: meta.category,
-          priority: meta.priority,
-          author: meta.author,
-          held_at: r.held_at
-            ? new Date(r.held_at).toISOString()
-            : r.created_at
-            ? new Date(r.created_at).toISOString()
-            : new Date().toISOString(),
-        };
-      });
-    }
+    const formatted = reports.map((r: any) => {
+      const meta = decodeNoticeTitle(String(r.title || ""));
+      return {
+        id: Number(r.id),
+        title: meta.title,
+        body: r.body,
+        category: meta.category,
+        priority: meta.priority,
+        author: meta.author,
+        held_at: r.held_at
+          ? new Date(r.held_at).toISOString()
+          : r.created_at
+          ? new Date(r.created_at).toISOString()
+          : new Date().toISOString(),
+      };
+    });
 
-    return NextResponse.json({ data: reports });
+    return NextResponse.json({ data: formatted });
   } catch (err: any) {
     return NextResponse.json({ message: "Could not fetch notices.", error: err.message }, { status: 500 });
   }

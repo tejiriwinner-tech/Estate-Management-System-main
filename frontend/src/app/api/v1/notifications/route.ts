@@ -47,29 +47,6 @@ export async function GET() {
       // Fallback
     }
 
-    if (items.length === 0) {
-      items.push(
-        {
-          id: 1,
-          type: "notice",
-          title: "Q4 Estate Security & Solar Grid Bulletin Published",
-          body: "Review the latest executive infrastructure & gate ANPR notice.",
-          data: null,
-          read: false,
-          created_at: new Date().toISOString(),
-        },
-        {
-          id: 2,
-          type: "system",
-          title: "Gate QR Clearance System Active",
-          body: "Visitor and Resident Exit QR passes are active at Gate 1 & Gate 2.",
-          data: null,
-          read: true,
-          created_at: new Date(Date.now() - 3600000).toISOString(),
-        }
-      );
-    }
-
     items.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     const unreadCount = items.filter((i) => !i.read).length;
 

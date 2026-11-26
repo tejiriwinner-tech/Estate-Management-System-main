@@ -9,11 +9,22 @@ export async function POST(req: Request) {
     const otherUserId = Number(body.user_id);
 
     const userRows = await sql`SELECT name FROM users WHERE id = ${otherUserId} LIMIT 1`;
-    const otherName = userRows[0]?.name || "Member";
+    if (userRows.length === 0) {
+      return NextResponse.json({ message: "Member not found." }, { status: 404 });
+    }
+    const otherName = userRows[0].name;
+    const roomTitle = `Chat with ${otherName}`;
+
+    const existing = await sql`
+      SELECT id FROM chat_rooms WHERE type = 'direct' AND name = ${roomTitle} LIMIT 1
+    `;
+    if (existing.length > 0) {
+      return NextResponse.json({ data: { id: Number(existing[0].id) } });
+    }
 
     const res = await sql`
       INSERT INTO chat_rooms (type, name, created_at, updated_at)
-      VALUES ('direct', ${`Chat with ${otherName}`}, NOW(), NOW())
+      VALUES ('direct', ${roomTitle}, NOW(), NOW())
       RETURNING id
     `;
 
