@@ -71,23 +71,7 @@ export async function GET(req: NextRequest) {
     });
   } catch (err: any) {
     console.warn("Service charges GET fallback:", err.message);
-    return NextResponse.json({
-      data: [
-        {
-          id: 1,
-          user_id: 2,
-          resident_name: "Chinedu Resident",
-          unit_number: "Villa A-402",
-          service_type: "Monthly Estate Security & Maintenance Levy",
-          amount: 35000,
-          billing_cycle: "Monthly",
-          due_date: "2026-11-30",
-          status: "Pending",
-          invoice_no: "SC-2026-1041",
-          notes: "Standard monthly estate security & common area upkeep",
-        },
-      ],
-    });
+    return NextResponse.json({ data: [] });
   }
 }
 
@@ -108,13 +92,23 @@ export async function POST(req: NextRequest) {
 
     await ensureTable();
 
-    if (target === "all") {
-      // Bill all active residents in users table
-      const residents = await sql`
-        SELECT id, name, unit_number FROM users WHERE role = 'resident'
-      `;
+    if (target === "all" || target === "residents" || target === "stores") {
+      const recipients =
+        target === "residents"
+          ? await sql`SELECT id, name, unit_number FROM users WHERE role IN ('resident', 'user')`
+          : target === "stores"
+          ? await sql`SELECT id, name, unit_number FROM users WHERE role = 'store_owner'`
+          : await sql`SELECT id, name, unit_number FROM users WHERE role IN ('resident', 'store_owner', 'user')`;
+
+      if (recipients.length === 0) {
+        return NextResponse.json(
+          { message: "No active residents or shop owners found to bill.", data: [] },
+          { status: 404 }
+        );
+      }
+
       const created = [];
-      for (const r of residents) {
+      for (const r of recipients) {
         const inv = `SC-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
         const ins = await sql`
           INSERT INTO service_charges (user_id, resident_name, unit_number, service_type, amount, billing_cycle, due_date, status, invoice_no, notes)
@@ -126,7 +120,7 @@ export async function POST(req: NextRequest) {
 
       return NextResponse.json({
         data: created,
-        message: `Service charge billed to ${created.length} estate member(s).`,
+        message: `Service charge billed to ${created.length} recipient(s).`,
       });
     }
 

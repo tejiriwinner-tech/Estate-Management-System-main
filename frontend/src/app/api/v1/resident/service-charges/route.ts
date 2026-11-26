@@ -39,20 +39,31 @@ export async function GET(req: NextRequest) {
 
     await ensureServiceChargeTable();
 
+    let targetUserId: number | null = null;
+    if (callerEmail) {
+      const u = await sql`SELECT id FROM users WHERE LOWER(email) = ${callerEmail} LIMIT 1`;
+      if (u.length > 0) targetUserId = Number(u[0].id);
+    }
+
     let rows: any[] = [];
     if (scope === "store") {
-      rows = await sql`
-        SELECT * FROM service_charges
-        WHERE LOWER(unit_number) LIKE '%shop%' OR LOWER(unit_number) LIKE '%plaza%' OR LOWER(resident_name) LIKE '%mart%'
-        ORDER BY created_at DESC
-      `;
+      rows = targetUserId
+        ? await sql`
+            SELECT * FROM service_charges
+            WHERE user_id = ${targetUserId}
+               OR LOWER(unit_number) LIKE '%shop%'
+               OR LOWER(unit_number) LIKE '%plaza%'
+            ORDER BY created_at DESC
+          `
+        : await sql`
+            SELECT * FROM service_charges
+            WHERE user_id IN (SELECT id FROM users WHERE role = 'store_owner')
+               OR LOWER(unit_number) LIKE '%shop%'
+               OR LOWER(unit_number) LIKE '%plaza%'
+               OR LOWER(resident_name) LIKE '%mart%'
+            ORDER BY created_at DESC
+          `;
     } else {
-      let targetUserId: number | null = null;
-      if (callerEmail) {
-        const u = await sql`SELECT id FROM users WHERE LOWER(email) = ${callerEmail} LIMIT 1`;
-        if (u.length > 0) targetUserId = Number(u[0].id);
-      }
-
       rows = targetUserId
         ? await sql`
             SELECT * FROM service_charges

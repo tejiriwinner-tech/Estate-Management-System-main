@@ -46,6 +46,7 @@ export function ServiceChargeModal({
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
+  const [bulkTarget, setBulkTarget] = useState<"all" | "residents" | "stores">("all");
   const [form, setForm] = useState({
     service_type: SERVICE_PRESETS[0].label,
     amount: "",
@@ -99,7 +100,7 @@ export function ServiceChargeModal({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          target: isBulk ? "all" : "single",
+          target: isBulk ? bulkTarget : "single",
           user_id: member?.id,
           resident_name: member?.name,
           unit_number: member?.house_no,
@@ -111,6 +112,11 @@ export function ServiceChargeModal({
         }),
       });
       const json = await res.json();
+      if (!res.ok) {
+        setToast(json.message || "Could not assign service charge.");
+        setTimeout(() => setToast(null), 4000);
+        return;
+      }
       setToast(json.message || "Service charge billed successfully!");
       setTimeout(() => setToast(null), 3500);
       onSaved?.();
@@ -213,6 +219,20 @@ export function ServiceChargeModal({
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {isBulk && (
+              <div className="sm:col-span-2">
+                <label className="block text-[11px] font-bold text-gray-700 mb-1">Bill To</label>
+                <select
+                  value={bulkTarget}
+                  onChange={(e) => setBulkTarget(e.target.value as "all" | "residents" | "stores")}
+                  className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#B22222]"
+                >
+                  <option value="all">All Residents &amp; Shop Owners</option>
+                  <option value="residents">Estate Residents Only</option>
+                  <option value="stores">Shop Owners Only</option>
+                </select>
+              </div>
+            )}
             <div className="sm:col-span-2">
               <label className="block text-[11px] font-bold text-gray-700 mb-1">Service Charge Category</label>
               <select
