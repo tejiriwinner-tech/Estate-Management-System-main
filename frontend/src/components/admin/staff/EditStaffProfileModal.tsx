@@ -58,6 +58,8 @@ export function EditStaffProfileModal({
   });
 
   const [isDeactivated, setIsDeactivated] = useState(false);
+  const [showResetBox, setShowResetBox] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
   const [resetMessage, setResetMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -72,6 +74,8 @@ export function EditStaffProfileModal({
         avatar_url: member.avatar_url || "",
       });
       setIsDeactivated(member.status === "suspended");
+      setShowResetBox(false);
+      setNewPassword("");
       setResetMessage(null);
     }
   }, [member, isOpen]);
@@ -95,14 +99,24 @@ export function EditStaffProfileModal({
   };
 
   const handleTriggerResetPassword = async () => {
-    const tempPass = `PA-${Math.floor(100000 + Math.random() * 900000)}`;
+    const passToSave = newPassword.trim() || `PA-${Math.floor(100000 + Math.random() * 900000)}`;
+    if (passToSave.length < 6) {
+      setResetMessage("Password must be at least 6 characters.");
+      return;
+    }
     try {
-      await fetch(`/api/v1/admin/staff/${member.id}`, {
+      const res = await fetch(`/api/v1/admin/staff/${member.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password: tempPass }),
+        body: JSON.stringify({ password: passToSave }),
       });
-      setResetMessage(`Temporary password saved: ${tempPass}`);
+      if (!res.ok) {
+        setResetMessage("Could not reset password.");
+        return;
+      }
+      setResetMessage(`Password updated: ${passToSave}`);
+      setNewPassword("");
+      setShowResetBox(false);
       onResetPassword?.(member.id);
     } catch {
       setResetMessage("Could not reset password.");
@@ -211,12 +225,31 @@ export function EditStaffProfileModal({
               {/* Reset Password Action */}
               <button
                 type="button"
-                onClick={handleTriggerResetPassword}
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-accent hover:text-accent-hover mt-1.5 transition-colors group"
+                onClick={() => setShowResetBox((v) => !v)}
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-accent hover:text-accent-hover mt-1.5 transition-colors group cursor-pointer"
               >
                 <RotateCw className="w-3.5 h-3.5 transition-transform group-hover:rotate-180" />
                 <span>Reset Password</span>
               </button>
+
+              {showResetBox && (
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <input
+                    type="text"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="New password (blank = auto)"
+                    className="px-3 py-1.5 rounded-lg border border-border bg-surface text-xs font-medium text-dark w-48"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleTriggerResetPassword}
+                    className="px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-bold hover:bg-primary-hover cursor-pointer"
+                  >
+                    Save Password
+                  </button>
+                </div>
+              )}
 
               {resetMessage && (
                 <div className="text-[11px] font-bold text-primary mt-1 animate-in fade-in">

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
 import { sql } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
@@ -27,7 +28,8 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { name, email, phone, role, job_title, department, staff_id, status, avatar_url } = body;
+    const { name, email, phone, role, job_title, department, staff_id, status, avatar_url, password } = body;
+    const hashedPassword = await bcrypt.hash(String(password || "PostArmy2024!"), 10);
 
     const allowedRole =
       role === "store_owner" || role === "agent" || role === "chairman" || role === "security"
@@ -45,7 +47,7 @@ export async function POST(req: Request) {
         name, email, password, phone, role, job_title, department, staff_id, status, avatar_url, created_at, updated_at
       )
       VALUES (
-        ${name}, ${String(email).trim().toLowerCase()}, 'PostArmy2024!', ${phone || null}, ${allowedRole},
+        ${name}, ${String(email).trim().toLowerCase()}, ${hashedPassword}, ${phone || null}, ${allowedRole},
         ${job_title || (allowedRole === "chairman" ? "Estate Chairman" : allowedRole === "store_owner" ? "Store Admin" : allowedRole === "security" ? "Chief Security Officer" : "Estate Agent")},
         ${department || "Estate Operations"},
         ${staff_id || `PA-${Date.now().toString().slice(-4)}`}, ${status || "active"},

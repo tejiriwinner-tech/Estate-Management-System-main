@@ -47,7 +47,7 @@ const navItems: NavItem[] = [
 export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const [financeOpen, setFinanceOpen] = useState(true);
+  const [financeOpen, setFinanceOpen] = useState(isFinanceRoute(pathname));
 
   return (
     <aside className="sticky top-20 hidden md:flex h-[calc(100vh-5rem)] w-60 flex-col justify-between border-r border-slate-100 bg-white px-4 py-6 flex-shrink-0">

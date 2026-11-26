@@ -57,7 +57,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { summary } = useChatSummary();
   const isFinanceActive = pathname.startsWith("/admin/finance") || pathname.startsWith("/finance") || pathname.startsWith("/payments") || pathname.startsWith("/outstanding") || pathname.startsWith("/services");
   const isStoreActive = pathname.startsWith("/admin/store") || pathname.startsWith("/store-app");
-  const [financeOpen, setFinanceOpen] = React.useState(true);
+  const [financeOpen, setFinanceOpen] = React.useState(isFinanceActive);
   const [storeOpen, setStoreOpen] = React.useState(false);
 
   // Keep open whenever browsing respective section

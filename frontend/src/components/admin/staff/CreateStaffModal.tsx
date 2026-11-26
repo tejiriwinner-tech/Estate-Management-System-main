@@ -9,7 +9,7 @@ import { cn } from "@/lib/admin/utils";
 interface CreateStaffModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (newStaffData: Partial<StaffMember>) => void;
+  onSave: (newStaffData: Partial<StaffMember> & { password?: string }) => void;
   staffSequence?: number;
 }
 
@@ -38,6 +38,7 @@ export function CreateStaffModal({
   const [staffId, setStaffId] = useState(defaultStaffId);
   const [workEmail, setWorkEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [password, setPassword] = useState("");
   const [department, setDepartment] = useState("");
   const [roleDesignation, setRoleDesignation] = useState("");
   const [employmentType, setEmploymentType] = useState<"full_time" | "contract">("full_time");
@@ -66,6 +67,7 @@ export function CreateStaffModal({
       staff_id: staffId.trim(),
       email: workEmail.trim(),
       phone: phoneNumber.trim() || null,
+      password: password.trim() || "PostArmy2024!",
       department: department || "Operations",
       job_title: roleDesignation.trim() || "Operational Staff",
       employment_type: employmentType,
@@ -81,6 +83,7 @@ export function CreateStaffModal({
     setFullName("");
     setWorkEmail("");
     setPhoneNumber("");
+    setPassword("");
     setDepartment("");
     setRoleDesignation("");
     setAvatarPreview(null);
@@ -216,10 +219,26 @@ export function CreateStaffModal({
                   type="text"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
-                  placeholder="+1(555) 000-0000"
+                  placeholder="+234 800 000 0000"
                   className="w-full px-4 py-2.5 rounded-xl border border-border bg-surface text-sm text-dark font-medium placeholder:text-muted/60 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all shadow-xs"
                 />
               </div>
+            </div>
+
+            {/* Login Password */}
+            <div>
+              <label className="block text-[11px] font-bold text-muted uppercase tracking-wider mb-1.5">
+                LOGIN PASSWORD
+              </label>
+              <input
+                type="password"
+                required
+                minLength={6}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Set staff login password (min. 6 characters)"
+                className="w-full px-4 py-2.5 rounded-xl border border-border bg-surface text-sm text-dark font-medium placeholder:text-muted/60 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all shadow-xs"
+              />
             </div>
 
             {/* Row 3: DEPARTMENT & ROLE / DESIGNATION */}
