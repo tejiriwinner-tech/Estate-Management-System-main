@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { AlertTriangle, MapPin, Radio, ShieldAlert, ShieldCheck, X } from "lucide-react";
 import { EMERGENCY_CODE_LIST, type EmergencyCodeKey } from "@/lib/emergencyCodes";
 
@@ -88,152 +89,155 @@ export function CodedEmergencyTrigger({
         <span>{buttonLabel}</span>
       </button>
 
-      {open && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4"
-          onClick={resetAndClose}
-        >
+      {open &&
+        typeof document !== "undefined" &&
+        createPortal(
           <div
-            onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-lg rounded-2xl bg-white shadow-2xl border border-slate-200 overflow-hidden"
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4"
+            onClick={resetAndClose}
           >
-            <div className="flex items-center justify-between px-6 py-4 bg-[#B22222] text-white">
-              <div className="flex items-center gap-2.5">
-                <Radio className="w-5 h-5 animate-pulse text-[#C9A227]" />
-                <div>
-                  <h2 className="text-sm font-extrabold tracking-tight">
-                    Instant Security Command Alert
-                  </h2>
-                  <p className="text-[11px] text-red-100">
-                    {senderName} • {senderRole} • Received immediately by Security HQ
-                  </p>
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-white shadow-2xl border border-slate-200"
+            >
+              <div className="flex items-center justify-between px-6 py-4 bg-[#B22222] text-white sticky top-0 z-10">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <Radio className="w-5 h-5 animate-pulse text-[#C9A227] shrink-0" />
+                  <div className="min-w-0">
+                    <h2 className="text-sm font-extrabold tracking-tight truncate">
+                      Instant Security Command Alert
+                    </h2>
+                    <p className="text-[11px] text-red-100 truncate">
+                      {senderName} • {senderRole} • Received immediately by Security HQ
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <button
-                type="button"
-                onClick={resetAndClose}
-                className="p-1.5 rounded-lg hover:bg-white/10 transition-colors"
-                aria-label="Close"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {phase === "sent" ? (
-              <div className="p-6 text-center">
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 mb-4 border border-emerald-200">
-                  <ShieldCheck className="h-7 w-7" />
-                </div>
-                <h3 className="text-lg font-extrabold text-slate-900">
-                  Alert Transmitted to Security HQ
-                </h3>
-                <p className="mt-2 text-xs text-slate-600 leading-relaxed">
-                  Security officers have been notified with your exact location (<strong>{location}</strong>) and emergency protocol.
-                </p>
                 <button
                   type="button"
                   onClick={resetAndClose}
-                  className="mt-6 w-full rounded-xl bg-[#B22222] py-2.5 text-xs font-bold text-white hover:bg-[#991B1B]"
+                  className="p-1.5 rounded-lg hover:bg-white/10 transition-colors shrink-0"
+                  aria-label="Close"
                 >
-                  Done
+                  <X className="w-4 h-4" />
                 </button>
               </div>
-            ) : (
-              <form onSubmit={handleDispatch} className="p-6 space-y-4">
-                <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">
-                    Select Emergency Protocol Code
-                  </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    {EMERGENCY_CODE_LIST.map((spec) => {
-                      const active = selectedCode === spec.key;
-                      return (
-                        <button
-                          key={spec.key}
-                          type="button"
-                          onClick={() => setSelectedCode(spec.key)}
-                          className={`text-left rounded-xl border p-3 transition-all ${
-                            active
-                              ? `${spec.cardClass} ring-2 ring-[#B22222] shadow-xs`
-                              : "border-slate-200 bg-white hover:bg-slate-50"
-                          }`}
-                        >
-                          <div className="flex items-center justify-between gap-2 mb-1">
-                            <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${spec.badgeClass}`}>
-                              <span className={`w-1.5 h-1.5 rounded-full ${spec.dotClass}`} />
-                              {spec.label}
-                            </span>
-                            <span className="text-[10px] font-semibold text-slate-400">
-                              {spec.priority}
-                            </span>
-                          </div>
-                          <p className="text-xs font-bold text-slate-900 leading-snug">
-                            {spec.title}
-                          </p>
-                        </button>
-                      );
-                    })}
+
+              {phase === "sent" ? (
+                <div className="p-6 text-center">
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 mb-4 border border-emerald-200">
+                    <ShieldCheck className="h-7 w-7" />
                   </div>
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
-                    Exact Location / Unit / Shop / Gate
-                  </label>
-                  <div className="relative">
-                    <MapPin className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="text"
-                      required
-                      value={location}
-                      onChange={(e) => setLocation(e.target.value)}
-                      placeholder="e.g. Villa A-402, Commercial Plaza Shop A-02, Gate 1..."
-                      className="w-full rounded-xl border border-slate-200 pl-9 pr-3 py-2.5 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#B22222]"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
-                    Situation Details (Optional)
-                  </label>
-                  <textarea
-                    rows={2}
-                    value={note}
-                    onChange={(e) => setNote(e.target.value)}
-                    placeholder="Briefly describe what is happening so Security dispatches the right team..."
-                    className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#B22222]"
-                  />
-                </div>
-
-                {phase === "error" && (
-                  <div className="flex items-center gap-2 rounded-xl bg-red-50 border border-red-200 px-3 py-2 text-xs font-semibold text-red-700">
-                    <AlertTriangle className="w-4 h-4 shrink-0" />
-                    <span>{errorMsg}</span>
-                  </div>
-                )}
-
-                <div className="flex items-center gap-3 pt-1">
+                  <h3 className="text-lg font-extrabold text-slate-900">
+                    Alert Transmitted to Security HQ
+                  </h3>
+                  <p className="mt-2 text-xs text-slate-600 leading-relaxed">
+                    Security officers have been notified with your exact location (<strong>{location}</strong>) and emergency protocol.
+                  </p>
                   <button
                     type="button"
                     onClick={resetAndClose}
-                    className="flex-1 rounded-xl border border-slate-200 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50"
+                    className="mt-6 w-full rounded-xl bg-[#B22222] py-2.5 text-xs font-bold text-white hover:bg-[#991B1B]"
                   >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={phase === "sending"}
-                    className="flex-1 rounded-xl bg-[#B22222] py-2.5 text-xs font-extrabold text-white hover:bg-[#991B1B] shadow-md disabled:opacity-60"
-                  >
-                    {phase === "sending" ? "Transmitting..." : "Dispatch Alert Now"}
+                    Done
                   </button>
                 </div>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
+              ) : (
+                <form onSubmit={handleDispatch} className="p-6 space-y-4">
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">
+                      Select Emergency Protocol Code
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {EMERGENCY_CODE_LIST.map((spec) => {
+                        const active = selectedCode === spec.key;
+                        return (
+                          <button
+                            key={spec.key}
+                            type="button"
+                            onClick={() => setSelectedCode(spec.key)}
+                            className={`text-left rounded-xl border p-3.5 transition-all ${
+                              active
+                                ? `${spec.cardClass} ring-2 ring-[#B22222] shadow-xs`
+                                : "border-slate-200 bg-white hover:bg-slate-50"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-2 mb-1.5">
+                              <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border whitespace-nowrap ${spec.badgeClass}`}>
+                                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${spec.dotClass}`} />
+                                {spec.label}
+                              </span>
+                              <span className="text-[10px] font-semibold text-slate-400 whitespace-nowrap">
+                                {spec.priority}
+                              </span>
+                            </div>
+                            <p className="text-xs font-bold text-slate-900 leading-snug">
+                              {spec.title}
+                            </p>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                      Exact Location / Unit / Shop / Gate
+                    </label>
+                    <div className="relative">
+                      <MapPin className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        required
+                        value={location}
+                        onChange={(e) => setLocation(e.target.value)}
+                        placeholder="e.g. Villa A-402, Commercial Plaza Shop A-02, Gate 1..."
+                        className="w-full rounded-xl border border-slate-200 pl-9 pr-3 py-2.5 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#B22222]"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                      Situation Details (Optional)
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={note}
+                      onChange={(e) => setNote(e.target.value)}
+                      placeholder="Briefly describe what is happening so Security dispatches the right team..."
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#B22222]"
+                    />
+                  </div>
+
+                  {phase === "error" && (
+                    <div className="flex items-center gap-2 rounded-xl bg-red-50 border border-red-200 px-3 py-2 text-xs font-semibold text-red-700">
+                      <AlertTriangle className="w-4 h-4 shrink-0" />
+                      <span>{errorMsg}</span>
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-3 pt-1">
+                    <button
+                      type="button"
+                      onClick={resetAndClose}
+                      className="flex-1 rounded-xl border border-slate-200 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={phase === "sending"}
+                      className="flex-1 rounded-xl bg-[#B22222] py-2.5 text-xs font-extrabold text-white hover:bg-[#991B1B] shadow-md disabled:opacity-60"
+                    >
+                      {phase === "sending" ? "Transmitting..." : "Dispatch Alert Now"}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          </div>,
+          document.body
+        )}
     </>
   );
 }
