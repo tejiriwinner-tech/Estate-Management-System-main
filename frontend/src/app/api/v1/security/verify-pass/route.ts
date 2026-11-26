@@ -3,6 +3,17 @@ import { sql } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
+async function logGateClearance(visitorName: string, unitOrReason: string, direction: "in" | "out", status: "granted" | "denied") {
+  try {
+    await sql`
+      INSERT INTO access_logs (visitor_name, gate_number, direction, status, reason, created_at, updated_at)
+      VALUES (${visitorName}, 'Gate 1', ${direction}, ${status}, ${unitOrReason}, NOW(), NOW())
+    `;
+  } catch {
+    // Non-blocking
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -12,24 +23,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ valid: false, message: "Enter or scan a QR pass code." }, { status: 400 });
     }
 
-    // Case 1: Resident Digital Exit/Entry QR Token
-    // Format: LINCOLN-RESIDENT:RES-VILLAA402:Chinedu-Resident:Villa-A-402:KJA-492AA:EXIT-CLEARANCE
-    if (rawInput.toUpperCase().startsWith("LINCOLN-RESIDENT:") || rawInput.toUpperCase().startsWith("RES-")) {
-      const parts = rawInput.split(":");
-      const code = parts[1] || rawInput.toUpperCase();
-      const name = (parts[2] || "Chinedu Resident").replace(/-/g, " ");
-      const unit = (parts[3] || "Villa A-402").replace(/-/g, " ");
-      const vehicle = parts[4] || "KJA-492AA";
-      const action = (parts[5] || "EXIT-CLEARANCE").includes("ENTRY") ? "Resident Entry" : "Resident Exit";
+    const upper = rawInput.toUpperCase();
 
-      try {
-        await sql`
-          INSERT INTO access_logs (person_name, role, gate, status, verification_type, notes, created_at)
-          VALUES (${name}, 'Resident', 'Gate 1 (Main)', 'Granted', 'QR Digital Pass', ${`${action} • ${unit} • ${vehicle}`}, NOW())
-        `;
-      } catch {
-        // Non-blocking
-      }
+    // Case 1: Resident Digital Exit/Entry QR Token
+    // Format: PAHE-RESIDENT:RES-...:Resident-Name:Unit:Vehicle:EXIT-CLEARANCE
+    if (upper.startsWith("PAHE-RESIDENT:") || upper.startsWith("LINCOLN-RESIDENT:") || upper.startsWith("RES-")) {
+      const parts = rawInput.split(":");
+      const code = parts[1] || upper;
+      const name = (parts[2] || "Verified Resident").replace(/-/g, " ");
+      const unit = (parts[3] || "Estate Unit").replace(/-/g, " ");
+      const vehicle = parts[4] || "On Foot";
+      const isEntry = (parts[5] || "EXIT-CLEARANCE").toUpperCase().includes("ENTRY");
+      const action = isEntry ? "Resident Entry" : "Resident Exit";
+
+      await logGateClearance(name, `${action} • ${unit} • ${vehicle}`, isEntry ? "in" : "out", "granted");
 
       return NextResponse.json({
         valid: true,
@@ -44,91 +51,89 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Case 2: Structured Visitor QR Token
-    // Format: LINCOLN-PASS:LP-8403:PIN-820822:Villa-A-402:Felix:Social-Visit
-    if (rawInput.toUpperCase().startsWith("LINCOLN-PASS:")) {
+    // Case 2: Structured Visitor QR Token (extract code & verify in DB)
+    let lookupCode = upper;
+    let tokenPin = "";
+    let tokenUnit = "";
+    let tokenVisitor = "";
+    let tokenPurpose = "";
+    if (upper.startsWith("PAHE-PASS:") || upper.startsWith("LINCOLN-PASS:")) {
       const parts = rawInput.split(":");
-      const code = parts[1] || "LP-0000";
-      const pin = (parts[2] || "").replace("PIN-", "");
-      const unit = (parts[3] || "Villa A-402").replace(/-/g, " ");
-      const visitorName = (parts[4] || "Verified Guest").replace(/-/g, " ");
-      const purpose = (parts[5] || "Authorized Visit").replace(/-/g, " ");
-
-      try {
-        await sql`
-          INSERT INTO access_logs (person_name, role, gate, status, verification_type, notes, created_at)
-          VALUES (${visitorName}, 'Visitor', 'Gate 1 (Main)', 'Granted', 'Visitor QR Scan', ${`Code: ${code} • Host Unit: ${unit} • ${purpose}`}, NOW())
-        `;
-      } catch {
-        // Non-blocking
-      }
-
-      return NextResponse.json({
-        valid: true,
-        passType: "VISITOR",
-        action: "Visitor Entry",
-        code,
-        pin,
-        personName: visitorName,
-        unit,
-        purpose,
-        status: "CLEARANCE GRANTED",
-        message: `Visitor ${visitorName} verified for ${unit}. Entry logged.`,
-      });
+      lookupCode = (parts[1] || "").toUpperCase();
+      tokenPin = (parts[2] || "").replace("PIN-", "");
+      tokenUnit = (parts[3] || "").replace(/-/g, " ");
+      tokenVisitor = (parts[4] || "").replace(/-/g, " ");
+      tokenPurpose = (parts[5] || "").replace(/-/g, " ");
     }
 
-    // Case 3: Short Pass Code Lookup (e.g. LP-8403)
-    const cleanCode = rawInput.toUpperCase();
+    // Case 3: Database verification against guest_passes (single source of truth)
     try {
       const dbPass = await sql`
-        SELECT * FROM guest_passes WHERE UPPER(code) = ${cleanCode} LIMIT 1
+        SELECT * FROM guest_passes
+        WHERE UPPER(code) = ${lookupCode}
+        ORDER BY id DESC
+        LIMIT 1
       `;
       if (dbPass.length > 0) {
         const p = dbPass[0];
-        await sql`
-          INSERT INTO access_logs (person_name, role, gate, status, verification_type, notes, created_at)
-          VALUES (${p.visitor_name || p.name || "Guest"}, 'Visitor', 'Gate 1 (Main)', 'Granted', 'Pass Code', ${`Code: ${cleanCode}`}, NOW())
-        `.catch(() => {});
+        const guestName = p.guest_name || p.visitor_name || tokenVisitor || "Verified Visitor";
+        const hostUnit = p.invited_by || tokenUnit || "Estate Resident";
+        const purpose = p.purpose || tokenPurpose || "Registered Guest Pass";
+
+        if (p.status === "revoked") {
+          await logGateClearance(guestName, `Revoked Pass ${lookupCode} (${hostUnit})`, "in", "denied");
+          return NextResponse.json(
+            {
+              valid: false,
+              status: "ACCESS DENIED (REVOKED)",
+              message: `Visitor pass ${lookupCode} was revoked by ${hostUnit}. Do not open barrier.`,
+            },
+            { status: 403 }
+          );
+        }
+
+        if (p.valid_until && new Date(p.valid_until).getTime() < Date.now()) {
+          await logGateClearance(guestName, `Expired Pass ${lookupCode} (${hostUnit})`, "in", "denied");
+          return NextResponse.json(
+            {
+              valid: false,
+              status: "ACCESS DENIED (EXPIRED)",
+              message: `Visitor pass ${lookupCode} has expired. Ask resident to issue a new pass.`,
+            },
+            { status: 403 }
+          );
+        }
+
+        await sql`UPDATE guest_passes SET status = 'used', updated_at = NOW() WHERE id = ${Number(p.id)}`.catch(() => {});
+        await logGateClearance(guestName, `Visitor Pass ${lookupCode} • Host: ${hostUnit} • ${purpose}`, "in", "granted");
 
         return NextResponse.json({
           valid: true,
           passType: "VISITOR",
           action: "Visitor Entry",
-          code: cleanCode,
-          personName: p.visitor_name || p.name || "Verified Visitor",
-          unit: p.invited_by || "Villa A-402",
-          purpose: "Registered Guest Pass",
+          code: lookupCode,
+          pin: p.pin || tokenPin || undefined,
+          personName: guestName,
+          unit: hostUnit,
+          purpose,
           status: "CLEARANCE GRANTED",
-          message: `Guest pass ${cleanCode} verified. Gate access granted.`,
+          message: `Guest pass ${lookupCode} verified for ${guestName} (Host: ${hostUnit}). Gate access granted.`,
         });
       }
-    } catch {
-      // Fallback check for LP-* format
+    } catch (e: any) {
+      console.warn("Verify pass DB lookup error:", e.message);
     }
 
-    if (/^LP-\d{4}$/.test(cleanCode)) {
-      return NextResponse.json({
-        valid: true,
-        passType: "VISITOR",
-        action: "Visitor Entry",
-        code: cleanCode,
-        personName: "Authorized Estate Visitor",
-        unit: "Villa A-402",
-        purpose: "Resident Issued Pass",
-        status: "CLEARANCE GRANTED",
-        message: `Gate Clearance Code ${cleanCode} validated. Entry logged.`,
-      });
-    }
-
+    await logGateClearance("Unknown Visitor", `Invalid Pass Code: ${rawInput}`, "in", "denied");
     return NextResponse.json(
       {
         valid: false,
         status: "ACCESS DENIED",
-        message: `Unrecognized or expired pass code "${rawInput}". Do not open barrier without host phone confirmation.`,
+        message: `Unrecognized or unissued pass code "${rawInput}". Only active passes issued by a verified resident can be cleared.`,
       },
       { status: 404 }
     );
   } catch (err: any) {
-    return NextResponse.json({ valid: false, message: "Verification error.", error: err.message }, { status: 500 });
+    return NextResponse.json({ valid: false, status: "ERROR", message: err.message }, { status: 500 });
   }
 }

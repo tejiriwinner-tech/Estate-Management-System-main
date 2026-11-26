@@ -22,11 +22,30 @@ export default function ResidentGatePassesPage() {
     })
       .then((r) => r.json())
       .then((j) => {
+        const rName = j?.data?.name || session?.name || "Resident";
         if (j?.data?.name) setResidentName(j.data.name);
         if (j?.data?.unit_number) setUnitNumber(j.data.unit_number);
+        return fetch(`/api/v1/security/access/passes?invited_by=${encodeURIComponent(rName)}`, { cache: "no-store" });
+      })
+      .then((r) => r.json())
+      .then((j) => {
+        if (Array.isArray(j?.data)) {
+          setPasses(
+            j.data
+              .filter((p: any) => p.status === "active")
+              .map((p: any) => ({
+                id: String(p.id),
+                visitor: p.guest_name || "Visitor",
+                purpose: p.purpose || "Social Visit",
+                code: p.code,
+                pin: p.pin || "—",
+                validTill: p.valid_until ? new Date(p.valid_until).toLocaleString("en-NG") : "24 Hours",
+              }))
+          );
+        }
       })
       .catch(() => {});
-  }, [session?.email]);
+  }, [session?.email, session?.name]);
 
   // Modals
   const [myGatePassOpen, setMyGatePassOpen] = useState(false);
@@ -52,7 +71,7 @@ export default function ResidentGatePassesPage() {
   const handleCreateVisitorPass = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!visitorName.trim()) return;
-    const code = "LP-" + Math.floor(1000 + Math.random() * 9000);
+    const code = "PAHE-" + Math.floor(1000 + Math.random() * 9000);
     const pin = Math.floor(100000 + Math.random() * 900000).toString();
     const newPass = {
       id: String(Date.now()),
@@ -67,16 +86,22 @@ export default function ResidentGatePassesPage() {
     setVisitorName("");
 
     try {
-      await fetch("/api/v1/security/access/passes", {
+      const res = await fetch("/api/v1/security/access/passes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: newPass.visitor,
           invited_by: `${residentName} (${unitNumber})`,
+          purpose: newPass.purpose,
           code: newPass.code,
+          pin: newPass.pin,
           expires_in_minutes: 1440,
         }),
       });
+      const json = await res.json();
+      if (json?.data?.id) {
+        setPasses((prev) => prev.map((p) => (p.code === code ? { ...p, id: String(json.data.id) } : p)));
+      }
     } catch {
       // Non-blocking
     }

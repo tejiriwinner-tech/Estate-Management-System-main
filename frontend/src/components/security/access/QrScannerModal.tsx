@@ -109,30 +109,15 @@ export function QrScannerModal({ isOpen, onClose, onVerified }: QrScannerModalPr
                   autoFocus
                   value={inputCode}
                   onChange={(e) => setInputCode(e.target.value)}
-                  placeholder="e.g. LP-8403 or RES-VILLAA402..."
+                  placeholder="e.g. PAHE-8403 or PAHE-RESIDENT:..."
                   className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 font-mono text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#B22222]"
                 />
               </div>
             </div>
 
-            {/* Quick Sample Simulation Buttons for Guard Testing */}
-            <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
-              <span className="text-slate-400 font-semibold mr-1">Quick Test:</span>
-              <button
-                type="button"
-                onClick={() => handleVerify(undefined, "LINCOLN-RESIDENT:RES-VILLAA402:Chinedu-Resident:Villa-A-402:KJA-492AA:EXIT-CLEARANCE")}
-                className="px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold transition-colors"
-              >
-                Resident Exit QR
-              </button>
-              <button
-                type="button"
-                onClick={() => handleVerify(undefined, "LP-8841")}
-                className="px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold transition-colors"
-              >
-                Visitor LP-8841
-              </button>
-            </div>
+            <p className="text-[11px] text-slate-400">
+              Only active passes issued by verified Post Army House Estate residents will be granted clearance.
+            </p>
 
             <button
               type="submit"

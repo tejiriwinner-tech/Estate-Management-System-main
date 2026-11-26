@@ -15,9 +15,9 @@ interface ResidentGatePassModalProps {
 export function ResidentGatePassModal({
   isOpen,
   onClose,
-  residentName = "Chinedu Resident",
-  unitNumber = "Villa A-402",
-  vehiclePlate = "KJA-492AA",
+  residentName = "Estate Resident",
+  unitNumber = "Estate Unit",
+  vehiclePlate = "On Foot",
 }: ResidentGatePassModalProps) {
   const [direction, setDirection] = useState<"EXIT" | "ENTRY">("EXIT");
   const [notified, setNotified] = useState(false);
@@ -25,8 +25,8 @@ export function ResidentGatePassModal({
 
   if (!isOpen) return null;
 
-  const passId = `RES-${unitNumber.replace(/[^A-Z0-9]/gi, "").toUpperCase()}`;
-  const qrPayload = `LINCOLN-RESIDENT:${passId}:${residentName.replace(/\s+/g, "-")}:${unitNumber.replace(/\s+/g, "-")}:${vehiclePlate}:${direction}-CLEARANCE`;
+  const passId = `RES-${unitNumber.replace(/[^A-Z0-9]/gi, "").toUpperCase() || "UNIT"}`;
+  const qrPayload = `PAHE-RESIDENT:${passId}:${residentName.replace(/\s+/g, "-")}:${unitNumber.replace(/\s+/g, "-")}:${vehiclePlate}:${direction}-CLEARANCE`;
 
   const handleNotifyGate = async () => {
     setNotifying(true);
