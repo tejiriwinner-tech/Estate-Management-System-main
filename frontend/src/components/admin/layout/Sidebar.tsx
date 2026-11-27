@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   ClipboardCheck,
   ChevronDown,
+  Settings,
 } from "lucide-react";
 import { cn } from "@/lib/admin/utils";
 import { clearSession, readSession } from "@/components/auth/session";
@@ -35,6 +36,7 @@ const navItems = [
   { name: "Reports", href: "/admin/reports", icon: BarChart3 },
   { name: "Staffs", href: "/admin/staffs", icon: Users },
   { name: "Listings", href: "/admin/listings", icon: ClipboardCheck }, // agent listing approval (KAN-66)
+  { name: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
 const financeSubLinks = [
@@ -89,18 +91,18 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         )}
       >
         {/* Brand Header */}
-        <div className="flex items-center justify-between h-20 px-6 border-b border-border/60">
-          <Link href="/admin/dashboard" className="flex items-center gap-3 group">
+        <div className="flex items-center justify-between h-20 px-5 border-b border-border/60 shrink-0">
+          <Link href="/admin/dashboard" className="flex items-center gap-3 group min-w-0">
             {/* Monogram Logo */}
-            <div className="relative flex items-center justify-center w-11 h-11 rounded-full bg-primary text-white font-bold text-lg shadow-md transition-transform group-hover:scale-105">
+            <div className="relative flex items-center justify-center w-11 h-11 rounded-full bg-primary text-white font-bold text-sm shadow-md transition-transform group-hover:scale-105 shrink-0">
               <span className="tracking-tighter">PAHE</span>
               <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-accent rounded-full border-2 border-white" />
             </div>
-            <div className="flex flex-col">
-              <span className="font-extrabold text-base tracking-tight text-dark">
+            <div className="flex flex-col min-w-0">
+              <span className="font-extrabold text-sm leading-tight tracking-tight text-dark">
                 Post Army Housing<span className="text-primary"> Estate</span>
               </span>
-              <span className="text-[10px] font-semibold tracking-wider text-muted uppercase">
+              <span className="text-[10px] font-semibold tracking-wider text-muted uppercase mt-0.5">
                 Admin Dashboard
               </span>
             </div>
