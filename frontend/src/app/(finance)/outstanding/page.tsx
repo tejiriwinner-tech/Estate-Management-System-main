@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Download, Bell, AlertTriangle, User } from "lucide-react";
 import { OutstandingSummaryCards } from "@/components/outstanding/OutstandingSummaryCards";
 import { OutstandingFilterToolbar } from "@/components/outstanding/OutstandingFilterToolbar";
@@ -12,6 +13,9 @@ import type { OutstandingPayment, OutstandingSummaryMetrics } from "@/types/outs
 import { OutstandingFilterState } from "@/types/outstanding";
 
 export default function OutstandingPaymentsPage() {
+  const pathname = usePathname();
+  const isAdminRoute = pathname?.startsWith("/admin");
+  const residentSummaryHref = isAdminRoute ? "/admin/finance/outstanding/resident" : "/outstanding/resident";
   const [filters, setFilters] = useState<OutstandingFilterState>({
     serviceType: "All Services",
     status: "All Status",
@@ -139,7 +143,7 @@ export default function OutstandingPaymentsPage() {
           </div>
           <div className="flex items-center gap-3">
             <Link
-              href="/outstanding/resident"
+              href={residentSummaryHref}
               className="inline-flex items-center gap-2 rounded-xl border border-primary/20 bg-primary/5 px-4 py-2.5 text-xs font-bold text-primary hover:bg-primary hover:text-white shadow-xs transition-colors"
             >
               <User className="h-4 w-4" />

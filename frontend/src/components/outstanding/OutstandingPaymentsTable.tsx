@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { User, AlertTriangle, Clock, CreditCard, Send } from "lucide-react";
 import { OutstandingPayment, OutstandingStatus } from "@/types/outstanding";
 
@@ -38,6 +39,10 @@ export function OutstandingPaymentsTable({
   payments,
   onSendReminder,
 }: OutstandingPaymentsTableProps) {
+  const pathname = usePathname();
+  const baseResidentHref = pathname?.startsWith("/admin")
+    ? "/admin/finance/outstanding/resident"
+    : "/outstanding/resident";
   if (payments.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -82,7 +87,7 @@ export function OutstandingPaymentsTable({
                 {/* Resident */}
                 <td className="py-4 px-5">
                   <Link
-                    href={`/outstanding/resident/${payment.residentId ?? payment.id}`}
+                    href={`${baseResidentHref}/${payment.residentId ?? payment.id}`}
                     className="flex items-center gap-3 group/link"
                   >
                     <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 group-hover/link:bg-primary group-hover/link:text-white transition-colors">

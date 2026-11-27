@@ -9,8 +9,7 @@ export async function GET() {
 
     try {
       const scRows = await sql`
-        SELECT sc.id, sc.user_id, sc.invoice_no, sc.resident_name, sc.unit_number, sc.service_type,
-               sc.amount, sc.due_date, sc.status, u.phone, u.email
+        SELECT sc.*, u.phone as u_phone, u.email as u_email
         FROM service_charges sc
         LEFT JOIN users u ON u.id = sc.user_id
         WHERE LOWER(COALESCE(sc.status, 'pending')) != 'paid'
@@ -36,11 +35,15 @@ export async function GET() {
           dueDate: dueDate || "—",
           daysOverdue,
           status: isOverdue ? "overdue" : "pending",
-          phone: r.phone || "—",
-          email: r.email || "—",
+          phone: r.u_phone || "—",
+          email: r.u_email || "—",
         });
       }
+    } catch (e: any) {
+      console.error("Outstanding service_charges DB error:", e.message);
+    }
 
+    try {
       const invRows = await sql`
         SELECT i.id, i.user_id, i.reference, i.service_name, i.amount_kobo, i.paid_kobo, i.due_date,
                u.name as resident_name, u.email as resident_email, u.phone as resident_phone, u.unit_number
@@ -74,8 +77,8 @@ export async function GET() {
           email: r.resident_email || "—",
         });
       }
-    } catch (e: any) {
-      console.error("Outstanding DB error:", e.message);
+    } catch {
+      // fin_invoices table may not exist
     }
 
     const totalOutstanding = data.reduce((acc, cur) => acc + Math.max(0, cur.amountDue - cur.amountPaid), 0);
@@ -93,6 +96,6 @@ export async function GET() {
       },
     });
   } catch (err: any) {
-    return NextResponse.json({ message: "Could not fetch outstanding payments.", error: err.message }, { status: 500 });
+    return NextResponse.json({ message: "Could not fetch outstanding payments.", error: err?.message }, { status: 500 });
   }
 }
