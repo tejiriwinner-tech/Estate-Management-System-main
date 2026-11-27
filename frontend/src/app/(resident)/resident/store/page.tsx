@@ -15,6 +15,7 @@ import {
   Trash2,
   MapPin,
   Truck,
+  Sparkles,
 } from "lucide-react";
 import { readSession } from "@/components/auth/session";
 
@@ -26,6 +27,7 @@ interface ActiveStore {
   owner_name: string;
   owner_email: string;
   status: string;
+  is_promoted?: boolean;
 }
 
 interface StoreProduct {
@@ -40,6 +42,8 @@ interface StoreProduct {
   stock: number;
   description?: string;
   image?: string;
+  featured?: boolean;
+  store_promoted?: boolean;
 }
 
 interface CartItem {
@@ -373,6 +377,11 @@ export default function ResidentMarketplacePage() {
                 <p className="text-xs font-extrabold flex items-center gap-1.5">
                   <Store className="w-3.5 h-3.5" />
                   <span>{s.name}</span>
+                  {s.is_promoted && (
+                    <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-extrabold text-amber-800 border border-amber-200">
+                      <Sparkles className="w-2.5 h-2.5" /> Promoted
+                    </span>
+                  )}
                 </p>
                 <p className="text-[10px] text-slate-500 flex items-center gap-1 mt-0.5">
                   <MapPin className="w-2.5 h-2.5" />
@@ -419,6 +428,11 @@ export default function ResidentMarketplacePage() {
               className="rounded-2xl border border-slate-200/80 bg-white overflow-hidden shadow-2xs hover:shadow-md transition-shadow flex flex-col"
             >
               <div className="h-44 bg-slate-100 relative overflow-hidden">
+                {p.featured && (
+                  <span className="absolute top-2.5 left-2.5 z-10 inline-flex items-center gap-1 rounded-full bg-amber-500 px-2.5 py-0.5 text-[10px] font-extrabold text-white shadow-xs">
+                    <Sparkles className="w-3 h-3" /> Featured
+                  </span>
+                )}
                 {p.image ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={p.image} alt={p.name} className="w-full h-full object-cover" />

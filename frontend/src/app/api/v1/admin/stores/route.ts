@@ -17,16 +17,21 @@ async function ensureStoresTable() {
       owner_email VARCHAR(255) UNIQUE NOT NULL,
       owner_user_id INTEGER,
       status VARCHAR(30) DEFAULT 'active',
+      is_promoted BOOLEAN DEFAULT false,
       created_at TIMESTAMP DEFAULT NOW(),
       updated_at TIMESTAMP DEFAULT NOW()
     )
   `;
+  await sql`ALTER TABLE estate_stores ADD COLUMN IF NOT EXISTS is_promoted BOOLEAN DEFAULT false`.catch(() => {});
 }
 
 export async function GET() {
   try {
     await ensureStoresTable();
-    const rows = await sql`SELECT * FROM estate_stores ORDER BY id DESC`;
+    const rows = await sql`
+      SELECT * FROM estate_stores
+      ORDER BY COALESCE(is_promoted, false) DESC, id DESC
+    `;
     return NextResponse.json({ data: rows });
   } catch (err: any) {
     console.warn("Admin stores fallback:", err.message);
@@ -122,27 +127,39 @@ export async function POST(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   try {
     const body = await req.json();
-    const { id, status } = body;
+    const { id, status, is_promoted } = body;
 
     try {
       await ensureStoresTable();
       const updated = await sql`
         UPDATE estate_stores
-        SET status = ${status || "active"}, updated_at = NOW()
+        SET
+          status = COALESCE(${status ?? null}, status),
+          is_promoted = COALESCE(${typeof is_promoted === "boolean" ? is_promoted : null}, is_promoted, false),
+          updated_at = NOW()
         WHERE id = ${Number(id)}
         RETURNING *
       `;
-      if (updated[0]?.owner_user_id) {
+      if (status && updated[0]?.owner_user_id) {
         await sql`
           UPDATE users SET status = ${status === "archived" ? "suspended" : "active"}, updated_at = NOW()
           WHERE id = ${Number(updated[0].owner_user_id)}
         `.catch(() => {});
       }
-      return NextResponse.json({ data: updated[0], message: `Store marked as ${status}.` });
+      const msg =
+        typeof is_promoted === "boolean"
+          ? is_promoted
+            ? "Store promoted to featured placement for residents."
+            : "Store demoted from featured placement."
+          : `Store marked as ${status}.`;
+      return NextResponse.json({ data: updated[0], message: msg });
     } catch {
       const target = memoryStores.find((s) => Number(s.id) === Number(id));
-      if (target) target.status = status || "active";
-      return NextResponse.json({ data: target, message: `Store marked as ${status}.` });
+      if (target) {
+        if (status) target.status = status;
+        if (typeof is_promoted === "boolean") target.is_promoted = is_promoted;
+      }
+      return NextResponse.json({ data: target, message: "Store updated." });
     }
   } catch (err: any) {
     return NextResponse.json({ message: "Could not update store.", error: err.message }, { status: 500 });
