@@ -67,8 +67,9 @@ export function OutstandingMobileView({
       {/* Outstanding Cards List */}
       <div className="space-y-3">
         {payments.map((payment) => {
-          const cfg = statusConfig[payment.status];
-          const balance = payment.amountDue - payment.amountPaid;
+          const stKey = String(payment.status || "pending").toLowerCase() as OutstandingStatus;
+          const cfg = statusConfig[stKey] ?? statusConfig.pending;
+          const balance = (Number(payment.amountDue) || 0) - (Number(payment.amountPaid) || 0);
 
           return (
             <div

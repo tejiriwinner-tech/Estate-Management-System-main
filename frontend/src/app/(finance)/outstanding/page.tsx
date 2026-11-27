@@ -40,7 +40,7 @@ export default function OutstandingPaymentsPage() {
 
     // Filter by status
     if (filters.status !== "All Status") {
-      result = result.filter((p) => p.status === filters.status);
+      result = result.filter((p) => String(p.status).toLowerCase() === filters.status.toLowerCase());
     }
 
     // Sort

@@ -69,9 +69,10 @@ export function OutstandingPaymentsTable({
         </thead>
         <tbody className="divide-y divide-slate-50 bg-white text-xs">
           {payments.map((payment) => {
-            const cfg = statusConfig[payment.status];
+            const stKey = String(payment.status || "pending").toLowerCase() as OutstandingStatus;
+            const cfg = statusConfig[stKey] ?? statusConfig.pending;
             const StatusIcon = cfg.icon;
-            const balance = payment.amountDue - payment.amountPaid;
+            const balance = (Number(payment.amountDue) || 0) - (Number(payment.amountPaid) || 0);
 
             return (
               <tr
